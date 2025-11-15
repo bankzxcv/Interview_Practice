@@ -20,27 +20,337 @@ Fast & Slow Pointers (also called the "Tortoise and Hare" algorithm) uses two po
 
 ### Visual Diagram
 
+#### 1. The Race Track Analogy - Understanding Fast & Slow Pointers
+
+Think of fast and slow pointers as two runners on a track:
 ```
-Cycle Detection:
-1 -> 2 -> 3 -> 4 -> 5
-          ↑         ↓
-          8 <- 7 <- 6
+🐢 = Slow Pointer (Tortoise) - moves 1 step at a time
+🐰 = Fast Pointer (Hare) - moves 2 steps at a time
 
-Step 1:  slow=1, fast=2
-Step 2:  slow=2, fast=4
-Step 3:  slow=3, fast=6
-Step 4:  slow=4, fast=8
-Step 5:  slow=5, fast=4
-Step 6:  slow=6, fast=6  <- They meet! Cycle detected
+Starting Line:
+    🐢🐰
+    ↓
+[Start] -> [1] -> [2] -> [3] -> [4] -> [5] -> [Finish]
 
-Finding Middle:
-1 -> 2 -> 3 -> 4 -> 5 -> null
-↑    ↑
-slow fast
+After 1 Move:
+    🐢      🐰
+    ↓       ↓
+[Start] -> [1] -> [2] -> [3] -> [4] -> [5] -> [Finish]
 
-Step 1:  slow=1, fast=2
-Step 2:  slow=2, fast=4
-Step 3:  slow=3, fast=null  <- fast reached end, slow at middle
+After 2 Moves:
+            🐢              🐰
+            ↓               ↓
+[Start] -> [1] -> [2] -> [3] -> [4] -> [5] -> [Finish]
+
+After 3 Moves:
+                    🐢                      🐰
+                    ↓                       ↓
+[Start] -> [1] -> [2] -> [3] -> [4] -> [5] -> [Finish]
+
+Result: When 🐰 reaches finish, 🐢 is at the middle!
+```
+
+#### 2. Cycle Detection - Complete Walkthrough
+
+```
+=== THE CIRCULAR TRACK ===
+
+Imagine a circular race track where runners keep going in circles:
+
+    [1] → [2] → [3]
+     ↑           ↓
+    [6] ← [5] ← [4]
+
+This is a cycle! Let's watch our runners:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 0 (Initial Position):
+    [1*] → [2] → [3]
+     ↑           ↓
+    [6] ← [5] ← [4]
+    🐢🐰 both start at node 1
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1:
+    [1] → [2*] → [3]
+     ↑      🐢    ↓
+    [6] ← [5] ← [4]
+                  🐰
+    🐢 moved 1 step → at node 2
+    🐰 moved 2 steps → at node 3
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 2:
+    [1] → [2] → [3*]
+     ↑           ↓
+    [6] ← [5*] ← [4]
+          🐰     🐢
+    🐢 moved 1 step → at node 3
+    🐰 moved 2 steps → at node 5
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 3:
+    [1] → [2] → [3]
+     ↑           ↓
+    [6*] ← [5] ← [4*]
+    🐰          🐢
+    🐢 moved 1 step → at node 4
+    🐰 moved 2 steps → at node 6
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 4:
+    [1] → [2*] → [3]
+     ↑     🐰    ↓
+    [6] ← [5*] ← [4]
+          🐢
+    🐢 moved 1 step → at node 5
+    🐰 moved 2 steps → at node 2 (wrapped around!)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 5:
+    [1] → [2] → [3]
+     ↑           ↓
+    [6*] ← [5] ← [4*]
+    🐢🐰
+    🐢 moved 1 step → at node 6
+    🐰 moved 2 steps → at node 4
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 6:
+    [1] → [2*] → [3]
+     ↑    🐢🐰   ↓
+    [6] ← [5] ← [4]
+
+    🐢 moved 1 step → at node 2
+    🐰 moved 2 steps → at node 2
+
+    🎉 THEY MEET! CYCLE DETECTED! 🎉
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+KEY INSIGHT: In a cycle, fast pointer will ALWAYS catch slow pointer!
+Like a faster runner lapping a slower one on a circular track.
+```
+
+#### 3. Finding Middle Element - Visual Journey
+
+```
+=== SCENARIO 1: ODD NUMBER OF NODES ===
+
+List: [1] → [2] → [3] → [4] → [5] → NULL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Initial:
+🐢🐰
+ ↓
+[1] → [2] → [3] → [4] → [5] → NULL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Move 1:
+      🐢      🐰
+       ↓       ↓
+[1] → [2] → [3] → [4] → [5] → NULL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Move 2:
+              🐢              🐰
+               ↓               ↓
+[1] → [2] → [3] → [4] → [5] → NULL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Final State:
+              🐢                      🐰
+               ↓                       ↓
+[1] → [2] → [3] → [4] → [5] → NULL
+
+🐰 reached end (NULL)
+🐢 is at MIDDLE node (3)! ✓
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+=== SCENARIO 2: EVEN NUMBER OF NODES ===
+
+List: [1] → [2] → [3] → [4] → [5] → [6] → NULL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Initial:
+🐢🐰
+ ↓
+[1] → [2] → [3] → [4] → [5] → [6] → NULL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Move 1:
+      🐢      🐰
+       ↓       ↓
+[1] → [2] → [3] → [4] → [5] → [6] → NULL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Move 2:
+              🐢              🐰
+               ↓               ↓
+[1] → [2] → [3] → [4] → [5] → [6] → NULL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Move 3:
+                      🐢                      🐰
+                       ↓                       ↓
+[1] → [2] → [3] → [4] → [5] → [6] → NULL
+
+🐰 reached end (NULL)
+🐢 is at SECOND MIDDLE node (4)! ✓
+(For even length, we return the second of two middle nodes)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+#### 4. Finding Cycle Start - The Magic Formula
+
+```
+=== FINDING WHERE THE CYCLE BEGINS ===
+
+Phase 1: Detect cycle and find meeting point
+
+    [A] → [B] → [C] ← ─ ─ ─ ┐
+                 ↓          │ (This is the CYCLE)
+                [F] → [E] → [D]
+
+    Distance from A to C = L (length before cycle)
+    Cycle length = C
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Step 1: Run fast & slow until they meet
+
+    [A] → [B] → [C] ← ─ ─ ─ ┐
+                 ↓          │
+                [F] → [E*] → [D]
+                      🐢🐰
+
+    They meet at E! (meeting point)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Phase 2: Find the cycle start (the magic part!)
+
+Step 2: Reset slow to head, keep fast at meeting point
+        Move BOTH at same speed (1 step each)
+
+    🐢
+    ↓
+    [A] → [B] → [C] ← ─ ─ ─ ┐
+                 ↓          │
+                [F] → [E] → [D]
+                      🐰
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After 1 move (both move 1 step):
+
+          🐢
+           ↓
+    [A] → [B] → [C] ← ─ ─ ─ ┐
+                 ↓          │
+                [F*] → [E] → [D]
+                🐰
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After 2 moves:
+
+                  🐢🐰
+                   ↓
+    [A] → [B] → [C] ← ─ ─ ─ ┐
+                 ↓          │
+                [F] → [E] → [D]
+
+    🎉 THEY MEET AT C - THE CYCLE START! 🎉
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHY THIS WORKS (The Mathematical Magic):
+
+When they first meet in Phase 1:
+  • slow traveled: L + k (L to enter cycle, k into cycle)
+  • fast traveled: L + k + nC (same path + n full cycles)
+  • fast is 2x speed: 2(L + k) = L + k + nC
+
+Simplifying:
+  2L + 2k = L + k + nC
+  L + k = nC
+  L = nC - k
+
+This means:
+  Distance from HEAD to CYCLE START (L)
+  = Distance from MEETING POINT to CYCLE START (nC - k)
+
+So moving both pointers at same speed from these positions,
+they'll meet exactly at the cycle start!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+#### 5. Why Fast & Slow Works - The Intuition
+
+```
+╔═══════════════════════════════════════════════════════════╗
+║  KEY PRINCIPLE: Gap Reduction in Cycles                  ║
+╚═══════════════════════════════════════════════════════════╝
+
+In a cycle, if fast is behind slow:
+
+Gap = 3 nodes
+         ↓―――――↓
+    [1] → [2] → [3] → [4] → [5]
+     ↑                       ↓
+     └───────[8] ← [7] ← [6]←┘
+    🐢                   🐰
+
+After 1 iteration:
+  • slow moves 1 step forward
+  • fast moves 2 steps forward
+  • Gap REDUCES by 1
+
+Gap = 2 nodes
+         ↓―――↓
+    [1] → [2] → [3] → [4] → [5]
+     ↑                       ↓
+     └───────[8] ← [7] ← [6]←┘
+          🐢              🐰
+
+After another iteration:
+Gap = 1 node
+         ↓―↓
+    [1] → [2] → [3] → [4] → [5]
+     ↑                       ↓
+     └───────[8] ← [7] ← [6]←┘
+               🐢          🐰
+
+After another iteration:
+Gap = 0 nodes (MEET!)
+         🐢🐰
+    [1] → [2] → [3] → [4] → [5]
+     ↑                       ↓
+     └───────[8] ← [7] ← [6]←┘
+
+GUARANTEED to meet in cycle!
+No cycle? Fast reaches NULL first!
+
+╚═══════════════════════════════════════════════════════════╝
 ```
 
 ## Recognition Guidelines
@@ -1494,6 +1804,1181 @@ function splitListToParts(head: ListNode | null, k: number): Array<ListNode | nu
 
 **Time Complexity**: O(n + k) - traverse list once + create k parts
 **Space Complexity**: O(k) - output array of k parts
+
+---
+
+### Problem 16: Delete the Middle Node of a Linked List
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/](https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/)
+
+**Description**: Delete the middle node of a linked list and return the head. For a list of size n, middle node is the ⌊n/2⌋th node (0-indexed).
+
+#### Python Solution
+```python
+def deleteMiddle(head: ListNode) -> ListNode:
+    # Step 1: Handle edge case - single node
+    if not head or not head.next:
+        return None
+
+    # Step 2: Create dummy node to handle edge cases
+    dummy = ListNode(0)
+    dummy.next = head
+
+    # Step 3: Initialize fast and slow pointers
+    # We need prev pointer to delete middle
+    slow = dummy
+    fast = head
+
+    # Step 4: Move pointers - fast moves 2x speed
+    # When fast reaches end, slow will be at node BEFORE middle
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+
+    # Step 5: Delete middle node
+    # slow is at node before middle
+    slow.next = slow.next.next
+
+    # Step 6: Return new head
+    return dummy.next
+
+# Visualization for [1,2,3,4,5]:
+#
+# Initial state:
+#   dummy -> 1 -> 2 -> 3 -> 4 -> 5 -> null
+#   slow=dummy, fast=1
+#
+# After iteration 1:
+#   dummy -> 1 -> 2 -> 3 -> 4 -> 5 -> null
+#            ↑         ↑
+#           slow      fast
+#
+# After iteration 2:
+#   dummy -> 1 -> 2 -> 3 -> 4 -> 5 -> null
+#                 ↑              ↑
+#                slow          fast
+#
+# Fast reached end, slow at node 2 (before middle 3)
+# Delete: slow.next = slow.next.next
+# Result: [1,2,4,5] (middle node 3 removed)
+```
+
+#### TypeScript Solution
+```typescript
+function deleteMiddle(head: ListNode | null): ListNode | null {
+    // Step 1: Edge case
+    if (!head || !head.next) return null;
+
+    // Step 2: Create dummy
+    const dummy = new ListNode(0);
+    dummy.next = head;
+
+    // Step 3: Initialize pointers
+    let slow: ListNode = dummy;
+    let fast: ListNode | null = head;
+
+    // Step 4: Move pointers
+    while (fast && fast.next) {
+        slow = slow.next!;
+        fast = fast.next.next;
+    }
+
+    // Step 5: Delete middle
+    slow.next = slow.next!.next;
+
+    return dummy.next;
+}
+```
+
+**Time Complexity**: O(n) - single pass through list
+**Space Complexity**: O(1) - only using pointers
+
+---
+
+### Problem 17: Maximum Twin Sum of a Linked List
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/maximum-twin-sum-of-a-linked-list/](https://leetcode.com/problems/maximum-twin-sum-of-a-linked-list/)
+
+**Description**: In a linked list of even length n, the ith node's twin is the (n-1-i)th node. Return maximum twin sum.
+
+#### Python Solution
+```python
+def pairSum(head: ListNode) -> int:
+    # Step 1: Find middle using fast & slow pointers
+    slow = head
+    fast = head
+
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+
+    # Step 2: Reverse second half of list
+    # slow is now at middle
+    prev = None
+    curr = slow
+
+    while curr:
+        next_node = curr.next
+        curr.next = prev
+        prev = curr
+        curr = next_node
+
+    # Step 3: Calculate twin sums
+    # First half: head -> ... -> middle
+    # Second half (reversed): prev -> ... -> middle
+    max_sum = 0
+    first = head
+    second = prev  # Head of reversed second half
+
+    while second:
+        # Step 4: Calculate current twin sum
+        twin_sum = first.val + second.val
+        # Step 5: Update maximum
+        max_sum = max(max_sum, twin_sum)
+
+        # Step 6: Move to next pair
+        first = first.next
+        second = second.next
+
+    return max_sum
+
+# Visualization for [5,4,2,1]:
+#
+# Original: 5 -> 4 -> 2 -> 1
+#           0    1    2    3  (indices)
+#
+# Twin pairs:
+#   (0,3): 5 + 1 = 6
+#   (1,2): 4 + 2 = 6
+#
+# Step 1: Find middle
+#   5 -> 4 -> 2 -> 1
+#             ↑
+#           slow (middle)
+#
+# Step 2: Reverse second half
+#   First half: 5 -> 4
+#   Second half (reversed): 1 -> 2
+#
+# Step 3: Calculate sums
+#   5 + 1 = 6 ✓
+#   4 + 2 = 6 ✓
+#   max = 6
+```
+
+#### TypeScript Solution
+```typescript
+function pairSum(head: ListNode | null): number {
+    // Step 1: Find middle
+    let slow = head;
+    let fast = head;
+
+    while (fast && fast.next) {
+        slow = slow!.next;
+        fast = fast.next.next;
+    }
+
+    // Step 2: Reverse second half
+    let prev: ListNode | null = null;
+    let curr = slow;
+
+    while (curr) {
+        const nextNode = curr.next;
+        curr.next = prev;
+        prev = curr;
+        curr = nextNode;
+    }
+
+    // Step 3: Calculate max sum
+    let maxSum = 0;
+    let first = head;
+    let second = prev;
+
+    while (second) {
+        const twinSum = first!.val + second.val;
+        maxSum = Math.max(maxSum, twinSum);
+
+        first = first!.next;
+        second = second.next;
+    }
+
+    return maxSum;
+}
+```
+
+**Time Complexity**: O(n) - traverse list twice
+**Space Complexity**: O(1) - only using pointers
+
+---
+
+### Problem 18: Reverse Nodes in k-Group
+**Difficulty**: Hard
+**LeetCode Link**: [https://leetcode.com/problems/reverse-nodes-in-k-group/](https://leetcode.com/problems/reverse-nodes-in-k-group/)
+
+**Description**: Reverse nodes of linked list k at a time. If nodes remaining are less than k, leave them as is.
+
+#### Python Solution
+```python
+def reverseKGroup(head: ListNode, k: int) -> ListNode:
+    # Step 1: Check if we have k nodes to reverse
+    def has_k_nodes(node: ListNode, k: int) -> bool:
+        count = 0
+        while node and count < k:
+            count += 1
+            node = node.next
+        return count == k
+
+    # Step 2: Reverse k nodes starting from head
+    def reverse_k_nodes(head: ListNode, k: int):
+        prev = None
+        curr = head
+
+        for _ in range(k):
+            next_node = curr.next
+            curr.next = prev
+            prev = curr
+            curr = next_node
+
+        return prev, curr  # New head, next segment start
+
+    # Step 3: Main logic
+    if not head or k == 1:
+        return head
+
+    # Step 4: Use dummy node
+    dummy = ListNode(0)
+    dummy.next = head
+    prev_group = dummy
+
+    while True:
+        # Step 5: Check if we have k nodes
+        if not has_k_nodes(prev_group.next, k):
+            break
+
+        # Step 6: Save positions
+        group_start = prev_group.next
+        next_group = group_start
+        for _ in range(k):
+            next_group = next_group.next
+
+        # Step 7: Reverse k nodes
+        new_group_head, _ = reverse_k_nodes(group_start, k)
+
+        # Step 8: Connect reversed group
+        prev_group.next = new_group_head
+        group_start.next = next_group
+
+        # Step 9: Move to next group
+        prev_group = group_start
+
+    return dummy.next
+
+# Visualization for [1,2,3,4,5], k=2:
+#
+# Original: 1 -> 2 -> 3 -> 4 -> 5
+#
+# Group 1 (reverse 1,2):
+#   2 -> 1 -> 3 -> 4 -> 5
+#
+# Group 2 (reverse 3,4):
+#   2 -> 1 -> 4 -> 3 -> 5
+#
+# Group 3 (only 1 node left, don't reverse):
+#   Final: 2 -> 1 -> 4 -> 3 -> 5
+```
+
+#### TypeScript Solution
+```typescript
+function reverseKGroup(head: ListNode | null, k: number): ListNode | null {
+    // Helper: Check if k nodes available
+    const hasKNodes = (node: ListNode | null, k: number): boolean => {
+        let count = 0;
+        while (node && count < k) {
+            count++;
+            node = node.next;
+        }
+        return count === k;
+    };
+
+    // Helper: Reverse k nodes
+    const reverseK = (head: ListNode, k: number): [ListNode, ListNode | null] => {
+        let prev: ListNode | null = null;
+        let curr: ListNode | null = head;
+
+        for (let i = 0; i < k; i++) {
+            const nextNode = curr!.next;
+            curr!.next = prev;
+            prev = curr;
+            curr = nextNode;
+        }
+
+        return [prev!, curr];
+    };
+
+    if (!head || k === 1) return head;
+
+    const dummy = new ListNode(0);
+    dummy.next = head;
+    let prevGroup: ListNode = dummy;
+
+    while (true) {
+        if (!hasKNodes(prevGroup.next, k)) break;
+
+        const groupStart = prevGroup.next!;
+        let nextGroup: ListNode | null = groupStart;
+
+        for (let i = 0; i < k; i++) {
+            nextGroup = nextGroup!.next;
+        }
+
+        const [newHead, _] = reverseK(groupStart, k);
+
+        prevGroup.next = newHead;
+        groupStart.next = nextGroup;
+        prevGroup = groupStart;
+    }
+
+    return dummy.next;
+}
+```
+
+**Time Complexity**: O(n) - traverse each node once
+**Space Complexity**: O(1) - only using pointers
+
+---
+
+### Problem 19: Add Two Numbers II
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/add-two-numbers-ii/](https://leetcode.com/problems/add-two-numbers-ii/)
+
+**Description**: Add two numbers represented by linked lists where most significant digit comes first. Return the sum as a linked list.
+
+#### Python Solution
+```python
+def addTwoNumbers(l1: ListNode, l2: ListNode) -> ListNode:
+    # Step 1: Reverse both lists
+    def reverse_list(head: ListNode) -> ListNode:
+        prev = None
+        curr = head
+
+        while curr:
+            next_node = curr.next
+            curr.next = prev
+            prev = curr
+            curr = next_node
+
+        return prev
+
+    # Step 2: Reverse input lists
+    r1 = reverse_list(l1)
+    r2 = reverse_list(l2)
+
+    # Step 3: Add numbers digit by digit
+    dummy = ListNode(0)
+    curr = dummy
+    carry = 0
+
+    while r1 or r2 or carry:
+        # Step 4: Get current digits
+        val1 = r1.val if r1 else 0
+        val2 = r2.val if r2 else 0
+
+        # Step 5: Calculate sum
+        total = val1 + val2 + carry
+        carry = total // 10
+        digit = total % 10
+
+        # Step 6: Create new node
+        curr.next = ListNode(digit)
+        curr = curr.next
+
+        # Step 7: Move to next digits
+        r1 = r1.next if r1 else None
+        r2 = r2.next if r2 else None
+
+    # Step 8: Reverse result to get correct order
+    return reverse_list(dummy.next)
+
+# Visualization for l1 = [7,2,4,3], l2 = [5,6,4]:
+# (represents 7243 + 564 = 7807)
+#
+# Step 1: Reverse lists
+#   r1: 3 -> 4 -> 2 -> 7
+#   r2: 4 -> 6 -> 5
+#
+# Step 2: Add digit by digit (right to left)
+#   3 + 4 = 7, carry = 0
+#   4 + 6 = 10, carry = 1, digit = 0
+#   2 + 5 + 1 = 8, carry = 0
+#   7 + 0 = 7, carry = 0
+#
+#   Result (reversed): 7 -> 0 -> 8 -> 7
+#
+# Step 3: Reverse to get final answer
+#   Final: 7 -> 8 -> 0 -> 7 (represents 7807)
+```
+
+#### TypeScript Solution
+```typescript
+function addTwoNumbers(l1: ListNode | null, l2: ListNode | null): ListNode | null {
+    // Helper: Reverse list
+    const reverseList = (head: ListNode | null): ListNode | null => {
+        let prev: ListNode | null = null;
+        let curr = head;
+
+        while (curr) {
+            const nextNode = curr.next;
+            curr.next = prev;
+            prev = curr;
+            curr = nextNode;
+        }
+
+        return prev;
+    };
+
+    // Reverse inputs
+    let r1 = reverseList(l1);
+    let r2 = reverseList(l2);
+
+    // Add numbers
+    const dummy = new ListNode(0);
+    let curr = dummy;
+    let carry = 0;
+
+    while (r1 || r2 || carry) {
+        const val1 = r1 ? r1.val : 0;
+        const val2 = r2 ? r2.val : 0;
+
+        const total = val1 + val2 + carry;
+        carry = Math.floor(total / 10);
+        const digit = total % 10;
+
+        curr.next = new ListNode(digit);
+        curr = curr.next;
+
+        r1 = r1 ? r1.next : null;
+        r2 = r2 ? r2.next : null;
+    }
+
+    // Reverse result
+    return reverseList(dummy.next);
+}
+```
+
+**Time Complexity**: O(max(m, n)) - where m, n are lengths of lists
+**Space Complexity**: O(1) - excluding output list
+
+---
+
+### Problem 20: Copy List with Random Pointer
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/copy-list-with-random-pointer/](https://leetcode.com/problems/copy-list-with-random-pointer/)
+
+**Description**: Deep copy a linked list where each node has a next and random pointer.
+
+#### Python Solution
+```python
+class Node:
+    def __init__(self, val=0, next=None, random=None):
+        self.val = val
+        self.next = next
+        self.random = random
+
+def copyRandomList(head: Node) -> Node:
+    if not head:
+        return None
+
+    # Step 1: Create interleaved list (original -> copy -> original -> copy)
+    # Original: A -> B -> C
+    # After: A -> A' -> B -> B' -> C -> C'
+    curr = head
+
+    while curr:
+        # Create copy and insert after original
+        copy = Node(curr.val)
+        copy.next = curr.next
+        curr.next = copy
+        curr = copy.next
+
+    # Step 2: Set random pointers for copied nodes
+    curr = head
+
+    while curr:
+        if curr.random:
+            # Copy's random = original's random's next (which is the copy)
+            curr.next.random = curr.random.next
+        curr = curr.next.next
+
+    # Step 3: Separate the two lists
+    # Restore original and extract copy
+    dummy = Node(0)
+    copy_curr = dummy
+    curr = head
+
+    while curr:
+        # Extract copy
+        copy_node = curr.next
+        copy_curr.next = copy_node
+        copy_curr = copy_node
+
+        # Restore original
+        curr.next = copy_node.next
+        curr = curr.next
+
+    return dummy.next
+
+# Visualization for [[7,null],[13,0],[11,4],[10,2],[1,0]]:
+#
+# Original list:
+#   7 -> 13 -> 11 -> 10 -> 1
+#   ↓     ↓     ↓     ↓    ↓
+#  null   7     1     11   7
+#
+# Step 1: Create interleaved
+#   7 -> 7' -> 13 -> 13' -> 11 -> 11' -> 10 -> 10' -> 1 -> 1'
+#
+# Step 2: Set random pointers
+#   7'.random = 7.random.next = null.next = null
+#   13'.random = 13.random.next = 7.next = 7'
+#   (and so on...)
+#
+# Step 3: Separate lists
+#   Copy: 7' -> 13' -> 11' -> 10' -> 1'
+#   (with all random pointers correctly set)
+```
+
+#### TypeScript Solution
+```typescript
+class Node {
+    val: number;
+    next: Node | null;
+    random: Node | null;
+
+    constructor(val?: number, next?: Node, random?: Node) {
+        this.val = (val === undefined ? 0 : val);
+        this.next = (next === undefined ? null : next);
+        this.random = (random === undefined ? null : random);
+    }
+}
+
+function copyRandomList(head: Node | null): Node | null {
+    if (!head) return null;
+
+    // Step 1: Create interleaved list
+    let curr: Node | null = head;
+
+    while (curr) {
+        const copy = new Node(curr.val);
+        copy.next = curr.next;
+        curr.next = copy;
+        curr = copy.next;
+    }
+
+    // Step 2: Set random pointers
+    curr = head;
+
+    while (curr) {
+        if (curr.random) {
+            curr.next!.random = curr.random.next;
+        }
+        curr = curr.next!.next;
+    }
+
+    // Step 3: Separate lists
+    const dummy = new Node(0);
+    let copyCurr = dummy;
+    curr = head;
+
+    while (curr) {
+        const copyNode = curr.next!;
+        copyCurr.next = copyNode;
+        copyCurr = copyNode;
+
+        curr.next = copyNode.next;
+        curr = curr.next;
+    }
+
+    return dummy.next;
+}
+```
+
+**Time Complexity**: O(n) - three passes through list
+**Space Complexity**: O(1) - excluding output (in-place interleaving)
+
+---
+
+### Problem 21: Flatten a Multilevel Doubly Linked List
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/flatten-a-multilevel-doubly-linked-list/](https://leetcode.com/problems/flatten-a-multilevel-doubly-linked-list/)
+
+**Description**: Flatten a multilevel doubly linked list where nodes can have a child pointer to another list.
+
+#### Python Solution
+```python
+class Node:
+    def __init__(self, val=0, prev=None, next=None, child=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+        self.child = child
+
+def flatten(head: Node) -> Node:
+    if not head:
+        return None
+
+    # Step 1: Use pointer to traverse and flatten
+    curr = head
+
+    while curr:
+        # Step 2: If no child, just move forward
+        if not curr.child:
+            curr = curr.next
+            continue
+
+        # Step 3: Has child - need to flatten
+        # Save next node
+        next_node = curr.next
+
+        # Step 4: Find tail of child list
+        child = curr.child
+        tail = child
+
+        while tail.next:
+            tail = tail.next
+
+        # Step 5: Connect current to child
+        curr.next = child
+        child.prev = curr
+        curr.child = None
+
+        # Step 6: Connect child's tail to saved next
+        if next_node:
+            tail.next = next_node
+            next_node.prev = tail
+
+        # Step 7: Continue from current position
+        # (will now traverse through flattened child)
+        curr = curr.next
+
+    return head
+
+# Visualization:
+#
+# Original multilevel list:
+#   1 <-> 2 <-> 3 <-> 4 <-> 5 <-> 6
+#              |
+#              7 <-> 8 <-> 9 <-> 10
+#                   |
+#                   11 <-> 12
+#
+# Step-by-step flattening:
+#
+# At node 3 (has child 7):
+#   1. Save next = 4
+#   2. Find tail of child list (10)
+#   3. Connect: 3 -> 7, 7 <- 3
+#   4. Connect: 10 -> 4, 4 <- 10
+#   5. Remove child pointer
+#
+#   1 <-> 2 <-> 3 <-> 7 <-> 8 <-> 9 <-> 10 <-> 4 <-> 5 <-> 6
+#                            |
+#                            11 <-> 12
+#
+# At node 8 (has child 11):
+#   1. Save next = 9
+#   2. Find tail of child list (12)
+#   3. Connect: 8 -> 11, 11 <- 8
+#   4. Connect: 12 -> 9, 9 <- 12
+#
+# Final flattened list:
+#   1 <-> 2 <-> 3 <-> 7 <-> 8 <-> 11 <-> 12 <-> 9 <-> 10 <-> 4 <-> 5 <-> 6
+```
+
+#### TypeScript Solution
+```typescript
+class Node {
+    val: number;
+    prev: Node | null;
+    next: Node | null;
+    child: Node | null;
+
+    constructor(val?: number, prev?: Node, next?: Node, child?: Node) {
+        this.val = (val === undefined ? 0 : val);
+        this.prev = (prev === undefined ? null : prev);
+        this.next = (next === undefined ? null : next);
+        this.child = (child === undefined ? null : child);
+    }
+}
+
+function flatten(head: Node | null): Node | null {
+    if (!head) return null;
+
+    let curr: Node | null = head;
+
+    while (curr) {
+        if (!curr.child) {
+            curr = curr.next;
+            continue;
+        }
+
+        const nextNode = curr.next;
+        const child = curr.child;
+
+        // Find tail of child
+        let tail = child;
+        while (tail.next) {
+            tail = tail.next;
+        }
+
+        // Connect current to child
+        curr.next = child;
+        child.prev = curr;
+        curr.child = null;
+
+        // Connect tail to next
+        if (nextNode) {
+            tail.next = nextNode;
+            nextNode.prev = tail;
+        }
+
+        curr = curr.next;
+    }
+
+    return head;
+}
+```
+
+**Time Complexity**: O(n) - visit each node once
+**Space Complexity**: O(1) - only using pointers
+
+---
+
+### Problem 22: Linked List Components
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/linked-list-components/](https://leetcode.com/problems/linked-list-components/)
+
+**Description**: Given a linked list and array of values, count number of connected components (consecutive nodes whose values are in the array).
+
+#### Python Solution
+```python
+def numComponents(head: ListNode, nums: List[int]) -> int:
+    # Step 1: Convert array to set for O(1) lookup
+    num_set = set(nums)
+
+    # Step 2: Traverse list and count components
+    components = 0
+    curr = head
+    in_component = False
+
+    while curr:
+        # Step 3: Check if current value is in set
+        if curr.val in num_set:
+            # Step 4: If not already in component, start new one
+            if not in_component:
+                components += 1
+                in_component = True
+        else:
+            # Step 5: End of component
+            in_component = False
+
+        # Step 6: Move to next node
+        curr = curr.next
+
+    return components
+
+# Visualization for head = [0,1,2,3], nums = [0,1,3]:
+#
+# List: 0 -> 1 -> 2 -> 3
+#       ✓    ✓    ✗    ✓
+#
+# Traversal:
+#   Node 0: in nums ✓, start component 1, in_component = True
+#   Node 1: in nums ✓, continue component 1
+#   Node 2: NOT in nums ✗, end component, in_component = False
+#   Node 3: in nums ✓, start component 2, in_component = True
+#
+# Components:
+#   Component 1: [0, 1]
+#   Component 2: [3]
+#
+# Total: 2 components
+#
+# Another example: head = [0,1,2,3,4], nums = [0,3,1,4]:
+#
+# List: 0 -> 1 -> 2 -> 3 -> 4
+#       ✓    ✓    ✗    ✓    ✓
+#
+# Components:
+#   Component 1: [0, 1]
+#   Component 2: [3, 4]
+#
+# Total: 2 components
+```
+
+#### TypeScript Solution
+```typescript
+function numComponents(head: ListNode | null, nums: number[]): number {
+    // Step 1: Create set
+    const numSet = new Set(nums);
+
+    // Step 2: Count components
+    let components = 0;
+    let curr = head;
+    let inComponent = false;
+
+    while (curr) {
+        if (numSet.has(curr.val)) {
+            if (!inComponent) {
+                components++;
+                inComponent = true;
+            }
+        } else {
+            inComponent = false;
+        }
+
+        curr = curr.next;
+    }
+
+    return components;
+}
+```
+
+**Time Complexity**: O(n + m) - n for list traversal, m for set creation
+**Space Complexity**: O(m) - set storage for m numbers
+
+---
+
+### Problem 23: Next Greater Node In Linked List
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/next-greater-node-in-linked-list/](https://leetcode.com/problems/next-greater-node-in-linked-list/)
+
+**Description**: For each node, find the value of the next greater node (first node with greater value to the right). Return 0 if none exists.
+
+#### Python Solution
+```python
+def nextLargerNodes(head: ListNode) -> List[int]:
+    # Step 1: Convert linked list to array for easier processing
+    values = []
+    curr = head
+
+    while curr:
+        values.append(curr.val)
+        curr = curr.next
+
+    # Step 2: Initialize result array with zeros
+    n = len(values)
+    result = [0] * n
+
+    # Step 3: Use stack to find next greater elements
+    # Stack stores indices of elements waiting for next greater
+    stack = []
+
+    # Step 4: Traverse array
+    for i in range(n):
+        # Step 5: While current element is greater than stack top
+        # We found next greater for stack top
+        while stack and values[stack[-1]] < values[i]:
+            idx = stack.pop()
+            result[idx] = values[i]
+
+        # Step 6: Push current index to stack
+        stack.append(i)
+
+    # Step 7: Remaining elements in stack have no next greater
+    # (already initialized to 0)
+
+    return result
+
+# Visualization for [2,1,5]:
+#
+# List: 2 -> 1 -> 5
+# Index: 0    1    2
+#
+# Step-by-step:
+#
+# i=0, val=2:
+#   stack = []
+#   No elements to pop
+#   Push 0: stack = [0]
+#   result = [0, 0, 0]
+#
+# i=1, val=1:
+#   stack = [0]
+#   values[0]=2 > values[1]=1, don't pop
+#   Push 1: stack = [0, 1]
+#   result = [0, 0, 0]
+#
+# i=2, val=5:
+#   stack = [0, 1]
+#   values[1]=1 < values[2]=5 ✓
+#     Pop 1, result[1] = 5
+#   values[0]=2 < values[2]=5 ✓
+#     Pop 0, result[0] = 5
+#   Push 2: stack = [2]
+#   result = [5, 5, 0]
+#
+# Final: [5, 5, 0]
+#
+# Explanation:
+#   Node 2: next greater is 5
+#   Node 1: next greater is 5
+#   Node 5: no next greater (returns 0)
+```
+
+#### TypeScript Solution
+```typescript
+function nextLargerNodes(head: ListNode | null): number[] {
+    // Step 1: Convert to array
+    const values: number[] = [];
+    let curr = head;
+
+    while (curr) {
+        values.push(curr.val);
+        curr = curr.next;
+    }
+
+    // Step 2: Initialize result
+    const n = values.length;
+    const result = new Array(n).fill(0);
+
+    // Step 3: Use stack
+    const stack: number[] = [];
+
+    for (let i = 0; i < n; i++) {
+        while (stack.length > 0 && values[stack[stack.length - 1]] < values[i]) {
+            const idx = stack.pop()!;
+            result[idx] = values[i];
+        }
+
+        stack.push(i);
+    }
+
+    return result;
+}
+```
+
+**Time Complexity**: O(n) - each element pushed/popped once
+**Space Complexity**: O(n) - array and stack storage
+
+---
+
+### Problem 24: Remove Zero Sum Consecutive Nodes from Linked List
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/remove-zero-sum-consecutive-nodes-from-linked-list/](https://leetcode.com/problems/remove-zero-sum-consecutive-nodes-from-linked-list/)
+
+**Description**: Remove all consecutive sequences of nodes that sum to 0.
+
+#### Python Solution
+```python
+def removeZeroSumSublists(head: ListNode) -> ListNode:
+    # Step 1: Create dummy node
+    dummy = ListNode(0)
+    dummy.next = head
+
+    # Step 2: Use prefix sum and hashmap
+    # Key: prefix sum, Value: node at that prefix sum
+    prefix_sum = 0
+    prefix_map = {0: dummy}
+
+    # Step 3: First pass - record all prefix sums
+    curr = head
+
+    while curr:
+        prefix_sum += curr.val
+        # If prefix sum seen before, it means nodes in between sum to 0
+        # Update map to point to current node (will remove intermediate nodes)
+        prefix_map[prefix_sum] = curr
+        curr = curr.next
+
+    # Step 4: Second pass - rebuild list skipping zero-sum sequences
+    prefix_sum = 0
+    curr = dummy
+
+    while curr:
+        prefix_sum += curr.val
+        # Jump to the last node with this prefix sum
+        # This skips all zero-sum sequences
+        curr.next = prefix_map[prefix_sum].next
+        curr = curr.next
+
+    return dummy.next
+
+# Visualization for [1,2,-3,3,1]:
+#
+# Original: 1 -> 2 -> -3 -> 3 -> 1
+#
+# First pass - calculate prefix sums:
+#   dummy(0): sum = 0
+#   1: sum = 1
+#   2: sum = 3
+#   -3: sum = 0 (same as dummy! nodes 1,2,-3 sum to 0)
+#   3: sum = 3 (same as node 2! node -3 alone or with 3 sum to 0)
+#   1: sum = 4
+#
+# prefix_map after first pass:
+#   0 -> node(-3)  (updated from dummy)
+#   1 -> node(1)
+#   3 -> node(3)   (updated from node(2))
+#   4 -> node(1)
+#
+# Second pass - rebuild:
+#   At dummy (sum=0): jump to prefix_map[0].next = node(3)
+#   At node 3 (sum=3): jump to prefix_map[3].next = node(1)
+#   At node 1 (sum=4): jump to prefix_map[4].next = null
+#
+# Result: 3 -> 1
+#
+# Another example: [1,2,3,-3,-2]:
+#   Original: 1 -> 2 -> 3 -> -3 -> -2
+#
+#   Prefix sums:
+#   1: sum=1
+#   2: sum=3
+#   3: sum=6
+#   -3: sum=3 (nodes 3,-3 sum to 0)
+#   -2: sum=1 (nodes 2,3,-3,-2 sum to 0)
+#
+#   Result: 1
+```
+
+#### TypeScript Solution
+```typescript
+function removeZeroSumSublists(head: ListNode | null): ListNode | null {
+    // Step 1: Create dummy
+    const dummy = new ListNode(0);
+    dummy.next = head;
+
+    // Step 2: First pass - record prefix sums
+    let prefixSum = 0;
+    const prefixMap = new Map<number, ListNode>();
+    prefixMap.set(0, dummy);
+
+    let curr: ListNode | null = head;
+
+    while (curr) {
+        prefixSum += curr.val;
+        prefixMap.set(prefixSum, curr);
+        curr = curr.next;
+    }
+
+    // Step 3: Second pass - rebuild list
+    prefixSum = 0;
+    curr = dummy;
+
+    while (curr) {
+        prefixSum += curr.val;
+        curr.next = prefixMap.get(prefixSum)!.next;
+        curr = curr.next;
+    }
+
+    return dummy.next;
+}
+```
+
+**Time Complexity**: O(n) - two passes through list
+**Space Complexity**: O(n) - hashmap storage
+
+---
+
+### Problem 25: Convert Binary Number in a Linked List to Integer
+**Difficulty**: Easy
+**LeetCode Link**: [https://leetcode.com/problems/convert-binary-number-in-a-linked-list-to-integer/](https://leetcode.com/problems/convert-binary-number-in-a-linked-list-to-integer/)
+
+**Description**: Convert a binary number represented as a linked list (most significant bit first) to decimal integer.
+
+#### Python Solution
+```python
+def getDecimalValue(head: ListNode) -> int:
+    # Step 1: Initialize result
+    result = 0
+    curr = head
+
+    # Step 2: Traverse list
+    # For each bit, shift result left and add current bit
+    while curr:
+        # Step 3: Shift left (multiply by 2) and add current bit
+        result = result * 2 + curr.val
+        # Step 4: Move to next node
+        curr = curr.next
+
+    # Step 5: Return decimal value
+    return result
+
+# Visualization for [1,0,1]:
+# Binary: 101 = 1*4 + 0*2 + 1*1 = 5
+#
+# Step-by-step calculation:
+#
+# Initial: result = 0
+#
+# Node 1 (val=1):
+#   result = 0 * 2 + 1 = 1
+#   Binary so far: 1
+#
+# Node 2 (val=0):
+#   result = 1 * 2 + 0 = 2
+#   Binary so far: 10
+#
+# Node 3 (val=1):
+#   result = 2 * 2 + 1 = 5
+#   Binary so far: 101
+#
+# Final: 5
+#
+# Alternative approach - Understanding the math:
+# For binary number b₃b₂b₁:
+#   Decimal = b₃ * 2² + b₂ * 2¹ + b₁ * 2⁰
+#
+# We can rewrite as:
+#   Decimal = ((b₃ * 2 + b₂) * 2 + b₁)
+#
+# This is what we compute iteratively!
+#
+# Example with [1,0,0,1]:
+# Binary: 1001 = 9
+#
+#   Start: 0
+#   After 1: 0*2+1 = 1
+#   After 0: 1*2+0 = 2
+#   After 0: 2*2+0 = 4
+#   After 1: 4*2+1 = 9 ✓
+```
+
+#### TypeScript Solution
+```typescript
+function getDecimalValue(head: ListNode | null): number {
+    // Step 1: Initialize
+    let result = 0;
+    let curr = head;
+
+    // Step 2: Traverse and calculate
+    while (curr) {
+        // Shift left and add current bit
+        result = result * 2 + curr.val;
+        curr = curr.next;
+    }
+
+    return result;
+}
+
+// Alternative solution using bit manipulation:
+function getDecimalValueBitwise(head: ListNode | null): number {
+    let result = 0;
+    let curr = head;
+
+    while (curr) {
+        // Left shift by 1 (equivalent to * 2)
+        // Then OR with current bit
+        result = (result << 1) | curr.val;
+        curr = curr.next;
+    }
+
+    return result;
+}
+```
+
+**Time Complexity**: O(n) - single pass through list
+**Space Complexity**: O(1) - only using result variable
 
 ---
 

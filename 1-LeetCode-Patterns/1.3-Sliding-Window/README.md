@@ -19,19 +19,226 @@ Sliding Window is a technique that maintains a subset (window) of elements in an
 
 ### Visual Diagram
 
-```
-Fixed Window (size = 3):
-Array: [1, 3, 2, 6, -1, 4, 1, 8, 2]
-        [-----]                      Window at position 0, sum = 6
-           [-----]                   Window at position 1, sum = 11
-              [-----]                Window at position 2, sum = 7
-                  ...continue...
+#### Fixed-Size Window: The Sliding Curtain
+Imagine a curtain of fixed width sliding across a stage. As it moves right, it reveals new elements and hides old ones.
 
-Variable Window (sum >= target):
-Array: [2, 3, 1, 2, 4, 3], target = 7
-        [----------]                 Window [2,3,1,2], sum = 8 >= 7
-           [-------]                 Shrink: [3,1,2], sum = 6 < 7
-           [----------]              Expand: [3,1,2,4], sum = 10 >= 7
+```
+Array: [1, 3, 2, 6, -1, 4, 1, 8, 2]
+Index:  0  1  2  3   4  5  6  7  8
+
+Step 1: Initial Window (k=3)
+        ┌─────────┐
+        │ 1  3  2 │  sum = 6
+        └─────────┘
+         L     R
+
+Step 2: Slide Right (remove 1, add 6)
+           ┌─────────┐
+        1  │ 3  2  6 │  sum = 11  (removed 1, added 6)
+           └─────────┘
+            L     R
+
+Step 3: Slide Right (remove 3, add -1)
+              ┌──────────┐
+        1  3  │ 2  6 -1 │  sum = 7  (removed 3, added -1)
+              └──────────┘
+               L      R
+
+Step 4: Continue sliding...
+                 ┌──────────┐
+        1  3  2  │ 6 -1  4 │  sum = 9
+                 └──────────┘
+                  L      R
+
+Pattern: Each step removes LEFT element, adds RIGHT element
+```
+
+#### Variable-Size Window: The Elastic Band
+Imagine an elastic band that expands when possible and contracts when necessary.
+
+```
+Array: [2, 3, 1, 2, 4, 3], target_sum = 7
+Index:  0  1  2  3  4  5
+
+Phase 1: EXPAND until sum >= target
+        ┌───┐
+Step 1: │ 2 │            sum = 2 < 7  ➜ EXPAND
+        └───┘
+         L,R
+
+        ┌───────┐
+Step 2: │ 2  3 │         sum = 5 < 7  ➜ EXPAND
+        └───────┘
+         L     R
+
+        ┌───────────┐
+Step 3: │ 2  3  1 │     sum = 6 < 7  ➜ EXPAND
+        └───────────┘
+         L        R
+
+        ┌───────────────┐
+Step 4: │ 2  3  1  2 │  sum = 8 >= 7 ✓ VALID! length = 4
+        └───────────────┘
+         L           R
+
+Phase 2: SHRINK while valid, looking for smaller window
+           ┌───────────┐
+Step 5:  2 │ 3  1  2 │  sum = 6 < 7  (shrank too much)
+           └───────────┘
+            L        R
+
+Phase 3: EXPAND again
+           ┌───────────────┐
+Step 6:  2 │ 3  1  2  4 │  sum = 10 >= 7 ✓ length = 5
+           └───────────────┘
+            L           R
+
+           SHRINK ↓
+              ┌───────────┐
+Step 7:  2  3 │ 1  2  4 │  sum = 7 >= 7 ✓ length = 3 (minimum!)
+              └───────────┘
+               L        R
+
+Pattern: RIGHT expands, LEFT shrinks. Each element visited at most TWICE!
+```
+
+#### Character Frequency Window: The Letter Counter
+Track character frequencies as the window slides - perfect for anagram/permutation problems.
+
+```
+String s2: "e i d b a o o o"
+Index:      0 1 2 3 4 5 6 7
+Pattern s1: "ab" → need {a:1, b:1}
+
+Step 1: Window size 2, check "ei"
+        ┌─────┐
+        │ e i │  freq = {e:1, i:1} ≠ {a:1, b:1} ✗
+        └─────┘
+         L   R
+
+Step 2: Slide → check "id"
+           ┌─────┐
+        e  │ i d │  freq = {i:1, d:1} ≠ {a:1, b:1} ✗
+           └─────┘
+            L   R
+
+Step 3: Slide → check "db"
+              ┌─────┐
+        e  i  │ d b │  freq = {d:1, b:1} ≠ {a:1, b:1} ✗
+              └─────┘
+               L   R
+
+Step 4: Slide → check "ba"  🎯 MATCH!
+                 ┌─────┐
+        e  i  d  │ b a │  freq = {b:1, a:1} = {a:1, b:1} ✓
+                 └─────┘
+                  L   R
+
+Process: Remove left char, add right char, compare frequencies!
+```
+
+#### Expanding/Contracting Window: The Breathing Technique
+Watch how the window "breathes" - expanding when valid, contracting when invalid.
+
+```
+Array: [1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]
+Task: Max consecutive 1s with at most k=2 flips (0→1)
+
+Animation of window movement:
+
+        [1 1 1]              zeros=0 ✓ len=3
+         ─────
+
+        [1 1 1 0]            zeros=1 ✓ len=4 (flip one 0)
+         ───────
+
+        [1 1 1 0 0]          zeros=2 ✓ len=5 (flip two 0s)
+         ─────────
+
+        [1 1 1 0 0 0]        zeros=3 ✗ TOO MANY!
+         ───────────          MUST SHRINK ↓
+
+          [1 1 0 0 0]        zeros=3 ✗ STILL TOO MANY!
+           ─────────          SHRINK MORE ↓
+
+            [1 0 0 0]        zeros=3 ✗ KEEP SHRINKING!
+             ───────          ↓
+
+              [0 0 0]        zeros=3 ✗ SHRINK!
+               ─────          ↓
+
+                [0 0]        zeros=2 ✓ VALID! But small...
+                 ───          NOW EXPAND ➜
+
+                [0 0 1]      zeros=2 ✓ len=3
+                 ─────        EXPAND ➜
+
+                [0 0 1 1]    zeros=2 ✓ len=4
+                 ───────      EXPAND ➜
+
+                [0 0 1 1 1]  zeros=2 ✓ len=5
+                 ─────────    EXPAND ➜
+
+                [0 0 1 1 1 1]    zeros=2 ✓ len=6 🎯 MAXIMUM!
+                 ───────────────
+
+Key Insight: Window EXPANDS greedily, CONTRACTS reluctantly!
+```
+
+#### The Two-Pointer Dance
+Visualize how left and right pointers coordinate their movement.
+
+```
+Array: [a, b, c, a, b, c, b, b]
+Goal: Longest substring without repeating characters
+
+L = Left pointer (removes)
+R = Right pointer (adds)
+Set = characters in current window
+
+Step 0: L=0, R=0, Set={}
+        ↓
+        a  b  c  a  b  c  b  b
+        R
+
+Step 1: Add 'a', Set={a}, length=1
+        ↓
+        a  b  c  a  b  c  b  b
+        LR
+
+Step 2: Add 'b', Set={a,b}, length=2
+        ↓     ↓
+        a  b  c  a  b  c  b  b
+        L     R
+
+Step 3: Add 'c', Set={a,b,c}, length=3 ✓
+        ↓        ↓
+        a  b  c  a  b  c  b  b
+        L        R
+
+Step 4: Add 'a' → DUPLICATE! Remove from left until no duplicate
+                 ↓
+        a  b  c  a  b  c  b  b
+        L           R
+        Remove 'a' →
+
+           ↓     ↓
+        a  b  c  a  b  c  b  b
+           L        R
+        Set={b,c,a}, length=3
+
+Step 5: Add 'b' → DUPLICATE! Remove from left
+           ↓        ↓
+        a  b  c  a  b  c  b  b
+           L           R
+        Remove 'b' →
+
+              ↓     ↓
+        a  b  c  a  b  c  b  b
+              L        R
+        Set={c,a,b}, length=3
+
+The Dance: R moves right every beat, L moves right only when needed!
 ```
 
 ## Recognition Guidelines
@@ -1312,6 +1519,1127 @@ function longestSubarray(nums: number[]): number {
 
 **Time Complexity**: O(n) - single pass
 **Space Complexity**: O(1) - constant space
+
+---
+
+### Problem 14: Contains Duplicate II
+**Difficulty**: Easy
+**LeetCode Link**: [https://leetcode.com/problems/contains-duplicate-ii/](https://leetcode.com/problems/contains-duplicate-ii/)
+
+**Description**: Check if array contains duplicate values within a window of size k.
+
+#### Python Solution
+```python
+def containsNearbyDuplicate(nums: List[int], k: int) -> bool:
+    # Step 1: Initialize window set
+    # We maintain a sliding window of size k using a set
+    window = set()
+
+    # Step 2: Iterate through array
+    for i in range(len(nums)):
+        # Step 3: Check if current number is in window
+        if nums[i] in window:
+            return True  # Found duplicate within distance k
+
+        # Step 4: Add current number to window
+        window.add(nums[i])
+
+        # Step 5: Remove element that's now outside window
+        # If window size exceeds k, remove leftmost element
+        if len(window) > k:
+            window.remove(nums[i - k])
+
+    return False
+
+# Visualization for nums = [1,2,3,1], k = 3:
+# i=0: window={1}, check 1? No, add it
+# i=1: window={1,2}, check 2? No, add it
+# i=2: window={1,2,3}, check 3? No, add it
+# i=3: window={1,2,3}, check 1? Yes! ✓ Found duplicate
+#
+# Window visualization:
+# [1, 2, 3, 1]
+#  --------     i=0-2: window size = 3
+#     --------  i=3: 1 already in window!
+#
+# Example 2: nums = [1,2,3,1,2,3], k = 2:
+# i=0: window={1}
+# i=1: window={1,2}
+# i=2: window={2,3} (removed 1, size limit = 2)
+# i=3: window={3,1} (removed 2)
+# i=4: window={1,2} (removed 3)
+# i=5: window={2,3} (removed 1)
+# No duplicates within k=2 distance
+```
+
+#### TypeScript Solution
+```typescript
+function containsNearbyDuplicate(nums: number[], k: number): boolean {
+    // Step 1: Initialize window set
+    const window = new Set<number>();
+
+    // Step 2: Iterate through array
+    for (let i = 0; i < nums.length; i++) {
+        // Step 3: Check for duplicate
+        if (window.has(nums[i])) {
+            return true;
+        }
+
+        // Step 4: Add to window
+        window.add(nums[i]);
+
+        // Step 5: Maintain window size
+        if (window.size > k) {
+            window.delete(nums[i - k]);
+        }
+    }
+
+    return false;
+}
+```
+
+**Time Complexity**: O(n) - single pass through array
+**Space Complexity**: O(min(n, k)) - set stores at most k elements
+
+---
+
+### Problem 15: Subarray Product Less Than K
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/subarray-product-less-than-k/](https://leetcode.com/problems/subarray-product-less-than-k/)
+
+**Description**: Count number of contiguous subarrays where product is less than k.
+
+#### Python Solution
+```python
+def numSubarrayProductLessThanK(nums: List[int], k: int) -> int:
+    # Step 1: Handle edge case
+    if k <= 1:
+        return 0  # Product can't be less than 1
+
+    # Step 2: Initialize variables
+    left = 0
+    product = 1
+    count = 0
+
+    # Step 3: Expand window with right pointer
+    for right in range(len(nums)):
+        # Step 4: Multiply by new element
+        product *= nums[right]
+
+        # Step 5: Shrink window while product >= k
+        while product >= k:
+            # Step 6: Divide by leftmost element
+            product //= nums[left]
+            left += 1
+
+        # Step 7: Count all subarrays ending at right
+        # For window [left...right], number of subarrays = right - left + 1
+        # These are: [right], [right-1, right], [right-2, right-1, right], ...
+        count += right - left + 1
+
+    return count
+
+# Visualization for nums = [10, 5, 2, 6], k = 100:
+#
+# right=0: [10], product=10 < 100
+#          Count subarrays: [10] → count += 1 = 1
+#
+# right=1: [10,5], product=50 < 100
+#          Count subarrays: [5], [10,5] → count += 2 = 3
+#
+# right=2: [10,5,2], product=100 >= 100 (invalid!)
+#          Shrink: [5,2], product=10 < 100
+#          Count subarrays: [2], [5,2] → count += 2 = 5
+#
+# right=3: [5,2,6], product=60 < 100
+#          Count subarrays: [6], [2,6], [5,2,6] → count += 3 = 8
+#
+# Total: 8 subarrays
+#
+# Visual diagram:
+# [10, 5, 2, 6]
+#  ▓           → [10]
+#  ▓▓          → [10,5]
+#     ▓        → [5]
+#     ▓▓       → [5,2]
+#        ▓     → [2]
+#     ▓▓▓      → [5,2,6]
+#        ▓▓    → [2,6]
+#           ▓  → [6]
+```
+
+#### TypeScript Solution
+```typescript
+function numSubarrayProductLessThanK(nums: number[], k: number): number {
+    // Step 1: Handle edge case
+    if (k <= 1) return 0;
+
+    // Step 2: Initialize
+    let left = 0;
+    let product = 1;
+    let count = 0;
+
+    // Step 3: Expand window
+    for (let right = 0; right < nums.length; right++) {
+        // Step 4: Update product
+        product *= nums[right];
+
+        // Step 5: Shrink while invalid
+        while (product >= k) {
+            product /= nums[left];
+            left++;
+        }
+
+        // Step 6: Count subarrays
+        count += right - left + 1;
+    }
+
+    return count;
+}
+```
+
+**Time Complexity**: O(n) - each element added and removed once
+**Space Complexity**: O(1) - constant space
+
+---
+
+### Problem 16: Grumpy Bookstore Owner
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/grumpy-bookstore-owner/](https://leetcode.com/problems/grumpy-bookstore-owner/)
+
+**Description**: Maximize satisfied customers by using a technique for X minutes to not be grumpy.
+
+#### Python Solution
+```python
+def maxSatisfied(customers: List[int], grumpy: List[int], minutes: int) -> int:
+    # Step 1: Calculate base satisfied customers (when not grumpy)
+    base_satisfied = 0
+    for i in range(len(customers)):
+        if grumpy[i] == 0:  # Not grumpy
+            base_satisfied += customers[i]
+
+    # Step 2: Find best window to apply technique
+    # Calculate additional customers we can satisfy in first window
+    additional = 0
+    for i in range(minutes):
+        if grumpy[i] == 1:  # Was grumpy, technique makes them satisfied
+            additional += customers[i]
+
+    max_additional = additional
+
+    # Step 3: Slide window to find maximum additional customers
+    for i in range(minutes, len(customers)):
+        # Add new element (right side of window)
+        if grumpy[i] == 1:
+            additional += customers[i]
+
+        # Remove old element (left side of window)
+        if grumpy[i - minutes] == 1:
+            additional -= customers[i - minutes]
+
+        # Update maximum
+        max_additional = max(max_additional, additional)
+
+    # Step 4: Return total satisfied customers
+    return base_satisfied + max_additional
+
+# Visualization:
+# customers = [1, 0, 1, 2, 1, 1, 7, 5]
+# grumpy    = [0, 1, 0, 1, 0, 1, 0, 1]
+# minutes   = 3
+#
+# Base satisfied (grumpy=0): 1 + 1 + 1 + 7 = 10
+#
+# Window analysis (grumpy=1 positions):
+# Window [0,1,2]: grumpy positions: 1 → additional = 0
+# Window [1,2,3]: grumpy positions: 1,3 → additional = 0+2 = 2
+# Window [2,3,4]: grumpy positions: 3 → additional = 2
+# Window [3,4,5]: grumpy positions: 3,5 → additional = 2+1 = 3
+# Window [4,5,6]: grumpy positions: 5 → additional = 1
+# Window [5,6,7]: grumpy positions: 5,7 → additional = 1+5 = 6 ← MAX!
+#
+# Total: 10 + 6 = 16
+#
+# Visual:
+# Normally satisfied:    [1, _, 1, _, 1, _, 7, _] = 10
+# Best technique window:  _ [_, _, _, 1, _, 5] = 6
+# Total:                 [1, 0, 1, 2, 1, 1, 7, 5] = 16
+```
+
+#### TypeScript Solution
+```typescript
+function maxSatisfied(customers: number[], grumpy: number[], minutes: number): number {
+    // Step 1: Base satisfied customers
+    let baseSatisfied = 0;
+    for (let i = 0; i < customers.length; i++) {
+        if (grumpy[i] === 0) {
+            baseSatisfied += customers[i];
+        }
+    }
+
+    // Step 2: First window additional customers
+    let additional = 0;
+    for (let i = 0; i < minutes; i++) {
+        if (grumpy[i] === 1) {
+            additional += customers[i];
+        }
+    }
+
+    let maxAdditional = additional;
+
+    // Step 3: Slide window
+    for (let i = minutes; i < customers.length; i++) {
+        // Add right element
+        if (grumpy[i] === 1) {
+            additional += customers[i];
+        }
+
+        // Remove left element
+        if (grumpy[i - minutes] === 1) {
+            additional -= customers[i - minutes];
+        }
+
+        maxAdditional = Math.max(maxAdditional, additional);
+    }
+
+    // Step 4: Return total
+    return baseSatisfied + maxAdditional;
+}
+```
+
+**Time Complexity**: O(n) - two passes through array
+**Space Complexity**: O(1) - constant space
+
+---
+
+### Problem 17: Longest Turbulent Subarray
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/longest-turbulent-subarray/](https://leetcode.com/problems/longest-turbulent-subarray/)
+
+**Description**: Find length of longest turbulent subarray (alternating greater/less comparisons).
+
+#### Python Solution
+```python
+def maxTurbulenceSize(arr: List[int]) -> int:
+    # Step 1: Handle edge case
+    if len(arr) <= 1:
+        return len(arr)
+
+    # Step 2: Initialize variables
+    left = 0
+    max_length = 1
+
+    # Step 3: Iterate through array
+    for right in range(1, len(arr)):
+        # Step 4: Check if turbulent pattern continues
+        if right >= 2:
+            # Compare current comparison with previous comparison
+            # Turbulent means comparisons alternate: > < > or < > <
+            prev_comp = arr[right - 1] - arr[right - 2]
+            curr_comp = arr[right] - arr[right - 1]
+
+            # If same sign or either is 0, pattern breaks
+            if prev_comp * curr_comp >= 0:
+                left = right - 1  # Start new window
+
+        # Step 5: Handle equal elements
+        if arr[right] == arr[right - 1]:
+            left = right  # Equal elements break turbulence
+
+        # Step 6: Update max length
+        max_length = max(max_length, right - left + 1)
+
+    return max_length
+
+# Visualization for arr = [9,4,2,10,7,8,8,1,9]:
+#
+# Index:  0  1  2  3   4  5  6  7  8
+# Array: [9, 4, 2, 10, 7, 8, 8, 1, 9]
+#         >  >  <   >  <  =  >  <     (comparisons)
+#
+# Step-by-step:
+# i=1: [9,4], 9>4, length=2 ✓
+# i=2: [9,4,2], 9>4>2 (same direction!), reset to [4,2], length=2
+# i=3: [4,2,10], 4>2<10 (turbulent!), length=3 ✓
+# i=4: [4,2,10,7], 4>2<10>7 (turbulent!), length=4 ✓
+# i=5: [4,2,10,7,8], 4>2<10>7<8 (turbulent!), length=5 ✓
+# i=6: [..8,8], equal! reset to [8], length=1
+# i=7: [8,1], 8>1, length=2
+# i=8: [8,1,9], 8>1<9 (turbulent!), length=3
+#
+# Maximum length = 5 (subarray [4,2,10,7,8])
+#
+# Turbulent pattern visual:
+#     ╱╲
+#    ╱  ╲╱╲
+#   ╱      ╲
+# [4, 2, 10, 7, 8]  ← Alternating peaks and valleys!
+```
+
+#### TypeScript Solution
+```typescript
+function maxTurbulenceSize(arr: number[]): number {
+    // Step 1: Handle edge case
+    if (arr.length <= 1) return arr.length;
+
+    // Step 2: Initialize
+    let left = 0;
+    let maxLength = 1;
+
+    // Step 3: Iterate
+    for (let right = 1; right < arr.length; right++) {
+        // Step 4: Check turbulent pattern
+        if (right >= 2) {
+            const prevComp = arr[right - 1] - arr[right - 2];
+            const currComp = arr[right] - arr[right - 1];
+
+            // Pattern breaks if same sign or either is 0
+            if (prevComp * currComp >= 0) {
+                left = right - 1;
+            }
+        }
+
+        // Step 5: Handle equal elements
+        if (arr[right] === arr[right - 1]) {
+            left = right;
+        }
+
+        // Step 6: Update max
+        maxLength = Math.max(maxLength, right - left + 1);
+    }
+
+    return maxLength;
+}
+```
+
+**Time Complexity**: O(n) - single pass
+**Space Complexity**: O(1) - constant space
+
+---
+
+### Problem 18: Number of Substrings Containing All Three Characters
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/number-of-substrings-containing-all-three-characters/](https://leetcode.com/problems/number-of-substrings-containing-all-three-characters/)
+
+**Description**: Count substrings that contain at least one of each character 'a', 'b', and 'c'.
+
+#### Python Solution
+```python
+def numberOfSubstrings(s: str) -> int:
+    # Step 1: Initialize variables
+    # Track last seen index of each character
+    last_seen = {'a': -1, 'b': -1, 'c': -1}
+    count = 0
+
+    # Step 2: Iterate through string
+    for i in range(len(s)):
+        # Step 3: Update last seen index for current character
+        last_seen[s[i]] = i
+
+        # Step 4: Count valid substrings ending at position i
+        # The leftmost valid starting position is min(last_seen) + 1
+        # All positions from 0 to min(last_seen) are valid starts
+        min_index = min(last_seen.values())
+
+        # Step 5: Add count of valid substrings
+        # If all characters have been seen (min_index >= 0),
+        # we can form (min_index + 1) valid substrings ending at i
+        if min_index >= 0:
+            count += min_index + 1
+
+    return count
+
+# Visualization for s = "abcabc":
+#
+# Index:  0  1  2  3  4  5
+# String: a  b  c  a  b  c
+#
+# i=0: 'a', last_seen={a:0, b:-1, c:-1}, min=-1, count=0
+# i=1: 'b', last_seen={a:0, b:1, c:-1}, min=-1, count=0
+# i=2: 'c', last_seen={a:0, b:1, c:2}, min=0, count+=1 = 1
+#      Valid substrings: [abc]
+#                         ^^^
+#
+# i=3: 'a', last_seen={a:3, b:1, c:2}, min=1, count+=2 = 3
+#      Valid substrings: [abca], [bca]
+#                         ^^^^    ^^^
+#
+# i=4: 'b', last_seen={a:3, b:4, c:2}, min=2, count+=3 = 6
+#      Valid substrings: [abcab], [bcab], [cab]
+#                         ^^^^^    ^^^^    ^^^
+#
+# i=5: 'c', last_seen={a:3, b:4, c:5}, min=3, count+=4 = 10
+#      Valid substrings: [abcabc], [bcabc], [cabc], [abc]
+#                         ^^^^^^    ^^^^^    ^^^^    ^^^
+#
+# Total: 10 substrings
+#
+# Key insight: For each position, count how many valid starting positions exist
+# [a b c a b c]
+#  0 1 2 3 4 5
+#      ▓ ← First valid substring ends here
+#      ▓▓ ← Two valid substrings end here
+#      ▓▓▓ ← Three valid substrings end here
+#      ▓▓▓▓ ← Four valid substrings end here
+```
+
+#### TypeScript Solution
+```typescript
+function numberOfSubstrings(s: string): number {
+    // Step 1: Initialize
+    const lastSeen = { a: -1, b: -1, c: -1 };
+    let count = 0;
+
+    // Step 2: Iterate through string
+    for (let i = 0; i < s.length; i++) {
+        // Step 3: Update last seen
+        lastSeen[s[i] as 'a' | 'b' | 'c'] = i;
+
+        // Step 4: Find minimum index
+        const minIndex = Math.min(lastSeen.a, lastSeen.b, lastSeen.c);
+
+        // Step 5: Count valid substrings
+        if (minIndex >= 0) {
+            count += minIndex + 1;
+        }
+    }
+
+    return count;
+}
+```
+
+**Time Complexity**: O(n) - single pass through string
+**Space Complexity**: O(1) - storing only 3 indices
+
+---
+
+### Problem 19: Replace the Substring for Balanced String
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/replace-the-substring-for-balanced-string/](https://leetcode.com/problems/replace-the-substring-for-balanced-string/)
+
+**Description**: Find minimum length substring to replace to make string balanced (each char appears n/4 times).
+
+#### Python Solution
+```python
+def balancedString(s: str) -> int:
+    # Step 1: Count character frequencies
+    count = {'Q': 0, 'W': 0, 'E': 0, 'R': 0}
+    for char in s:
+        count[char] += 1
+
+    # Step 2: Calculate target frequency (balanced)
+    n = len(s)
+    target = n // 4
+
+    # Step 3: Check if already balanced
+    if all(count[char] <= target for char in count):
+        return 0
+
+    # Step 4: Use sliding window to find minimum replacement length
+    left = 0
+    min_length = n
+
+    # Step 5: Expand window with right pointer
+    for right in range(n):
+        # Step 6: Remove character from count (it's in replacement window)
+        count[s[right]] -= 1
+
+        # Step 7: Shrink window while valid
+        # Valid: characters outside window don't exceed target
+        while left < n and all(count[char] <= target for char in count):
+            # Step 8: Update minimum length
+            min_length = min(min_length, right - left + 1)
+
+            # Step 9: Add back left character (shrink window)
+            count[s[left]] += 1
+            left += 1
+
+    return min_length
+
+# Visualization for s = "QWER":
+# Already balanced: Q=1, W=1, E=1, R=1 (each appears 4/4 = 1 time)
+# Return 0
+#
+# Example 2: s = "QQWE"
+# Count: Q=2, W=1, E=1, R=0 (target = 1 each)
+# Need to fix: Q appears 2 times (1 extra), R appears 0 times (1 missing)
+#
+# Window analysis:
+# [Q Q W E]
+#  ─         Count outside: Q=1, W=1, E=1, R=0 → R>target? No, but R<target
+#  ───       Count outside: Q=0, W=1, E=1, R=0 → Q valid, but need R
+#  ─────     Count outside: Q=0, W=0, E=1, R=0
+#  ───────   Count outside: Q=0, W=0, E=0, R=0
+#
+# Need to replace "QQ" (length 2) to make balanced
+#
+# Visual representation:
+# Original: [Q, Q, W, E]  frequencies: Q=2, W=1, E=1, R=0
+# Replace:  [R, R, W, E]  frequencies: Q=0, W=1, E=1, R=2... no
+# Replace:  [R, W, W, E]  frequencies: Q=0, W=2, E=1, R=1... no
+# Replace:  [W, R, W, E]  frequencies: Q=0, W=2, E=1, R=1... no
+# Replace:  [E, R, W, E]  frequencies: Q=0, W=1, E=2, R=1... no
+# Replace:  [R, E, W, E]  frequencies: Q=0, W=1, E=2, R=1... no
+# Replace:  [W, E, W, E]  frequencies: Q=0, W=2, E=2, R=0... no
+# Replace:  [R, W, W, E]  frequencies: Q=0, W=2, E=1, R=1... no
+# Best:     [E, R, W, E]  or similar → minimum replacement length = 2
+```
+
+#### TypeScript Solution
+```typescript
+function balancedString(s: string): number {
+    // Step 1: Count frequencies
+    const count = new Map<string, number>([
+        ['Q', 0], ['W', 0], ['E', 0], ['R', 0]
+    ]);
+
+    for (const char of s) {
+        count.set(char, (count.get(char) || 0) + 1);
+    }
+
+    // Step 2: Calculate target
+    const n = s.length;
+    const target = n / 4;
+
+    // Step 3: Check if balanced
+    const isBalanced = (): boolean => {
+        for (const [char, freq] of count) {
+            if (freq > target) return false;
+        }
+        return true;
+    };
+
+    if (isBalanced()) return 0;
+
+    // Step 4: Sliding window
+    let left = 0;
+    let minLength = n;
+
+    // Step 5: Expand window
+    for (let right = 0; right < n; right++) {
+        // Step 6: Remove from count
+        count.set(s[right], count.get(s[right])! - 1);
+
+        // Step 7: Shrink while valid
+        while (isBalanced()) {
+            // Step 8: Update minimum
+            minLength = Math.min(minLength, right - left + 1);
+
+            // Step 9: Add back left
+            count.set(s[left], count.get(s[left])! + 1);
+            left++;
+        }
+    }
+
+    return minLength;
+}
+```
+
+**Time Complexity**: O(n) - each character visited at most twice
+**Space Complexity**: O(1) - fixed size map (4 characters)
+
+---
+
+### Problem 20: Count Number of Nice Subarrays
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/count-number-of-nice-subarrays/](https://leetcode.com/problems/count-number-of-nice-subarrays/)
+
+**Description**: Count subarrays with exactly k odd numbers.
+
+#### Python Solution
+```python
+def numberOfSubarrays(nums: List[int], k: int) -> int:
+    # Step 1: Helper function - count subarrays with at most k odds
+    def at_most_k_odds(k: int) -> int:
+        left = 0
+        odd_count = 0
+        result = 0
+
+        for right in range(len(nums)):
+            # Count odd numbers
+            if nums[right] % 2 == 1:
+                odd_count += 1
+
+            # Shrink while too many odds
+            while odd_count > k:
+                if nums[left] % 2 == 1:
+                    odd_count -= 1
+                left += 1
+
+            # Count all subarrays ending at right
+            result += right - left + 1
+
+        return result
+
+    # Step 2: Use subtraction trick
+    # Exactly k = at_most(k) - at_most(k-1)
+    return at_most_k_odds(k) - at_most_k_odds(k - 1)
+
+# Visualization for nums = [1,1,2,1,1], k = 3:
+#
+# Array: [1, 1, 2, 1, 1]  (odd: 1,1,_,1,1)
+#         ^  ^     ^  ^   ← odd numbers
+#
+# Step 1: Count at_most_k_odds(3):
+# [1] → 1 odd, count subarrays: 1
+# [1,1] → 2 odds, count subarrays: 1+2 = 3
+# [1,1,2] → 2 odds, count subarrays: 3+3 = 6
+# [1,1,2,1] → 3 odds, count subarrays: 6+4 = 10
+# [1,1,2,1,1] → 4 odds > 3, shrink
+#   [1,2,1,1] → 3 odds, count subarrays: 10+4 = 14
+# Total: 14
+#
+# Step 2: Count at_most_k_odds(2):
+# [1] → 1 odd, count: 1
+# [1,1] → 2 odds, count: 1+2 = 3
+# [1,1,2] → 2 odds, count: 3+3 = 6
+# [1,1,2,1] → 3 odds > 2, shrink
+#   [1,2,1] → 2 odds, count: 6+3 = 9
+# [1,2,1,1] → 3 odds > 2, shrink
+#   [2,1,1] → 2 odds, count: 9+3 = 12
+# Total: 12
+#
+# Step 3: exactly_k = 14 - 12 = 2
+#
+# Valid subarrays with exactly 3 odds:
+# [1, 1, 2, 1] → has 3 odds ✓
+# [1, 2, 1, 1] → has 3 odds ✓
+#
+# Visual representation:
+# [1, 1, 2, 1, 1]
+#  ▓▓▓▓▓▓▓▓▓     ← [1,1,2,1] has 3 odds
+#     ▓▓▓▓▓▓▓    ← [1,2,1,1] has 3 odds
+```
+
+#### TypeScript Solution
+```typescript
+function numberOfSubarrays(nums: number[], k: number): number {
+    // Step 1: Helper function
+    const atMostKOdds = (k: number): number => {
+        let left = 0;
+        let oddCount = 0;
+        let result = 0;
+
+        for (let right = 0; right < nums.length; right++) {
+            // Count odds
+            if (nums[right] % 2 === 1) {
+                oddCount++;
+            }
+
+            // Shrink window
+            while (oddCount > k) {
+                if (nums[left] % 2 === 1) {
+                    oddCount--;
+                }
+                left++;
+            }
+
+            // Count subarrays
+            result += right - left + 1;
+        }
+
+        return result;
+    };
+
+    // Step 2: Exactly k = at most k - at most (k-1)
+    return atMostKOdds(k) - atMostKOdds(k - 1);
+}
+```
+
+**Time Complexity**: O(n) - two passes through array
+**Space Complexity**: O(1) - constant space
+
+---
+
+### Problem 21: Frequency of the Most Frequent Element
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/frequency-of-the-most-frequent-element/](https://leetcode.com/problems/frequency-of-the-most-frequent-element/)
+
+**Description**: Find maximum frequency of an element after performing at most k increment operations.
+
+#### Python Solution
+```python
+def maxFrequency(nums: List[int], k: int) -> int:
+    # Step 1: Sort the array
+    # Key insight: It's optimal to make all elements in window equal to max element
+    nums.sort()
+
+    # Step 2: Initialize variables
+    left = 0
+    total = 0  # Sum of elements in current window
+    max_freq = 1
+
+    # Step 3: Expand window with right pointer
+    for right in range(len(nums)):
+        # Step 4: Add current element to window
+        total += nums[right]
+
+        # Step 5: Calculate operations needed to make all elements equal to nums[right]
+        # If we make all elements in [left, right] equal to nums[right]:
+        # Operations needed = nums[right] * window_size - total
+        window_size = right - left + 1
+        operations_needed = nums[right] * window_size - total
+
+        # Step 6: Shrink window while operations exceed k
+        while operations_needed > k:
+            # Remove leftmost element
+            total -= nums[left]
+            left += 1
+            window_size = right - left + 1
+            operations_needed = nums[right] * window_size - total
+
+        # Step 7: Update max frequency
+        max_freq = max(max_freq, window_size)
+
+    return max_freq
+
+# Visualization for nums = [1,2,4], k = 5:
+#
+# After sorting: [1, 2, 4]
+#
+# Step-by-step window analysis:
+#
+# right=0: window=[1], total=1
+#   Make all → 1: operations = 1*1 - 1 = 0 ≤ 5 ✓
+#   max_freq = 1
+#
+# right=1: window=[1,2], total=3
+#   Make all → 2: operations = 2*2 - 3 = 1 ≤ 5 ✓
+#   [1→2, 2] uses 1 operation
+#   max_freq = 2
+#
+# right=2: window=[1,2,4], total=7
+#   Make all → 4: operations = 4*3 - 7 = 5 ≤ 5 ✓
+#   [1→4, 2→4, 4] uses 3+2+0 = 5 operations
+#   max_freq = 3
+#
+# Visual transformation:
+# Original: [1, 2, 4]
+#            ↓  ↓  ↓  (use k=5 operations)
+# Target:   [4, 4, 4]
+#           +3 +2 +0 = 5 operations total ✓
+#
+# Maximum frequency = 3
+#
+# Another example: nums = [1,4,8,13], k = 5:
+# Sorted: [1, 4, 8, 13]
+#
+# Best window: [4, 8]
+# Make all → 8: operations = 8*2 - 12 = 4 ≤ 5 ✓
+# Result: [8, 8] → frequency = 2
+```
+
+#### TypeScript Solution
+```typescript
+function maxFrequency(nums: number[], k: number): number {
+    // Step 1: Sort array
+    nums.sort((a, b) => a - b);
+
+    // Step 2: Initialize
+    let left = 0;
+    let total = 0;
+    let maxFreq = 1;
+
+    // Step 3: Expand window
+    for (let right = 0; right < nums.length; right++) {
+        // Step 4: Add to total
+        total += nums[right];
+
+        // Step 5: Check operations needed
+        let windowSize = right - left + 1;
+        let operationsNeeded = nums[right] * windowSize - total;
+
+        // Step 6: Shrink if needed
+        while (operationsNeeded > k) {
+            total -= nums[left];
+            left++;
+            windowSize = right - left + 1;
+            operationsNeeded = nums[right] * windowSize - total;
+        }
+
+        // Step 7: Update max
+        maxFreq = Math.max(maxFreq, windowSize);
+    }
+
+    return maxFreq;
+}
+```
+
+**Time Complexity**: O(n log n) - dominated by sorting
+**Space Complexity**: O(1) - constant space (excluding sort)
+
+---
+
+### Problem 22: Subarrays with K Different Integers
+**Difficulty**: Hard
+**LeetCode Link**: [https://leetcode.com/problems/subarrays-with-k-different-integers/](https://leetcode.com/problems/subarrays-with-k-different-integers/)
+
+**Description**: Count subarrays with exactly K different integers.
+
+#### Python Solution
+```python
+def subarraysWithKDistinct(nums: List[int], k: int) -> int:
+    # Step 1: Helper function - count subarrays with at most k distinct
+    def at_most_k_distinct(k: int) -> int:
+        count = {}  # Frequency map
+        left = 0
+        result = 0
+
+        for right in range(len(nums)):
+            # Add element to window
+            count[nums[right]] = count.get(nums[right], 0) + 1
+
+            # Shrink while too many distinct
+            while len(count) > k:
+                count[nums[left]] -= 1
+                if count[nums[left]] == 0:
+                    del count[nums[left]]
+                left += 1
+
+            # Count all subarrays ending at right
+            result += right - left + 1
+
+        return result
+
+    # Step 2: Use subtraction trick
+    # Exactly k = at_most(k) - at_most(k-1)
+    return at_most_k_distinct(k) - at_most_k_distinct(k - 1)
+
+# Visualization for nums = [1,2,1,2,3], k = 2:
+#
+# Step 1: Count at_most_k_distinct(2):
+# Index: 0  1  2  3  4
+# Array: 1  2  1  2  3
+#
+# right=0: [1], distinct=1, count subarrays: 1
+#          Subarrays: [1]
+#
+# right=1: [1,2], distinct=2, count subarrays: 1+2 = 3
+#          Subarrays: [2], [1,2]
+#
+# right=2: [1,2,1], distinct=2, count subarrays: 3+3 = 6
+#          Subarrays: [1], [2,1], [1,2,1]
+#
+# right=3: [1,2,1,2], distinct=2, count subarrays: 6+4 = 10
+#          Subarrays: [2], [1,2], [2,1,2], [1,2,1,2]
+#
+# right=4: [1,2,1,2,3], distinct=3 > 2, shrink
+#          [2,1,2,3], distinct=3 > 2, shrink
+#          [1,2,3], distinct=3 > 2, shrink
+#          [2,3], distinct=2, count subarrays: 10+2 = 12
+# Total: 12
+#
+# Step 2: Count at_most_k_distinct(1):
+# right=0: [1], distinct=1, count: 1
+# right=1: [1,2], distinct=2 > 1, shrink → [2], count: 1+1 = 2
+# right=2: [2,1], distinct=2 > 1, shrink → [1], count: 2+1 = 3
+# right=3: [1,2], distinct=2 > 1, shrink → [2], count: 3+1 = 4
+# right=4: [2,3], distinct=2 > 1, shrink → [3], count: 4+1 = 5
+# Total: 5
+#
+# Step 3: exactly_k = 12 - 5 = 7
+#
+# Valid subarrays with exactly 2 distinct integers:
+# [1,2], [2,1], [1,2], [2,1], [1,2,1], [2,1,2], [1,2,1,2]
+#
+# Visual pattern:
+# [1, 2, 1, 2, 3]
+#  ▓▓           → [1,2]
+#     ▓▓        → [2,1]
+#  ▓▓▓▓         → [1,2,1]
+#     ▓▓▓       → [2,1,2]
+#        ▓▓     → [1,2]
+#  ▓▓▓▓▓▓▓      → [1,2,1,2]
+#     ▓▓▓▓      → [2,1,2]
+#           ▓▓  → [2,3]
+```
+
+#### TypeScript Solution
+```typescript
+function subarraysWithKDistinct(nums: number[], k: number): number {
+    // Step 1: Helper function
+    const atMostKDistinct = (k: number): number => {
+        const count = new Map<number, number>();
+        let left = 0;
+        let result = 0;
+
+        for (let right = 0; right < nums.length; right++) {
+            // Add to window
+            count.set(nums[right], (count.get(nums[right]) || 0) + 1);
+
+            // Shrink if needed
+            while (count.size > k) {
+                const leftCount = count.get(nums[left])! - 1;
+                if (leftCount === 0) {
+                    count.delete(nums[left]);
+                } else {
+                    count.set(nums[left], leftCount);
+                }
+                left++;
+            }
+
+            // Count subarrays
+            result += right - left + 1;
+        }
+
+        return result;
+    };
+
+    // Step 2: Exactly k = at most k - at most (k-1)
+    return atMostKDistinct(k) - atMostKDistinct(k - 1);
+}
+```
+
+**Time Complexity**: O(n) - two passes through array
+**Space Complexity**: O(k) - at most k distinct integers in map
+
+---
+
+### Problem 23: Minimum Number of Flips to Make Binary String Alternating
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/minimum-number-of-flips-to-make-the-binary-string-alternating/](https://leetcode.com/problems/minimum-number-of-flips-to-make-the-binary-string-alternating/)
+
+**Description**: Find minimum flips to make string alternating. Can perform type-1 (remove first, append to end) or type-2 (flip bit) operations.
+
+#### Python Solution
+```python
+def minFlips(s: str) -> int:
+    # Step 1: Understand the two possible alternating patterns
+    n = len(s)
+    # Pattern 1: starts with '0': 010101...
+    # Pattern 2: starts with '1': 101010...
+
+    # Step 2: Create extended string to simulate rotations
+    # Doubling the string simulates all possible type-1 operations
+    s_extended = s + s
+
+    # Step 3: Build target patterns
+    pattern1 = ""  # 010101...
+    pattern2 = ""  # 101010...
+    for i in range(len(s_extended)):
+        pattern1 += '0' if i % 2 == 0 else '1'
+        pattern2 += '1' if i % 2 == 0 else '0'
+
+    # Step 4: Initialize sliding window
+    diff1 = 0  # Differences with pattern1
+    diff2 = 0  # Differences with pattern2
+
+    # Calculate differences for first window
+    for i in range(n):
+        if s_extended[i] != pattern1[i]:
+            diff1 += 1
+        if s_extended[i] != pattern2[i]:
+            diff2 += 1
+
+    min_flips = min(diff1, diff2)
+
+    # Step 5: Slide window across extended string
+    for i in range(n, len(s_extended)):
+        # Add new character (right side)
+        if s_extended[i] != pattern1[i]:
+            diff1 += 1
+        if s_extended[i] != pattern2[i]:
+            diff2 += 1
+
+        # Remove old character (left side)
+        left = i - n
+        if s_extended[left] != pattern1[left]:
+            diff1 -= 1
+        if s_extended[left] != pattern2[left]:
+            diff2 -= 1
+
+        # Update minimum
+        min_flips = min(min_flips, diff1, diff2)
+
+    return min_flips
+
+# Visualization for s = "111000":
+#
+# Original: "111000" (length 6)
+# Extended: "111000111000" (simulate rotations)
+#
+# Pattern1: "010101010101" (starts with 0)
+# Pattern2: "101010101010" (starts with 1)
+#
+# Window analysis (size = 6):
+#
+# Window 1: "111000" vs "010101" → diff=5, vs "101010" → diff=1
+#           [1≠0, 1≠1, 1≠0, 0≠1, 0≠0, 0≠1] = 4 diffs
+#           [1≠1, 1≠0, 1≠1, 0≠0, 0≠1, 0≠0] = 2 diffs ← better!
+#
+# Window 2: "110001" (rotate 1 step) vs patterns
+#           After rotation: s becomes "110001"
+#           Compare and count differences...
+#
+# Window 3: "100011" (rotate 2 steps)
+# Window 4: "000111" (rotate 3 steps)
+# Window 5: "001110" (rotate 4 steps)
+# Window 6: "011100" (rotate 5 steps)
+#
+# Minimum across all rotations and patterns = 1
+#
+# Visual explanation:
+# Original: 1 1 1 0 0 0
+# Pattern:  1 0 1 0 1 0  (need to flip 2 positions)
+#             ↓   ↓   ↓
+# After:    1 0 1 0 1 0  (flipped positions 1, 3, 5)
+#
+# But with rotation:
+# Rotate 3: 0 0 0 1 1 1
+# Pattern:  0 1 0 1 0 1  (need to flip 1 position)
+#             ↓     ↓
+# After:    0 1 0 1 1 1  (flip just position 1 → gives us 010111)
+# Then flip position 4: 0 1 0 1 0 1 ✓
+#
+# Key insight: Try all rotations (type-1) + both patterns
+```
+
+#### TypeScript Solution
+```typescript
+function minFlips(s: string): number {
+    // Step 1: Setup
+    const n = s.length;
+    const sExtended = s + s;
+
+    // Step 2: Build patterns
+    let pattern1 = "";
+    let pattern2 = "";
+    for (let i = 0; i < sExtended.length; i++) {
+        pattern1 += i % 2 === 0 ? '0' : '1';
+        pattern2 += i % 2 === 0 ? '1' : '0';
+    }
+
+    // Step 3: Calculate initial differences
+    let diff1 = 0;
+    let diff2 = 0;
+    for (let i = 0; i < n; i++) {
+        if (sExtended[i] !== pattern1[i]) diff1++;
+        if (sExtended[i] !== pattern2[i]) diff2++;
+    }
+
+    let minFlips = Math.min(diff1, diff2);
+
+    // Step 4: Slide window
+    for (let i = n; i < sExtended.length; i++) {
+        // Add right
+        if (sExtended[i] !== pattern1[i]) diff1++;
+        if (sExtended[i] !== pattern2[i]) diff2++;
+
+        // Remove left
+        const left = i - n;
+        if (sExtended[left] !== pattern1[left]) diff1--;
+        if (sExtended[left] !== pattern2[left]) diff2--;
+
+        // Update minimum
+        minFlips = Math.min(minFlips, diff1, diff2);
+    }
+
+    return minFlips;
+}
+```
+
+**Time Complexity**: O(n) - process extended string of length 2n
+**Space Complexity**: O(n) - store extended string and patterns
 
 ---
 

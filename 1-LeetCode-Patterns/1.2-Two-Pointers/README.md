@@ -19,27 +19,324 @@ Two Pointers is a technique that uses two references (pointers) to traverse a da
 
 ### Visual Diagram
 
+#### Technique 1: Opposite Direction (Converging Pointers)
+
+**Concept**: Two pointers start at opposite ends and move toward each other
+
 ```
-Technique 1: Opposite Direction (Converging)
-Array: [1, 2, 3, 4, 5, 6, 7, 8]
-        ↑                    ↑
-       left                right
+┌─────────────────────────────────────────────────────────────┐
+│  OPPOSITE DIRECTION - Finding a Pair That Sums to Target    │
+└─────────────────────────────────────────────────────────────┘
 
-Move pointers toward each other based on condition
+Array: [1, 3, 5, 7, 9, 11, 13, 15]  Target = 16
 
-Technique 2: Same Direction (Fast & Slow)
-Array: [1, 2, 3, 4, 5, 6, 7, 8]
-        ↑  ↑
-      slow fast
+Step 1: Initialize pointers at both ends
+┌───┬───┬───┬───┬───┬────┬────┬────┐
+│ 1 │ 3 │ 5 │ 7 │ 9 │ 11 │ 13 │ 15 │
+└───┴───┴───┴───┴───┴────┴────┴────┘
+  ↑                               ↑
+ LEFT                           RIGHT
 
-Both move left-to-right, fast moves faster
+Sum = 1 + 15 = 16 ✓ FOUND!
 
-Technique 3: Sliding Window (Fixed/Variable)
-Array: [1, 2, 3, 4, 5, 6, 7, 8]
-        ↑     ↑
-      start  end
+Step 2: If sum too small, move left pointer right →
+┌───┬───┬───┬───┬───┬────┬────┬────┐
+│ 1 │ 3 │ 5 │ 7 │ 9 │ 11 │ 13 │ 15 │
+└───┴───┴───┴───┴───┴────┴────┴────┘
+      ↑                       ↑
+     LEFT                   RIGHT
 
-Maintain a window between pointers
+Sum = 3 + 13 = 16 ✓ Another solution!
+
+Step 3: If sum too large, move right pointer left ←
+┌───┬───┬───┬───┬───┬────┬────┬────┐
+│ 1 │ 3 │ 5 │ 7 │ 9 │ 11 │ 13 │ 15 │
+└───┴───┴───┴───┴───┴────┴────┴────┘
+          ↑           ↑
+         LEFT       RIGHT
+
+Sum = 5 + 11 = 16 ✓ Found again!
+
+╔════════════════════════════════════════════════╗
+║  Why this works:                               ║
+║  • Array is SORTED                             ║
+║  • If sum too small: need larger value (→)     ║
+║  • If sum too large: need smaller value (←)    ║
+║  • Time: O(n), Space: O(1)                     ║
+╚════════════════════════════════════════════════╝
+```
+
+#### Technique 2: Same Direction (Fast & Slow Pointers)
+
+**Concept**: Both pointers move in same direction, but at different speeds
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  SAME DIRECTION - Remove Duplicates from Sorted Array       │
+└─────────────────────────────────────────────────────────────┘
+
+Initial Array: [1, 1, 2, 2, 2, 3, 4, 4, 5]
+
+Step 1: Both pointers start at beginning
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 1 │ 1 │ 2 │ 2 │ 2 │ 3 │ 4 │ 4 │ 5 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+  ↑   ↑
+ SLOW FAST
+
+Step 2: FAST finds different element, copy it to SLOW+1
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 1 │ 2 │ 2 │ 2 │ 2 │ 3 │ 4 │ 4 │ 5 │  ← Copied 2 to index 1
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+      ↑   ↑
+     SLOW FAST
+
+Step 3: FAST continues, skip duplicates
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 1 │ 2 │ 3 │ 2 │ 2 │ 3 │ 4 │ 4 │ 5 │  ← Copied 3 to index 2
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+          ↑           ↑
+         SLOW        FAST
+
+Step 4: Continue process
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 1 │ 2 │ 3 │ 4 │ 2 │ 3 │ 4 │ 4 │ 5 │  ← Copied 4 to index 3
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+              ↑           ↑
+             SLOW        FAST
+
+Step 5: Final state
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 1 │ 2 │ 3 │ 4 │ 5 │ 3 │ 4 │ 4 │ 5 │  ← Copied 5 to index 4
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+                  ↑               ↑
+                 SLOW           FAST (end)
+
+Result: First 5 elements are unique [1, 2, 3, 4, 5]
+New Length = SLOW + 1 = 5
+
+╔════════════════════════════════════════════════╗
+║  How it works:                                 ║
+║  • SLOW: marks position of last unique element ║
+║  • FAST: explores array to find new elements   ║
+║  • When FAST finds new: copy to SLOW+1         ║
+║  • Time: O(n), Space: O(1)                     ║
+╚════════════════════════════════════════════════╝
+```
+
+#### Technique 3: Partitioning (Dutch National Flag)
+
+**Concept**: Use multiple pointers to partition array into sections
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  PARTITIONING - Sort Colors (0s, 1s, 2s)                    │
+└─────────────────────────────────────────────────────────────┘
+
+Goal: Sort array with values [0, 1, 2] in one pass
+
+Initial: [2, 0, 2, 1, 1, 0, 1, 2, 0]
+
+Pointer Setup:
+• LEFT (red boundary): Everything before is 0
+• CURR (current): Element being examined
+• RIGHT (blue boundary): Everything after is 2
+
+Step 1: Initialize
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 2 │ 0 │ 2 │ 1 │ 1 │ 0 │ 1 │ 2 │ 0 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+  ↑                               ↑
+L,C                               R
+
+CURR=2: Swap with RIGHT, move RIGHT ←
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 0 │ 0 │ 2 │ 1 │ 1 │ 0 │ 1 │ 2 │ 2 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+  ↑                           ↑
+L,C                           R
+
+Step 2: CURR=0: Swap with LEFT, move both →
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 0 │ 0 │ 2 │ 1 │ 1 │ 0 │ 1 │ 2 │ 2 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+      ↑                       ↑
+     L,C                      R
+
+Step 3: CURR=2: Swap with RIGHT, move RIGHT ←
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 0 │ 0 │ 1 │ 1 │ 1 │ 0 │ 1 │ 2 │ 2 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+      ↑                   ↑
+     L,C                  R
+
+Step 4: CURR=1: Just move CURR →
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 0 │ 0 │ 1 │ 1 │ 1 │ 0 │ 1 │ 2 │ 2 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+      ↑       ↑           ↑
+      L       C           R
+
+... Continue until CURR passes RIGHT ...
+
+Final Result:
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 0 │ 0 │ 0 │ 1 │ 1 │ 1 │ 1 │ 2 │ 2 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+  ← 0s →  ←   1s    →  ← 2s →
+
+╔════════════════════════════════════════════════╗
+║  Three-way partitioning:                       ║
+║  • LEFT boundary: [0...LEFT) contains 0s       ║
+║  • MIDDLE section: [LEFT...CURR) contains 1s   ║
+║  • RIGHT boundary: (RIGHT...n) contains 2s     ║
+║  • Time: O(n), Space: O(1)                     ║
+╚════════════════════════════════════════════════╝
+```
+
+#### Technique 4: Container Problem (Greedy Movement)
+
+**Concept**: Move the pointer that limits the result
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  CONTAINER - Most Water Between Two Lines                   │
+└─────────────────────────────────────────────────────────────┘
+
+Heights: [1, 8, 6, 2, 5, 4, 8, 3, 7]
+
+Visual Representation (rotated 90°):
+
+ 8 │   █           █
+ 7 │   █           █       █
+ 6 │   █   █       █       █
+ 5 │   █   █   █   █       █
+ 4 │   █   █   █ █ █       █
+ 3 │   █   █   █ █ █   █   █
+ 2 │   █   █ █ █ █ █   █   █
+ 1 │ █ █   █ █ █ █ █   █   █
+   └─┴─┴───┴─┴─┴─┴─┴───┴───┴─
+     0 1   2 3 4 5 6   7   8
+
+Step 1: Start with maximum width
+        L                       R
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 1 │ 8 │ 6 │ 2 │ 5 │ 4 │ 8 │ 3 │ 7 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+
+Width = 8, Height = min(1, 7) = 1
+Area = 8 × 1 = 8 water units
+Move LEFT (shorter line) →
+
+Step 2:
+            L                   R
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 1 │ 8 │ 6 │ 2 │ 5 │ 4 │ 8 │ 3 │ 7 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+
+Width = 7, Height = min(8, 7) = 7
+Area = 7 × 7 = 49 water units ★ BEST SO FAR!
+Move RIGHT (shorter line) ←
+
+Step 3:
+            L               R
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 1 │ 8 │ 6 │ 2 │ 5 │ 4 │ 8 │ 3 │ 7 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+
+Width = 6, Height = min(8, 3) = 3
+Area = 6 × 3 = 18 water units
+Move RIGHT (shorter line) ←
+
+Step 4:
+            L           R
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 1 │ 8 │ 6 │ 2 │ 5 │ 4 │ 8 │ 3 │ 7 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┘
+
+Width = 5, Height = min(8, 8) = 8
+Area = 5 × 8 = 40 water units
+Can move either pointer (tie)
+
+╔════════════════════════════════════════════════╗
+║  Strategy:                                     ║
+║  • Always move the pointer with SHORTER height ║
+║  • Why? Taller line isn't the bottleneck       ║
+║  • Moving shorter line might find taller one   ║
+║  • Maximum possible area = 49 units            ║
+╚════════════════════════════════════════════════╝
+```
+
+#### Technique 5: Trapping Water (Peak Detection)
+
+**Concept**: Track maximum heights from both sides
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  TRAPPING RAIN WATER - Calculate Trapped Water              │
+└─────────────────────────────────────────────────────────────┘
+
+Heights: [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]
+
+Visual Representation:
+ 3 │               █
+ 2 │       █       █       █
+ 1 │   █   █   █   █   █   █   █
+ 0 │ █ █ █ █ █ █ █ █ █ █ █ █ █
+   └─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─
+     0 1 2 3 4 5 6 7 8 9 10 11
+
+Water trapped (shown with ≈):
+ 3 │               █
+ 2 │       █ ≈ ≈ ≈ █ ≈ ≈ ≈ █
+ 1 │   █ ≈ █ ≈ █ ≈ █ █ ≈ █ ≈ █
+ 0 │ 0 1 0 2 1 0 1 3 2 1 2 1
+
+Step-by-step with two pointers:
+
+Step 1: L=0, R=11
+        L                       R
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 0 │ 1 │ 0 │ 2 │ 1 │ 0 │ 1 │ 3 │ 2 │ 1 │ 2 │ 1 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
+
+left_max=0, right_max=0
+height[L]=0 < height[R]=1, process left
+Water at L = max(0, 0-0) = 0
+Move L→, left_max=0
+
+Step 2: L=1, R=11
+            L                   R
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 0 │ 1 │ 0 │ 2 │ 1 │ 0 │ 1 │ 3 │ 2 │ 1 │ 2 │ 1 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
+
+height[L]=1 < height[R]=1
+Update left_max=1, water=0
+Move L→
+
+Step 3: L=2, R=11
+                L               R
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ 0 │ 1 │ 0 │ 2 │ 1 │ 0 │ 1 │ 3 │ 2 │ 1 │ 2 │ 1 │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
+
+height[L]=0 < height[R]=1
+Water at L = left_max - height[L] = 1-0 = 1 ★
+Total water = 1
+Move L→
+
+... Continue this process ...
+
+Final Total: 6 units of trapped water
+
+╔════════════════════════════════════════════════╗
+║  Key Insight:                                  ║
+║  • Water level = min(left_max, right_max)      ║
+║  • Process from side with smaller max          ║
+║  • Track maximum heights seen so far           ║
+║  • Time: O(n), Space: O(1)                     ║
+╚════════════════════════════════════════════════╝
 ```
 
 ## Recognition Guidelines
@@ -1392,6 +1689,1104 @@ function backspaceCompare(s: string, t: string): boolean {
 
 **Time Complexity**: O(n + m) - process both strings once
 **Space Complexity**: O(1) - only using pointers
+
+---
+
+### Problem 16: Intersection of Two Arrays II
+**Difficulty**: Easy
+**LeetCode Link**: [https://leetcode.com/problems/intersection-of-two-arrays-ii/](https://leetcode.com/problems/intersection-of-two-arrays-ii/)
+
+**Description**: Find the intersection of two arrays, including duplicates. Each element should appear as many times as it shows in both arrays.
+
+#### Python Solution
+```python
+def intersect(nums1: List[int], nums2: List[int]) -> List[int]:
+    # Step 1: Sort both arrays to enable two-pointer approach
+    nums1.sort()
+    nums2.sort()
+
+    # Step 2: Initialize two pointers and result list
+    i = 0  # pointer for nums1
+    j = 0  # pointer for nums2
+    result = []
+
+    # Step 3: Traverse both arrays simultaneously
+    while i < len(nums1) and j < len(nums2):
+        # Step 4: If elements match, add to result
+        if nums1[i] == nums2[j]:
+            result.append(nums1[i])
+            i += 1
+            j += 1
+        # Step 5: Move pointer pointing to smaller element
+        elif nums1[i] < nums2[j]:
+            i += 1
+        else:
+            j += 1
+
+    return result
+
+# Visualization for nums1 = [1,2,2,1], nums2 = [2,2]
+# After sort: nums1 = [1,1,2,2], nums2 = [2,2]
+#
+# Step 1: i=0, j=0
+# [1, 1, 2, 2]    nums1[0]=1
+#  ↑
+# [2, 2]          nums2[0]=2
+#  ↑
+# 1 < 2, move i→
+#
+# Step 2: i=1, j=0
+# [1, 1, 2, 2]    nums1[1]=1
+#     ↑
+# [2, 2]          nums2[0]=2
+#  ↑
+# 1 < 2, move i→
+#
+# Step 3: i=2, j=0
+# [1, 1, 2, 2]    nums1[2]=2
+#        ↑
+# [2, 2]          nums2[0]=2
+#  ↑
+# 2 == 2, add 2 to result, move both→
+#
+# Step 4: i=3, j=1
+# [1, 1, 2, 2]    nums1[3]=2
+#           ↑
+# [2, 2]          nums2[1]=2
+#     ↑
+# 2 == 2, add 2 to result, move both→
+#
+# Result: [2, 2]
+```
+
+#### TypeScript Solution
+```typescript
+function intersect(nums1: number[], nums2: number[]): number[] {
+    // Step 1: Sort both arrays
+    nums1.sort((a, b) => a - b);
+    nums2.sort((a, b) => a - b);
+
+    // Step 2: Initialize pointers
+    let i = 0;
+    let j = 0;
+    const result: number[] = [];
+
+    // Step 3: Two pointer traversal
+    while (i < nums1.length && j < nums2.length) {
+        // Step 4: Elements match
+        if (nums1[i] === nums2[j]) {
+            result.push(nums1[i]);
+            i++;
+            j++;
+        }
+        // Step 5: Move smaller element's pointer
+        else if (nums1[i] < nums2[j]) {
+            i++;
+        } else {
+            j++;
+        }
+    }
+
+    return result;
+}
+```
+
+**Time Complexity**: O(n log n + m log m) - dominated by sorting
+**Space Complexity**: O(1) - not counting output array (or O(log n + log m) for sorting)
+
+---
+
+### Problem 17: Long Pressed Name
+**Difficulty**: Easy
+**LeetCode Link**: [https://leetcode.com/problems/long-pressed-name/](https://leetcode.com/problems/long-pressed-name/)
+
+**Description**: Your friend types their name, but some keys were long pressed. Check if typed string could have been their name with some keys long pressed.
+
+#### Python Solution
+```python
+def isLongPressedName(name: str, typed: str) -> bool:
+    # Step 1: Initialize two pointers
+    i = 0  # pointer for name
+    j = 0  # pointer for typed
+
+    # Step 2: Traverse typed string
+    while j < len(typed):
+        # Step 3: Characters match, move both pointers
+        if i < len(name) and name[i] == typed[j]:
+            i += 1
+            j += 1
+        # Step 4: Long press - typed char matches previous name char
+        elif j > 0 and typed[j] == typed[j - 1]:
+            j += 1
+        # Step 5: Mismatch - not valid
+        else:
+            return False
+
+    # Step 6: Check if we consumed entire name
+    return i == len(name)
+
+# Visualization for name = "alex", typed = "aaleex"
+#
+# Step 1: i=0, j=0
+# name:  a l e x
+#        ↑
+# typed: a a l e e x
+#        ↑
+# Match! i=1, j=1
+#
+# Step 2: i=1, j=1
+# name:  a l e x
+#          ↑
+# typed: a a l e e x
+#          ↑
+# Mismatch, but typed[1]='a' == typed[0]='a' (long press)
+# Only j moves: j=2
+#
+# Step 3: i=1, j=2
+# name:  a l e x
+#          ↑
+# typed: a a l e e x
+#            ↑
+# Match! i=2, j=3
+#
+# Step 4: i=2, j=3
+# name:  a l e x
+#            ↑
+# typed: a a l e e x
+#              ↑
+# Match! i=3, j=4
+#
+# Step 5: i=3, j=4
+# name:  a l e x
+#              ↑
+# typed: a a l e e x
+#                ↑
+# Mismatch, but typed[4]='e' == typed[3]='e' (long press)
+# j=5
+#
+# Step 6: i=3, j=5
+# name:  a l e x
+#              ↑
+# typed: a a l e e x
+#                  ↑
+# Match! i=4, j=6 (both at end)
+# i == len(name) ✓
+```
+
+#### TypeScript Solution
+```typescript
+function isLongPressedName(name: string, typed: string): boolean {
+    // Step 1: Initialize pointers
+    let i = 0;
+    let j = 0;
+
+    // Step 2: Process typed string
+    while (j < typed.length) {
+        // Step 3: Characters match
+        if (i < name.length && name[i] === typed[j]) {
+            i++;
+            j++;
+        }
+        // Step 4: Long press detected
+        else if (j > 0 && typed[j] === typed[j - 1]) {
+            j++;
+        }
+        // Step 5: Invalid character
+        else {
+            return false;
+        }
+    }
+
+    // Step 6: Verify entire name was typed
+    return i === name.length;
+}
+```
+
+**Time Complexity**: O(n + m) - single pass through both strings
+**Space Complexity**: O(1) - only using pointer variables
+
+---
+
+### Problem 18: Minimum Size Subarray Sum
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/minimum-size-subarray-sum/](https://leetcode.com/problems/minimum-size-subarray-sum/)
+
+**Description**: Find the minimal length of a subarray whose sum is greater than or equal to target.
+
+#### Python Solution
+```python
+def minSubArrayLen(target: int, nums: List[int]) -> int:
+    # Step 1: Initialize variables
+    left = 0
+    current_sum = 0
+    min_length = float('inf')
+
+    # Step 2: Expand window with right pointer
+    for right in range(len(nums)):
+        # Step 3: Add current element to sum
+        current_sum += nums[right]
+
+        # Step 4: Shrink window while sum >= target
+        while current_sum >= target:
+            # Step 5: Update minimum length
+            min_length = min(min_length, right - left + 1)
+
+            # Step 6: Shrink from left
+            current_sum -= nums[left]
+            left += 1
+
+    # Step 7: Return result (0 if no valid subarray found)
+    return 0 if min_length == float('inf') else min_length
+
+# Visualization for target = 7, nums = [2,3,1,2,4,3]
+#
+# Initial: left=0, right=0, sum=0, min_len=∞
+#
+# Step 1: right=0
+# [2, 3, 1, 2, 4, 3]
+#  ↑
+# L,R
+# sum = 2 (< 7), continue
+#
+# Step 2: right=1
+# [2, 3, 1, 2, 4, 3]
+#  ↑  ↑
+#  L  R
+# sum = 5 (< 7), continue
+#
+# Step 3: right=2
+# [2, 3, 1, 2, 4, 3]
+#  ↑     ↑
+#  L     R
+# sum = 6 (< 7), continue
+#
+# Step 4: right=3
+# [2, 3, 1, 2, 4, 3]
+#  ↑        ↑
+#  L        R
+# sum = 8 (>= 7) ✓
+# min_len = 4
+# Shrink: sum -= 2, left=1, sum=6 (< 7), stop shrinking
+#
+# Step 5: right=4
+# [2, 3, 1, 2, 4, 3]
+#     ↑        ↑
+#     L        R
+# sum = 10 (>= 7) ✓
+# min_len = 4
+# Shrink: sum -= 3, left=2, sum=7 (>= 7) ✓
+# min_len = 3
+# Shrink: sum -= 1, left=3, sum=6 (< 7), stop
+#
+# Step 6: right=5
+# [2, 3, 1, 2, 4, 3]
+#           ↑     ↑
+#           L     R
+# sum = 9 (>= 7) ✓
+# min_len = 3
+# Shrink: sum -= 2, left=4, sum=7 (>= 7) ✓
+# min_len = 2
+# Shrink: sum -= 4, left=5, sum=3 (< 7), stop
+#
+# Final: min_len = 2, subarray [4,3]
+```
+
+#### TypeScript Solution
+```typescript
+function minSubArrayLen(target: number, nums: number[]): number {
+    // Step 1: Initialize variables
+    let left = 0;
+    let currentSum = 0;
+    let minLength = Infinity;
+
+    // Step 2: Expand window
+    for (let right = 0; right < nums.length; right++) {
+        // Step 3: Add to sum
+        currentSum += nums[right];
+
+        // Step 4: Shrink window while valid
+        while (currentSum >= target) {
+            // Step 5: Update minimum
+            minLength = Math.min(minLength, right - left + 1);
+
+            // Step 6: Shrink from left
+            currentSum -= nums[left];
+            left++;
+        }
+    }
+
+    // Step 7: Return result
+    return minLength === Infinity ? 0 : minLength;
+}
+```
+
+**Time Complexity**: O(n) - each element visited at most twice
+**Space Complexity**: O(1) - only using constant extra space
+
+---
+
+### Problem 19: Merge Sorted Array
+**Difficulty**: Easy
+**LeetCode Link**: [https://leetcode.com/problems/merge-sorted-array/](https://leetcode.com/problems/merge-sorted-array/)
+
+**Description**: Merge nums2 into nums1 as one sorted array. nums1 has size m+n with m elements followed by n zeros.
+
+#### Python Solution
+```python
+def merge(nums1: List[int], m: int, nums2: List[int], n: int) -> None:
+    # Step 1: Initialize three pointers (work backwards!)
+    # Key insight: Fill from the end to avoid overwriting
+    p1 = m - 1      # Last element of nums1's valid portion
+    p2 = n - 1      # Last element of nums2
+    p = m + n - 1   # Last position in nums1
+
+    # Step 2: Merge from back to front
+    while p1 >= 0 and p2 >= 0:
+        # Step 3: Compare and place larger element at end
+        if nums1[p1] > nums2[p2]:
+            nums1[p] = nums1[p1]
+            p1 -= 1
+        else:
+            nums1[p] = nums2[p2]
+            p2 -= 1
+        p -= 1
+
+    # Step 4: Copy remaining elements from nums2 (if any)
+    # Note: If nums1 has remaining elements, they're already in place
+    while p2 >= 0:
+        nums1[p] = nums2[p2]
+        p2 -= 1
+        p -= 1
+
+# Visualization for nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3
+#
+# Initial state:
+# nums1: [1, 2, 3, 0, 0, 0]
+#              ↑           ↑
+#             p1           p
+# nums2: [2, 5, 6]
+#              ↑
+#             p2
+#
+# Step 1: Compare 3 vs 6
+# nums1: [1, 2, 3, 0, 0, 6]  ← Place 6
+#           ↑        ↑
+#          p1        p
+# nums2: [2, 5, 6]
+#           ↑
+#          p2
+#
+# Step 2: Compare 3 vs 5
+# nums1: [1, 2, 3, 0, 5, 6]  ← Place 5
+#           ↑     ↑
+#          p1     p
+# nums2: [2, 5, 6]
+#        ↑
+#       p2
+#
+# Step 3: Compare 3 vs 2
+# nums1: [1, 2, 3, 3, 5, 6]  ← Place 3
+#        ↑     ↑
+#       p1     p
+# nums2: [2, 5, 6]
+#        ↑
+#       p2
+#
+# Step 4: Compare 2 vs 2
+# nums1: [1, 2, 2, 3, 5, 6]  ← Place 2 (from nums2)
+#        ↑  ↑
+#       p1  p
+# nums2: [2, 5, 6]
+#     (done)
+#
+# Step 5: p1 still has elements but they're in correct position
+# Final: [1, 2, 2, 3, 5, 6]
+```
+
+#### TypeScript Solution
+```typescript
+function merge(nums1: number[], m: number, nums2: number[], n: number): void {
+    // Step 1: Initialize pointers (work backwards)
+    let p1 = m - 1;
+    let p2 = n - 1;
+    let p = m + n - 1;
+
+    // Step 2: Merge from back to front
+    while (p1 >= 0 && p2 >= 0) {
+        // Step 3: Place larger element
+        if (nums1[p1] > nums2[p2]) {
+            nums1[p] = nums1[p1];
+            p1--;
+        } else {
+            nums1[p] = nums2[p2];
+            p2--;
+        }
+        p--;
+    }
+
+    // Step 4: Copy remaining from nums2
+    while (p2 >= 0) {
+        nums1[p] = nums2[p2];
+        p2--;
+        p--;
+    }
+}
+```
+
+**Time Complexity**: O(m + n) - single pass through both arrays
+**Space Complexity**: O(1) - in-place merge
+
+---
+
+### Problem 20: Boats to Save People
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/boats-to-save-people/](https://leetcode.com/problems/boats-to-save-people/)
+
+**Description**: Each boat carries at most 2 people and has weight limit. Return minimum number of boats needed.
+
+#### Python Solution
+```python
+def numRescueBoats(people: List[int], limit: int) -> int:
+    # Step 1: Sort people by weight
+    people.sort()
+
+    # Step 2: Initialize two pointers
+    left = 0              # Lightest person
+    right = len(people) - 1  # Heaviest person
+    boats = 0
+
+    # Step 3: Pair people greedily
+    while left <= right:
+        # Step 4: Try to pair lightest with heaviest
+        if people[left] + people[right] <= limit:
+            # Both can fit in one boat
+            left += 1
+            right -= 1
+        else:
+            # Heaviest person needs their own boat
+            right -= 1
+
+        # Step 5: Either way, we used one boat
+        boats += 1
+
+    return boats
+
+# Visualization for people = [3,2,2,1], limit = 3
+# After sort: [1, 2, 2, 3]
+#
+# Step 1: left=0, right=3
+# [1, 2, 2, 3]
+#  ↑        ↑
+#  L        R
+# 1 + 3 = 4 > 3, person with weight 3 goes alone
+# boats = 1, right = 2
+#
+# Step 2: left=0, right=2
+# [1, 2, 2, 3]
+#  ↑     ↑
+#  L     R
+# 1 + 2 = 3 <= 3, both fit together
+# boats = 2, left = 1, right = 1
+#
+# Step 3: left=1, right=1
+# [1, 2, 2, 3]
+#     ↑
+#    L,R
+# Same person, goes in boat alone
+# boats = 3, left = 2, right = 0 (done)
+#
+# Final: 3 boats
+# Boat 1: [3]
+# Boat 2: [1, 2]
+# Boat 3: [2]
+```
+
+#### TypeScript Solution
+```typescript
+function numRescueBoats(people: number[], limit: number): number {
+    // Step 1: Sort by weight
+    people.sort((a, b) => a - b);
+
+    // Step 2: Initialize pointers
+    let left = 0;
+    let right = people.length - 1;
+    let boats = 0;
+
+    // Step 3: Greedy pairing
+    while (left <= right) {
+        // Step 4: Try to pair lightest with heaviest
+        if (people[left] + people[right] <= limit) {
+            left++;
+            right--;
+        } else {
+            // Heaviest goes alone
+            right--;
+        }
+
+        // Step 5: Count boat
+        boats++;
+    }
+
+    return boats;
+}
+```
+
+**Time Complexity**: O(n log n) - dominated by sorting
+**Space Complexity**: O(1) - not counting space for sorting
+
+---
+
+### Problem 21: Compare Version Numbers
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/compare-version-numbers/](https://leetcode.com/problems/compare-version-numbers/)
+
+**Description**: Compare two version numbers version1 and version2. Return -1 if version1 < version2, 1 if version1 > version2, else 0.
+
+#### Python Solution
+```python
+def compareVersion(version1: str, version2: str) -> int:
+    # Step 1: Split versions by '.'
+    v1_parts = version1.split('.')
+    v2_parts = version2.split('.')
+
+    # Step 2: Get lengths for iteration
+    n1 = len(v1_parts)
+    n2 = len(v2_parts)
+
+    # Step 3: Use two pointers to compare each revision
+    i = 0
+    j = 0
+
+    # Step 4: Compare while either version has parts
+    while i < n1 or j < n2:
+        # Step 5: Get revision numbers (0 if out of bounds)
+        # This handles cases like "1.0" vs "1.0.0"
+        num1 = int(v1_parts[i]) if i < n1 else 0
+        num2 = int(v2_parts[j]) if j < n2 else 0
+
+        # Step 6: Compare current revisions
+        if num1 < num2:
+            return -1
+        elif num1 > num2:
+            return 1
+
+        # Step 7: Move to next revision
+        i += 1
+        j += 1
+
+    # Step 8: All revisions equal
+    return 0
+
+# Visualization for version1 = "1.01", version2 = "1.001.0"
+#
+# After split:
+# v1_parts = ["1", "01"]
+# v2_parts = ["1", "001", "0"]
+#
+# Step 1: i=0, j=0
+# v1: ["1", "01"]
+#       ↑
+# v2: ["1", "001", "0"]
+#       ↑
+# Compare: 1 vs 1 → Equal, continue
+#
+# Step 2: i=1, j=1
+# v1: ["1", "01"]
+#            ↑
+# v2: ["1", "001", "0"]
+#            ↑
+# Compare: 1 vs 1 → Equal (leading zeros ignored), continue
+#
+# Step 3: i=2, j=2
+# v1: ["1", "01"]  (out of bounds)
+#              ↑
+# v2: ["1", "001", "0"]
+#                   ↑
+# Compare: 0 vs 0 → Equal (v1 treated as 0), continue
+#
+# Step 4: i=3, j=3 (both out of bounds)
+# Result: 0 (versions are equal)
+```
+
+#### TypeScript Solution
+```typescript
+function compareVersion(version1: string, version2: string): number {
+    // Step 1: Split versions
+    const v1Parts = version1.split('.');
+    const v2Parts = version2.split('.');
+
+    // Step 2: Get lengths
+    const n1 = v1Parts.length;
+    const n2 = v2Parts.length;
+
+    // Step 3: Initialize pointers
+    let i = 0;
+    let j = 0;
+
+    // Step 4: Compare revisions
+    while (i < n1 || j < n2) {
+        // Step 5: Get revision numbers
+        const num1 = i < n1 ? parseInt(v1Parts[i]) : 0;
+        const num2 = j < n2 ? parseInt(v2Parts[j]) : 0;
+
+        // Step 6: Compare
+        if (num1 < num2) {
+            return -1;
+        } else if (num1 > num2) {
+            return 1;
+        }
+
+        // Step 7: Move pointers
+        i++;
+        j++;
+    }
+
+    // Step 8: Equal
+    return 0;
+}
+```
+
+**Time Complexity**: O(max(n, m)) - where n and m are number of revisions
+**Space Complexity**: O(n + m) - for split arrays
+
+---
+
+### Problem 22: Reverse Words in a String II
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/reverse-words-in-a-string-ii/](https://leetcode.com/problems/reverse-words-in-a-string-ii/)
+
+**Description**: Reverse the order of words in a string (given as array of characters). A word is sequence of non-space characters.
+
+#### Python Solution
+```python
+def reverseWords(s: List[str]) -> None:
+    # Step 1: Helper function to reverse a portion of array
+    def reverse(left: int, right: int) -> None:
+        while left < right:
+            s[left], s[right] = s[right], s[left]
+            left += 1
+            right -= 1
+
+    # Step 2: Reverse entire string
+    # "the sky is blue" → "eulb si yks eht"
+    reverse(0, len(s) - 1)
+
+    # Step 3: Reverse each word individually
+    # "eulb si yks eht" → "blue is sky the"
+    start = 0
+    for i in range(len(s) + 1):
+        # Step 4: Found end of word (space or end of string)
+        if i == len(s) or s[i] == ' ':
+            # Reverse the word
+            reverse(start, i - 1)
+            # Move start to beginning of next word
+            start = i + 1
+
+# Visualization for s = ["t","h","e"," ","s","k","y"]
+#
+# Step 1: Reverse entire array
+# Original: [t, h, e,  , s, k, y]
+#
+# After:    [y, k, s,  , e, h, t]
+#            ↑                 ↑
+#          start              end
+#
+# Step 2: Reverse each word
+# Word 1: "yks" → "sky"
+# [s, k, y,  , e, h, t]
+#  ↑     ↑
+# start end
+#
+# Word 2: "eht" → "the"
+# [s, k, y,  , t, h, e]
+#             ↑     ↑
+#           start  end
+#
+# Final: "sky the"
+# [s, k, y,  , t, h, e]
+#
+# Another example: ["a","b"," ","c","d"]
+#
+# Step 1: Reverse entire
+# [d, c,  , b, a]
+#
+# Step 2: Reverse each word
+# "dc" → "cd", "ba" → "ab"
+# [c, d,  , a, b]
+#
+# Result: "cd ab"
+```
+
+#### TypeScript Solution
+```typescript
+function reverseWords(s: string[]): void {
+    // Step 1: Helper to reverse portion
+    const reverse = (left: number, right: number): void => {
+        while (left < right) {
+            [s[left], s[right]] = [s[right], s[left]];
+            left++;
+            right--;
+        }
+    };
+
+    // Step 2: Reverse entire string
+    reverse(0, s.length - 1);
+
+    // Step 3: Reverse each word
+    let start = 0;
+    for (let i = 0; i <= s.length; i++) {
+        // Step 4: End of word found
+        if (i === s.length || s[i] === ' ') {
+            reverse(start, i - 1);
+            start = i + 1;
+        }
+    }
+}
+```
+
+**Time Complexity**: O(n) - two passes through array
+**Space Complexity**: O(1) - in-place reversal
+
+---
+
+### Problem 23: Find K Closest Elements
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/find-k-closest-elements/](https://leetcode.com/problems/find-k-closest-elements/)
+
+**Description**: Find k closest integers to x in sorted array arr. Result should be sorted in ascending order.
+
+#### Python Solution
+```python
+def findClosestElements(arr: List[int], k: int, x: int) -> List[int]:
+    # Step 1: Initialize two pointers at both ends
+    left = 0
+    right = len(arr) - 1
+
+    # Step 2: Remove elements until k elements remain
+    # Strategy: Remove the element furthest from x
+    while right - left + 1 > k:
+        # Step 3: Calculate distances from x
+        left_dist = abs(arr[left] - x)
+        right_dist = abs(arr[right] - x)
+
+        # Step 4: Remove element with greater distance
+        # If equal distance, remove the larger number (from right)
+        if left_dist > right_dist:
+            left += 1
+        else:
+            right -= 1
+
+    # Step 5: Return the k elements
+    return arr[left:right + 1]
+
+# Visualization for arr = [1,2,3,4,5], k = 4, x = 3
+#
+# Initial: Need to remove 1 element to get k=4
+# [1, 2, 3, 4, 5]
+#  ↑           ↑
+#  L           R
+#
+# Step 1: Compare distances
+# |1-3| = 2 (left distance)
+# |5-3| = 2 (right distance)
+# Equal! Remove larger number (5)
+# right = 3
+#
+# Step 2: Now have 4 elements
+# [1, 2, 3, 4, 5]
+#  ↑        ↑
+#  L        R
+# right - left + 1 = 4 = k, done!
+#
+# Result: [1, 2, 3, 4]
+#
+# Another example: arr = [1,2,3,4,5], k = 4, x = -1
+#
+# Initial:
+# [1, 2, 3, 4, 5]
+#  ↑           ↑
+#  L           R
+#
+# Step 1: Compare distances
+# |1-(-1)| = 2 (left distance)
+# |5-(-1)| = 6 (right distance)
+# Remove 5 (greater distance)
+# right = 3
+#
+# Step 2:
+# [1, 2, 3, 4, 5]
+#  ↑        ↑
+#  L        R
+# Have 4 elements, done!
+#
+# Result: [1, 2, 3, 4]
+```
+
+#### TypeScript Solution
+```typescript
+function findClosestElements(arr: number[], k: number, x: number): number[] {
+    // Step 1: Initialize pointers
+    let left = 0;
+    let right = arr.length - 1;
+
+    // Step 2: Shrink window to k elements
+    while (right - left + 1 > k) {
+        // Step 3: Calculate distances
+        const leftDist = Math.abs(arr[left] - x);
+        const rightDist = Math.abs(arr[right] - x);
+
+        // Step 4: Remove furthest element
+        if (leftDist > rightDist) {
+            left++;
+        } else {
+            right--;
+        }
+    }
+
+    // Step 5: Return k closest elements
+    return arr.slice(left, right + 1);
+}
+```
+
+**Time Complexity**: O(n) - at most n iterations to shrink window
+**Space Complexity**: O(1) - not counting output array
+
+---
+
+### Problem 24: Subarray Product Less Than K
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/subarray-product-less-than-k/](https://leetcode.com/problems/subarray-product-less-than-k/)
+
+**Description**: Count number of contiguous subarrays where product of all elements is less than k.
+
+#### Python Solution
+```python
+def numSubarrayProductLessThanK(nums: List[int], k: int) -> int:
+    # Step 1: Handle edge case
+    if k <= 1:
+        return 0
+
+    # Step 2: Initialize variables
+    left = 0
+    product = 1
+    count = 0
+
+    # Step 3: Expand window with right pointer
+    for right in range(len(nums)):
+        # Step 4: Multiply current element into product
+        product *= nums[right]
+
+        # Step 5: Shrink window while product >= k
+        while product >= k:
+            product //= nums[left]
+            left += 1
+
+        # Step 6: Count all subarrays ending at right
+        # Key insight: window [left...right] has (right - left + 1) subarrays
+        # All subarrays ending at 'right' within this window are valid
+        count += right - left + 1
+
+    return count
+
+# Visualization for nums = [10, 5, 2, 6], k = 100
+#
+# Step 1: right=0, nums[0]=10
+# [10, 5, 2, 6]
+#  ↑
+# L,R
+# product = 10 (< 100)
+# Window: [10]
+# Subarrays: [10]
+# count += 1 = 1
+#
+# Step 2: right=1, nums[1]=5
+# [10, 5, 2, 6]
+#  ↑   ↑
+#  L   R
+# product = 50 (< 100)
+# Window: [10, 5]
+# Subarrays ending at R: [5], [10,5]
+# count += 2 = 3
+#
+# Step 3: right=2, nums[2]=2
+# [10, 5, 2, 6]
+#  ↑      ↑
+#  L      R
+# product = 100 (>= 100)
+# Shrink: product /= 10, left=1, product=10
+# Window: [5, 2]
+# Subarrays ending at R: [2], [5,2]
+# count += 2 = 5
+#
+# Step 4: right=3, nums[3]=6
+# [10, 5, 2, 6]
+#      ↑     ↑
+#      L     R
+# product = 60 (< 100)
+# Window: [5, 2, 6]
+# Subarrays ending at R: [6], [2,6], [5,2,6]
+# count += 3 = 8
+#
+# Final count: 8
+# All subarrays: [10], [5], [10,5], [2], [5,2], [6], [2,6], [5,2,6]
+```
+
+#### TypeScript Solution
+```typescript
+function numSubarrayProductLessThanK(nums: number[], k: number): number {
+    // Step 1: Edge case
+    if (k <= 1) return 0;
+
+    // Step 2: Initialize
+    let left = 0;
+    let product = 1;
+    let count = 0;
+
+    // Step 3: Expand window
+    for (let right = 0; right < nums.length; right++) {
+        // Step 4: Update product
+        product *= nums[right];
+
+        // Step 5: Shrink if needed
+        while (product >= k) {
+            product = Math.floor(product / nums[left]);
+            left++;
+        }
+
+        // Step 6: Count subarrays
+        count += right - left + 1;
+    }
+
+    return count;
+}
+```
+
+**Time Complexity**: O(n) - each element visited at most twice
+**Space Complexity**: O(1) - only using constant extra space
+
+---
+
+### Problem 25: Sentence Similarity III
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/sentence-similarity-iii/](https://leetcode.com/problems/sentence-similarity-iii/)
+
+**Description**: Two sentences are similar if you can insert an arbitrary sentence (possibly empty) into one to make it equal to the other.
+
+#### Python Solution
+```python
+def areSentencesSimilar(sentence1: str, sentence2: str) -> bool:
+    # Step 1: Split sentences into words
+    words1 = sentence1.split()
+    words2 = sentence2.split()
+
+    # Step 2: Ensure words1 is the shorter sentence
+    if len(words1) > len(words2):
+        words1, words2 = words2, words1
+
+    # Step 3: Initialize pointers
+    left = 0
+    right1 = len(words1) - 1
+    right2 = len(words2) - 1
+
+    # Step 4: Match prefix (from left)
+    while left <= right1 and words1[left] == words2[left]:
+        left += 1
+
+    # Step 5: Match suffix (from right)
+    while right1 >= 0 and words1[right1] == words2[right2]:
+        right1 -= 1
+        right2 -= 1
+
+    # Step 6: Check if all words in shorter sentence are matched
+    # If right1 < left, all words are matched (entire sentence consumed)
+    return right1 < left
+
+# Visualization for sentence1 = "My name is Haley", sentence2 = "My Haley"
+#
+# words1 = ["My", "name", "is", "Haley"]
+# words2 = ["My", "Haley"]
+#
+# Step 1: Match prefix from left
+# words1: [My, name, is, Haley]
+#          ↑
+# words2: [My, Haley]
+#          ↑
+# "My" == "My", left = 1
+#
+# words1: [My, name, is, Haley]
+#              ↑
+# words2: [My, Haley]
+#              ↑
+# "name" != "Haley", stop matching prefix
+#
+# Step 2: Match suffix from right
+# words1: [My, name, is, Haley]
+#                          ↑
+#                        right1=3
+# words2: [My, Haley]
+#                ↑
+#              right2=1
+# "Haley" == "Haley", right1 = 2, right2 = 0
+#
+# words1: [My, name, is, Haley]
+#                   ↑
+#                 right1=2
+# words2: [My, Haley]
+#          ↑
+#        right2=0
+# "is" != "My", stop matching suffix
+#
+# Step 3: Check if consumed all of shorter sentence
+# left = 1, right1 = 2
+# right1 < left? NO (2 < 1 is False)
+# Result: False
+#
+# Example 2: sentence1 = "A B C D B B", sentence2 = "A B B"
+# words1 = ["A", "B", "B"]
+# words2 = ["A", "B", "C", "D", "B", "B"]
+#
+# Prefix: "A", "B" match → left = 2
+# Suffix: "B" matches → right1 = 1, right2 = 4
+# right1 < left? YES (1 < 2)
+# Result: True
+# We can insert "C D B" in middle to get sentence2
+```
+
+#### TypeScript Solution
+```typescript
+function areSentencesSimilar(sentence1: string, sentence2: string): boolean {
+    // Step 1: Split into words
+    let words1 = sentence1.split(' ');
+    let words2 = sentence2.split(' ');
+
+    // Step 2: Make words1 shorter
+    if (words1.length > words2.length) {
+        [words1, words2] = [words2, words1];
+    }
+
+    // Step 3: Initialize pointers
+    let left = 0;
+    let right1 = words1.length - 1;
+    let right2 = words2.length - 1;
+
+    // Step 4: Match prefix
+    while (left <= right1 && words1[left] === words2[left]) {
+        left++;
+    }
+
+    // Step 5: Match suffix
+    while (right1 >= 0 && words1[right1] === words2[right2]) {
+        right1--;
+        right2--;
+    }
+
+    // Step 6: Check if all matched
+    return right1 < left;
+}
+```
+
+**Time Complexity**: O(n + m) - where n and m are number of words in sentences
+**Space Complexity**: O(n + m) - for split word arrays
 
 ---
 

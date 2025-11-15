@@ -7,7 +7,7 @@ This comprehensive guide covers **15 essential coding patterns** that appear in 
 - 📖 **Pattern explanation** with visual diagrams
 - 🔍 **Recognition guidelines** to identify the pattern
 - 📝 **Code templates** in Python & TypeScript
-- 💡 **10-15 curated problems** (Easy → Medium → Hard)
+- 💡 **22-25 curated problems per pattern** (Easy → Medium → Hard)
 - 🔗 **Direct LeetCode links** for practice
 - ⚡ **Time & space complexity** analysis
 - 💬 **Step-by-step comments** (shadow speaking style)
@@ -468,25 +468,25 @@ def dp(state):
 **Weeks 1-2: Arrays & Strings**
 - Day 1-3: Prefix Sum + Two Pointers
 - Day 4-7: Sliding Window + Monotonic Stack
-- Goal: Solve 30-40 problems
+- Goal: Solve 50-60 problems
 
 **Weeks 3-4: LinkedLists & Heaps**
 - Day 1-4: Fast/Slow Pointers + LinkedList Reversal
 - Day 5-7: Top K Elements + Overlapping Intervals
-- Goal: Solve 30-40 problems
+- Goal: Solve 45-55 problems
 
 **Weeks 5-6: Trees & Graphs**
 - Day 1-2: Binary Search
 - Day 3-5: Tree Traversal + DFS + BFS
 - Day 6-7: Matrix Traversal
-- Goal: Solve 40-50 problems
+- Goal: Solve 60-70 problems
 
 **Weeks 7-8: Advanced Patterns**
 - Day 1-4: Backtracking
 - Day 5-7: Dynamic Programming
-- Goal: Solve 30-40 problems
+- Goal: Solve 50 problems
 
-**Total**: 130-170 problems over 8 weeks
+**Total**: 205-235 problems over 8 weeks (out of 359 total available)
 
 ### Daily Practice Routine
 
@@ -525,23 +525,23 @@ Ask: Does it involve...
 
 Mark your progress as you complete each pattern:
 
-- [ ] 1.1 Prefix Sum (15 problems)
-- [ ] 1.2 Two Pointers (15 problems)
-- [ ] 1.3 Sliding Window (13 problems)
-- [ ] 1.4 Fast & Slow Pointers (15 problems)
-- [ ] 1.5 LinkedList Reversal (12 problems)
-- [ ] 1.6 Monotonic Stack (13 problems)
-- [ ] 1.7 Top 'K' Elements (13 problems)
-- [ ] 1.8 Overlapping Intervals (13 problems)
-- [ ] 1.9 Modified Binary Search (15 problems)
-- [ ] 1.10 Binary Tree Traversal (13 problems)
-- [ ] 1.11 Depth-First Search (13 problems)
-- [ ] 1.12 Breadth-First Search (13 problems)
-- [ ] 1.13 Matrix Traversal (15 problems)
-- [ ] 1.14 Backtracking (15 problems)
-- [ ] 1.15 Dynamic Programming (15 problems)
+- [ ] 1.1 Prefix Sum (25 problems)
+- [ ] 1.2 Two Pointers (25 problems)
+- [ ] 1.3 Sliding Window (23 problems)
+- [ ] 1.4 Fast & Slow Pointers (25 problems)
+- [ ] 1.5 LinkedList Reversal (22 problems)
+- [ ] 1.6 Monotonic Stack (23 problems)
+- [ ] 1.7 Top 'K' Elements (23 problems)
+- [ ] 1.8 Overlapping Intervals (23 problems)
+- [ ] 1.9 Modified Binary Search (25 problems)
+- [ ] 1.10 Binary Tree Traversal (23 problems)
+- [ ] 1.11 Depth-First Search (23 problems)
+- [ ] 1.12 Breadth-First Search (23 problems)
+- [ ] 1.13 Matrix Traversal (25 problems)
+- [ ] 1.14 Backtracking (25 problems)
+- [ ] 1.15 Dynamic Programming (25 problems)
 
-**Total: 209 LeetCode problems**
+**Total: 359 LeetCode problems** 🚀
 
 ---
 

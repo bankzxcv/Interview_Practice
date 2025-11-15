@@ -19,26 +19,518 @@ Dynamic Programming (DP) is an optimization technique that solves complex proble
 
 ### Visual Diagram
 
+Dynamic Programming builds solutions like assembling LEGO blocks - each piece uses the results from smaller pieces!
+
+#### 1. Building Blocks Concept: How DP Combines Subproblems
+
 ```
-Fibonacci Without DP (Exponential):
-                    fib(5)
-                  /        \
-              fib(4)        fib(3)
-             /     \        /     \
-         fib(3)  fib(2)  fib(2)  fib(1)
-         /    \
-     fib(2) fib(1)   ... many repeated calculations
+Without DP - Repeated Work (Exponential Time):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                        fib(5) = ?
+                    ╱              ╲
+                fib(4)              fib(3)
+              ╱      ╲            ╱      ╲
+          fib(3)    fib(2)    fib(2)    fib(1)
+         ╱    ╲     ╱   ╲     ╱   ╲
+     fib(2) fib(1) [1]  [0] [1]  [0]     [1]
+     ╱   ╲
+   [1]   [0]
 
-Fibonacci With DP (Linear):
-memo = {0: 0, 1: 1, 2: 1, 3: 2, 4: 3, 5: 5}
-Each value calculated only once!
+❌ Notice: fib(3) calculated 2 times
+❌ Notice: fib(2) calculated 3 times
+❌ Notice: fib(1) calculated 5 times
+Total calculations: ~15+ function calls for just fib(5)!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-DP Table Example (Longest Common Subsequence):
-       ""  A  B  C  D
-    "" 0   0  0  0  0
-    A  0   1  1  1  1
-    C  0   1  1  2  2
-    E  0   1  1  2  2
+
+With DP - Build Once, Reuse Many (Linear Time):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Step-by-step building blocks:
+
+Step 1: fib(0) = 0   [BASE CASE] ✓
+        └─► memo[0] = 0
+
+Step 2: fib(1) = 1   [BASE CASE] ✓
+        └─► memo[1] = 1
+
+Step 3: fib(2) = memo[1] + memo[0] = 1 + 0 = 1 ✓
+        └─► memo[2] = 1
+
+Step 4: fib(3) = memo[2] + memo[1] = 1 + 1 = 2 ✓
+        └─► memo[3] = 2
+
+Step 5: fib(4) = memo[3] + memo[2] = 2 + 1 = 3 ✓
+        └─► memo[4] = 3
+
+Step 6: fib(5) = memo[4] + memo[3] = 3 + 2 = 5 ✓
+        └─► memo[5] = 5
+
+Final Memo Table:
+┌─────┬─────┬─────┬─────┬─────┬─────┐
+│  0  │  1  │  2  │  3  │  4  │  5  │ ← Index
+├─────┼─────┼─────┼─────┼─────┼─────┤
+│  0  │  1  │  1  │  2  │  3  │  5  │ ← Fibonacci Value
+└─────┴─────┴─────┴─────┴─────┴─────┘
+
+✓ Each value calculated exactly ONCE!
+✓ Total calculations: Only 6 (one per number)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+#### 2. Memoization vs Tabulation: Two Approaches
+
+```
+TOP-DOWN MEMOIZATION (Recursive + Cache):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Think: "I need fib(5), let me ask for smaller pieces"
+
+Call fib(5):
+  │
+  ├─→ Need fib(4)?  → Not in memo, calculate it
+  │     │
+  │     ├─→ Need fib(3)?  → Not in memo, calculate it
+  │     │     │
+  │     │     ├─→ Need fib(2)?  → Not in memo, calculate it
+  │     │     │     │
+  │     │     │     ├─→ Need fib(1)?  → Base case! Return 1
+  │     │     │     └─→ Need fib(0)?  → Base case! Return 0
+  │     │     │
+  │     │     │   fib(2) = 1 ✓ → Save to memo[2]
+  │     │     │
+  │     │     └─→ Need fib(1)?  → Base case! Return 1
+  │     │
+  │     │   fib(3) = 2 ✓ → Save to memo[3]
+  │     │
+  │     └─→ Need fib(2)?  → FOUND IN MEMO! Return 1 (no recursion)
+  │
+  │   fib(4) = 3 ✓ → Save to memo[4]
+  │
+  └─→ Need fib(3)?  → FOUND IN MEMO! Return 2 (no recursion)
+
+Result: fib(5) = 5 ✓ → Save to memo[5]
+
+Memo Cache:
+┌──────────┬───────┐
+│ State    │ Value │
+├──────────┼───────┤
+│ memo[2]  │   1   │ ← Saved during recursion
+│ memo[3]  │   2   │ ← Reused later!
+│ memo[4]  │   3   │ ← Saved and reused
+│ memo[5]  │   5   │ ← Final answer
+└──────────┴───────┘
+
+Characteristics:
+✓ Solves from top (goal) to bottom (base cases)
+✓ Only computes needed subproblems
+✓ More intuitive (follows natural recursion)
+✓ Uses recursion stack memory
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+BOTTOM-UP TABULATION (Iterative + Table):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Think: "Build from smallest to largest systematically"
+
+Initialize DP Table:
+┌─────┬─────┬─────┬─────┬─────┬─────┐
+│  0  │  1  │  2  │  3  │  4  │  5  │ ← Index
+├─────┼─────┼─────┼─────┼─────┼─────┤
+│  0  │  1  │  ?  │  ?  │  ?  │  ?  │ ← Initial (base cases)
+└─────┴─────┴─────┴─────┴─────┴─────┘
+
+Iteration 1: Calculate dp[2]
+┌─────┬─────┬─────┬─────┬─────┬─────┐
+│  0  │  1  │  2  │  3  │  4  │  5  │
+├─────┼─────┼─────┼─────┼─────┼─────┤
+│  0  │  1  │  1  │  ?  │  ?  │  ?  │
+└─────┴─────┴─────┴─────┴─────┴─────┘
+         ↑     ↑    ↑
+         └─────┴────┘ dp[2] = dp[1] + dp[0] = 1 + 0 = 1
+
+Iteration 2: Calculate dp[3]
+┌─────┬─────┬─────┬─────┬─────┬─────┐
+│  0  │  1  │  2  │  3  │  4  │  5  │
+├─────┼─────┼─────┼─────┼─────┼─────┤
+│  0  │  1  │  1  │  2  │  ?  │  ?  │
+└─────┴─────┴─────┴─────┴─────┴─────┘
+              ↑     ↑    ↑
+              └─────┴────┘ dp[3] = dp[2] + dp[1] = 1 + 1 = 2
+
+Iteration 3: Calculate dp[4]
+┌─────┬─────┬─────┬─────┬─────┬─────┐
+│  0  │  1  │  2  │  3  │  4  │  5  │
+├─────┼─────┼─────┼─────┼─────┼─────┤
+│  0  │  1  │  1  │  2  │  3  │  ?  │
+└─────┴─────┴─────┴─────┴─────┴─────┘
+                   ↑     ↑    ↑
+                   └─────┴────┘ dp[4] = dp[3] + dp[2] = 2 + 1 = 3
+
+Iteration 4: Calculate dp[5]
+┌─────┬─────┬─────┬─────┬─────┬─────┐
+│  0  │  1  │  2  │  3  │  4  │  5  │
+├─────┼─────┼─────┼─────┼─────┼─────┤
+│  0  │  1  │  1  │  2  │  3  │  5  │ ← COMPLETE!
+└─────┴─────┴─────┴─────┴─────┴─────┘
+                        ↑     ↑    ↑
+                        └─────┴────┘ dp[5] = dp[4] + dp[3] = 3 + 2 = 5
+
+Characteristics:
+✓ Solves from bottom (base cases) to top (goal)
+✓ Computes all subproblems systematically
+✓ Better performance (no recursion overhead)
+✓ Uses array/table memory
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+#### 3. Linear DP Pattern: Climbing Stairs Example
+
+```
+Problem: How many ways to climb n stairs (1 or 2 steps at a time)?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Visual: n = 5 stairs
+                                    ┌───┐
+                                    │ 5 │ ← GOAL: How many ways?
+                                    ├───┤
+                                    │ 4 │
+                                    ├───┤
+                                    │ 3 │
+                                    ├───┤
+                                    │ 2 │
+                                    ├───┤
+                                    │ 1 │
+                                    ├───┤
+                                    │ 0 │ ← START
+                                    └───┘
+
+Building the DP Table:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+State Definition: dp[i] = number of ways to reach stair i
+
+Base Cases:
+  dp[0] = 1  (one way: don't move)
+  dp[1] = 1  (one way: single step)
+
+Recurrence Relation:
+  dp[i] = dp[i-1] + dp[i-2]
+  (can reach stair i from stair i-1 OR stair i-2)
+
+Step-by-Step Construction:
+┌──────┬─────┬──────────────────────┬──────────────────┐
+│ Step │Ways │ Calculation          │  Visualization   │
+├──────┼─────┼──────────────────────┼──────────────────┤
+│  0   │  1  │ Base case            │     •            │
+│  1   │  1  │ Base case            │     •            │
+│      │     │                      │    / \           │
+│  2   │  2  │ dp[1] + dp[0]        │   •   •          │
+│      │     │ = 1 + 1 = 2          │  (1+1) (2)       │
+│      │     │                      │  /  |  \         │
+│  3   │  3  │ dp[2] + dp[1]        │ •   •   •        │
+│      │     │ = 2 + 1 = 3          │(1+1+1)(1+2)(2+1) │
+│      │     │                      │/ | | | \ | | \   │
+│  4   │  5  │ dp[3] + dp[2]        │• • • • •         │
+│      │     │ = 3 + 2 = 5          │ (5 different     │
+│      │     │                      │   sequences)     │
+│  5   │  8  │ dp[4] + dp[3]        │ 8 total ways!    │
+│      │     │ = 5 + 3 = 8          │                  │
+└──────┴─────┴──────────────────────┴──────────────────┘
+
+Final DP Table:
+┌─────┬─────┬─────┬─────┬─────┬─────┐
+│  0  │  1  │  2  │  3  │  4  │  5  │ ← Stair number
+├─────┼─────┼─────┼─────┼─────┼─────┤
+│  1  │  1  │  2  │  3  │  5  │  8  │ ← Ways to reach
+└─────┴─────┴─────┴─────┴─────┴─────┘
+  ↑     ↑     ↑
+  Base  Base  Built from previous values!
+
+Answer: 8 ways to climb 5 stairs
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+#### 4. 2D Grid DP Pattern: Unique Paths Example
+
+```
+Problem: Robot moves from top-left to bottom-right (only right/down)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3x4 Grid:
+      Col 0  Col 1  Col 2  Col 3
+    ┌──────┬──────┬──────┬──────┐
+Row 0│START │      │      │      │
+    ├──────┼──────┼──────┼──────┤
+Row 1│      │      │      │      │
+    ├──────┼──────┼──────┼──────┤
+Row 2│      │      │      │ GOAL │
+    └──────┴──────┴──────┴──────┘
+
+State Definition: dp[i][j] = number of paths to cell (i,j)
+
+Base Cases:
+  - First row: dp[0][j] = 1 (can only go right)
+  - First column: dp[i][0] = 1 (can only go down)
+
+Recurrence:
+  dp[i][j] = dp[i-1][j] + dp[i][j-1]
+  (paths from above + paths from left)
+
+Building the Table Step-by-Step:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Step 1: Initialize base cases
+      Col 0  Col 1  Col 2  Col 3
+    ┌──────┬──────┬──────┬──────┐
+Row 0│  1   │  1   │  1   │  1   │ ← Only one way (go right)
+    ├──────┼──────┼──────┼──────┤
+Row 1│  1   │  ?   │  ?   │  ?   │
+    ├──────┼──────┼──────┼──────┤ ↑
+Row 2│  1   │  ?   │  ?   │  ?   │ Only one way (go down)
+    └──────┴──────┴──────┴──────┘
+
+
+Step 2: Fill dp[1][1]
+      Col 0  Col 1  Col 2  Col 3
+    ┌──────┬──────┬──────┬──────┐
+Row 0│  1   │  1 ← │  1   │  1   │
+    ├──────┼──────┼──────┼──────┤
+Row 1│  1 ← │  2   │  ?   │  ?   │
+    └──────┴──────┴──────┴──────┘
+       ↑      ↑
+       └──────┘ dp[1][1] = 1 + 1 = 2
+
+
+Step 3: Fill dp[1][2]
+      Col 0  Col 1  Col 2  Col 3
+    ┌──────┬──────┬──────┬──────┐
+Row 0│  1   │  1   │  1 ← │  1   │
+    ├──────┼──────┼──────┼──────┤
+Row 1│  1   │  2 ← │  3   │  ?   │
+    └──────┴──────┴──────┴──────┘
+                ↑      ↑
+                └──────┘ dp[1][2] = 1 + 2 = 3
+
+
+Step 4: Fill dp[1][3]
+      Col 0  Col 1  Col 2  Col 3
+    ┌──────┬──────┬──────┬──────┐
+Row 0│  1   │  1   │  1   │  1 ← │
+    ├──────┼──────┼──────┼──────┤
+Row 1│  1   │  2   │  3 ← │  4   │
+    └──────┴──────┴──────┴──────┘
+                     ↑      ↑
+                     └──────┘ dp[1][3] = 1 + 3 = 4
+
+
+Step 5: Fill dp[2][1]
+      Col 0  Col 1  Col 2  Col 3
+    ┌──────┬──────┬──────┬──────┐
+Row 0│  1   │  1   │  1   │  1   │
+    ├──────┼──────┼──────┼──────┤
+Row 1│  1   │  2 ← │  3   │  4   │
+    ├──────┼──────┼──────┼──────┤
+Row 2│  1 ← │  3   │  ?   │  ?   │
+    └──────┴──────┴──────┴──────┘
+       ↑      ↑
+       └──────┘ dp[2][1] = 1 + 2 = 3
+
+
+Step 6: Fill dp[2][2]
+      Col 0  Col 1  Col 2  Col 3
+    ┌──────┬──────┬──────┬──────┐
+Row 0│  1   │  1   │  1   │  1   │
+    ├──────┼──────┼──────┼──────┤
+Row 1│  1   │  2   │  3 ← │  4   │
+    ├──────┼──────┼──────┼──────┤
+Row 2│  1   │  3 ← │  6   │  ?   │
+    └──────┴──────┴──────┴──────┘
+                ↑      ↑
+                └──────┘ dp[2][2] = 3 + 3 = 6
+
+
+Step 7: Fill dp[2][3] - GOAL!
+      Col 0  Col 1  Col 2  Col 3
+    ┌──────┬──────┬──────┬──────┐
+Row 0│  1   │  1   │  1   │  1   │
+    ├──────┼──────┼──────┼──────┤
+Row 1│  1   │  2   │  3   │  4 ← │
+    ├──────┼──────┼──────┼──────┤
+Row 2│  1   │  3   │  6 ← │ 10   │ ← Answer!
+    └──────┴──────┴──────┴──────┘
+                     ↑      ↑
+                     └──────┘ dp[2][3] = 4 + 6 = 10
+
+Final Complete Table:
+      Col 0  Col 1  Col 2  Col 3
+    ┌──────┬──────┬──────┬──────┐
+Row 0│  1   │  1   │  1   │  1   │
+    ├──────┼──────┼──────┼──────┤
+Row 1│  1   │  2   │  3   │  4   │
+    ├──────┼──────┼──────┼──────┤
+Row 2│  1   │  3   │  6   │  10  │ ← 10 unique paths!
+    └──────┴──────┴──────┴──────┘
+
+Answer: 10 unique paths from top-left to bottom-right
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+#### 5. Subsequence DP Pattern: Longest Common Subsequence
+
+```
+Problem: Find LCS of "ABCDGH" and "AEDFHR"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+State Definition:
+  dp[i][j] = length of LCS for text1[0..i-1] and text2[0..j-1]
+
+Recurrence:
+  If text1[i-1] == text2[j-1]:
+      dp[i][j] = dp[i-1][j-1] + 1    (match! extend LCS)
+  Else:
+      dp[i][j] = max(dp[i-1][j], dp[i][j-1])  (skip one char)
+
+Building the DP Table:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+         ""  A  E  D  F  H  R  ← text2
+       ┌───┬───┬───┬───┬───┬───┬───┐
+    "" │ 0 │ 0 │ 0 │ 0 │ 0 │ 0 │ 0 │ ← Base case (empty string)
+       ├───┼───┼───┼───┼───┼───┼───┤
+    A  │ 0 │ 1 │ 1 │ 1 │ 1 │ 1 │ 1 │
+       ├───┼───┼───┼───┼───┼───┼───┤
+    B  │ 0 │ 1 │ 1 │ 1 │ 1 │ 1 │ 1 │
+       ├───┼───┼───┼───┼───┼───┼───┤
+    C  │ 0 │ 1 │ 1 │ 1 │ 1 │ 1 │ 1 │
+       ├───┼───┼───┼───┼───┼───┼───┤
+    D  │ 0 │ 1 │ 1 │ 2 │ 2 │ 2 │ 2 │
+       ├───┼───┼───┼───┼───┼───┼───┤
+    G  │ 0 │ 1 │ 1 │ 2 │ 2 │ 2 │ 2 │
+       ├───┼───┼───┼───┼───┼───┼───┤
+    H  │ 0 │ 1 │ 1 │ 2 │ 2 │ 3 │ 3 │ ← Answer: 3
+       └───┴───┴───┴───┴───┴───┴───┘
+text1 ↑
+
+Detailed Example: Computing dp[4][3] (D vs D)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Comparing: text1[3] = 'D' with text2[2] = 'D'
+
+         ""  A  E  D
+       ┌───┬───┬───┬───┐
+    "" │ 0 │ 0 │ 0 │ 0 │
+       ├───┼───┼───┼───┤
+    A  │ 0 │ 1 │ 1 │ 1 │
+       ├───┼───┼───┼───┤
+    B  │ 0 │ 1 │ 1 │ 1 │
+       ├───┼───┼───┼───┤
+    C  │ 0 │ 1 │ 1 │ 1 │
+       ├───┼───┼───┼───┤
+    D  │ 0 │ 1 │ 1 │ ? │ ← Computing this
+       └───┴───┴───┴───┘
+                  ↑
+                  Diagonal (i-1, j-1)
+
+'D' == 'D' → MATCH! ✓
+dp[4][3] = dp[3][2] + 1 = 1 + 1 = 2
+
+         ""  A  E  D
+       ┌───┬───┬───┬───┐
+    "" │ 0 │ 0 │ 0 │ 0 │
+       ├───┼───┼───┼───┤
+    A  │ 0 │ 1 │ 1 │ 1 │
+       ├───┼───┼───┼───┤
+    B  │ 0 │ 1 │ 1 │ 1 │
+       ├───┼───┼───┼───┤
+    C  │ 0 │ 1 │ 1 ↖ 1 │
+       ├───┼───┼───┼───┤
+    D  │ 0 │ 1 │ 1 │ 2 │ ← Extended LCS by 1!
+       └───┴───┴───┴───┘
+
+LCS = "ADH" (length 3)
+Path through table (backtracking):
+  (6,6) → (5,5) → (4,3) → (1,1) → (0,0)
+   'H'     Match!  'D'     'A'     Done
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+#### 6. Knapsack DP Pattern: 0/1 Knapsack Visualization
+
+```
+Problem: Items with weights [2, 3, 4, 5] and values [3, 4, 5, 6]
+         Knapsack capacity = 5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Decision Tree for Each Item:
+                    Item 0 (w=2, v=3)
+                   /                 \
+              INCLUDE                EXCLUDE
+           (cap=3, val=3)          (cap=5, val=0)
+              /        \              /        \
+         INCLUDE      EXCLUDE    INCLUDE      EXCLUDE
+    Item 1: Can't fit   ...     (cap=2,v=4)    ...
+
+State Definition:
+  dp[i][w] = max value using items 0..i-1 with capacity w
+
+Building the DP Table:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Items:  Item 0: w=2, v=3
+        Item 1: w=3, v=4
+        Item 2: w=4, v=5
+        Item 3: w=5, v=6
+
+       Capacity →
+       0   1   2   3   4   5
+     ┌───┬───┬───┬───┬───┬───┐
+  0  │ 0 │ 0 │ 0 │ 0 │ 0 │ 0 │ ← No items
+     ├───┼───┼───┼───┼───┼───┤
+  1  │ 0 │ 0 │ 3 │ 3 │ 3 │ 3 │ ← Item 0 (w=2,v=3)
+     ├───┼───┼───┼───┼───┼───┤
+  2  │ 0 │ 0 │ 3 │ 4 │ 4 │ 7 │ ← Items 0,1
+     ├───┼───┼───┼───┼───┼───┤
+  3  │ 0 │ 0 │ 3 │ 4 │ 5 │ 7 │ ← Items 0,1,2
+     ├───┼───┼───┼───┼───┼───┤
+  4  │ 0 │ 0 │ 3 │ 4 │ 5 │ 7 │ ← Items 0,1,2,3
+     └───┴───┴───┴───┴───┴───┘
+Items ↑
+
+Detailed Example: Computing dp[2][5] (Items 0,1 with capacity 5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current item: Item 1 (weight=3, value=4)
+Capacity available: 5
+
+Option 1: EXCLUDE Item 1
+  → Take value from previous row: dp[1][5] = 3
+
+Option 2: INCLUDE Item 1
+  → Need capacity 3, leaving 5-3=2 remaining
+  → Value = item1_value + dp[1][5-3]
+  → Value = 4 + dp[1][2]
+  → Value = 4 + 3 = 7
+
+Decision: max(3, 7) = 7 ✓ INCLUDE Item 1!
+
+       Capacity 5
+     ┌───┐
+  1  │ 3 │ ← Don't include item 1
+     ├───┤
+  2  │ 7 │ ← Include item 1 (better!)
+     └───┘
+
+Visual representation of optimal solution:
+┌─────────────────────────────────────┐
+│ Knapsack (capacity = 5)             │
+│ ┌─────────────┬─────────────┐       │
+│ │  Item 0     │   Item 1    │       │
+│ │  Weight: 2  │  Weight: 3  │       │
+│ │  Value: 3   │  Value: 4   │       │
+│ └─────────────┴─────────────┘       │
+│ Total Weight: 2 + 3 = 5 ✓           │
+│ Total Value:  3 + 4 = 7 ✓           │
+└─────────────────────────────────────┘
+
+Answer: Maximum value = 7
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
@@ -1621,6 +2113,1398 @@ function maxCoins(nums: number[]): number {
 **Complexity**:
 - Time: O(n³)
 - Space: O(n²)
+
+---
+
+### 16. Triangle (Medium)
+**LeetCode**: https://leetcode.com/problems/triangle/
+
+**Description**: Given a triangle array, return the minimum path sum from top to bottom. For each step, you may move to an adjacent number on the row below.
+
+**State Transition**:
+```
+dp[i][j] = minimum path sum to reach row i, column j
+dp[i][j] = triangle[i][j] + min(dp[i-1][j-1], dp[i-1][j])
+
+Example Triangle:
+        2           ← row 0
+       3 4          ← row 1
+      6 5 7         ← row 2
+     4 1 8 3        ← row 3
+
+DP Table Visualization:
+        2           dp[0][0] = 2
+       / \
+      3   4         dp[1][0] = 2+3=5    dp[1][1] = 2+4=6
+     /|\ /|\
+    6 5 7 ...       dp[2][0] = 5+6=11   dp[2][1] = min(5,6)+5=10   dp[2][2] = 6+7=13
+
+Building from bottom up:
+Row 3:  4   1   8   3
+Row 2:  6   5   7
+        ↓   ↓   ↓
+      min paths:
+        6+min(4,1)=7    5+min(1,8)=6    7+min(8,3)=10
+
+Row 1:  3   4
+        ↓   ↓
+        3+min(7,6)=9    4+min(6,10)=10
+
+Row 0:  2
+        ↓
+        2+min(9,10)=11  ← Answer!
+```
+
+**Python Solution (Top-Down)**:
+```python
+def minimumTotal(triangle: list[list[int]]) -> int:
+    """
+    Memoization: recursively find min path from top to bottom.
+    """
+    n = len(triangle)
+    memo = {}
+
+    def dp(row, col):
+        # Step 1: Reached bottom row
+        if row == n - 1:
+            return triangle[row][col]
+
+        # Step 2: Check memo
+        if (row, col) in memo:
+            return memo[(row, col)]
+
+        # Step 3: Try both paths (down-left and down-right)
+        # From (row, col), we can go to (row+1, col) or (row+1, col+1)
+        left = dp(row + 1, col)
+        right = dp(row + 1, col + 1)
+
+        # Step 4: Current cell + minimum of two paths
+        memo[(row, col)] = triangle[row][col] + min(left, right)
+
+        return memo[(row, col)]
+
+    return dp(0, 0)
+```
+
+**Python Solution (Bottom-Up)**:
+```python
+def minimumTotal(triangle: list[list[int]]) -> int:
+    """
+    Tabulation: build from bottom to top.
+    """
+    if not triangle:
+        return 0
+
+    n = len(triangle)
+
+    # Step 1: Create DP table (can modify triangle in-place to save space)
+    dp = [row[:] for row in triangle]  # Deep copy
+
+    # Step 2: Start from second-to-last row, work upward
+    for row in range(n - 2, -1, -1):
+        for col in range(len(triangle[row])):
+            # Step 3: Minimum of two adjacent cells below
+            dp[row][col] = triangle[row][col] + min(
+                dp[row + 1][col],
+                dp[row + 1][col + 1]
+            )
+
+    return dp[0][0]
+```
+
+**Space Optimized (In-Place)**:
+```python
+def minimumTotal(triangle: list[list[int]]) -> int:
+    """
+    Modify triangle in-place, using only O(1) extra space.
+    """
+    n = len(triangle)
+
+    # Step 1: Start from second-to-last row
+    for row in range(n - 2, -1, -1):
+        for col in range(len(triangle[row])):
+            # Step 2: Update in-place
+            triangle[row][col] += min(
+                triangle[row + 1][col],
+                triangle[row + 1][col + 1]
+            )
+
+    return triangle[0][0]
+```
+
+**TypeScript Solution**:
+```typescript
+function minimumTotal(triangle: number[][]): number {
+    const n = triangle.length;
+
+    // Step 1: Use last row as initial DP state
+    let dp = [...triangle[n - 1]];
+
+    // Step 2: Build from bottom to top
+    for (let row = n - 2; row >= 0; row--) {
+        const newDp: number[] = [];
+
+        for (let col = 0; col < triangle[row].length; col++) {
+            // Step 3: Current value + min of two paths below
+            newDp[col] = triangle[row][col] + Math.min(dp[col], dp[col + 1]);
+        }
+
+        dp = newDp;
+    }
+
+    return dp[0];
+}
+```
+
+**Complexity**:
+- Time: O(n²) where n is number of rows
+- Space: O(1) if modifying in-place, O(n) for space-optimized
+
+---
+
+### 17. Best Time to Buy and Sell Stock with Cooldown (Medium)
+**LeetCode**: https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/
+
+**Description**: You can buy and sell stock multiple times, but after selling you must wait one day (cooldown). Find maximum profit.
+
+**State Transition**:
+```
+Three states at each day:
+  hold[i] = max profit if holding stock on day i
+  sold[i] = max profit if sold stock on day i
+  rest[i] = max profit if resting (no stock) on day i
+
+Transitions:
+  hold[i] = max(hold[i-1], rest[i-1] - prices[i])
+            (keep holding OR buy today after rest)
+
+  sold[i] = hold[i-1] + prices[i]
+            (sell the stock we were holding)
+
+  rest[i] = max(rest[i-1], sold[i-1])
+            (keep resting OR enter rest after selling)
+
+Example: prices = [1, 2, 3, 0, 2]
+Day 0: buy at 1
+Day 1: sell at 2 (profit=1)
+Day 2: cooldown (can't buy)
+Day 3: buy at 0
+Day 4: sell at 2 (profit=2)
+Total: 1 + 2 = 3
+
+State Table:
+Day    Price   Hold    Sold    Rest
+ 0      1      -1       0       0
+ 1      2      -1       1       0
+ 2      3      -1       2       1
+ 3      0      1        2       2
+ 4      2      1        3       2
+                        ↑ Answer!
+```
+
+**Python Solution (State Machine)**:
+```python
+def maxProfit(prices: list[int]) -> int:
+    """
+    Three-state DP: hold, sold, rest.
+
+    Visualization of state machine:
+         ┌──────┐  buy   ┌──────┐  sell  ┌──────┐
+         │ REST │───────→│ HOLD │───────→│ SOLD │
+         └──────┘        └──────┘        └──────┘
+            ↑                                │
+            │          (cooldown)            │
+            └────────────────────────────────┘
+    """
+    if not prices:
+        return 0
+
+    n = len(prices)
+
+    # Step 1: Initialize states for day 0
+    hold = -prices[0]  # Buy on first day
+    sold = 0           # Can't sell on first day
+    rest = 0           # Start with rest
+
+    # Step 2: Process each day
+    for i in range(1, n):
+        # Step 3: Calculate new states (use temp to avoid overwriting)
+        new_hold = max(hold, rest - prices[i])  # Keep holding or buy after rest
+        new_sold = hold + prices[i]              # Sell what we're holding
+        new_rest = max(rest, sold)               # Keep resting or cooldown after sell
+
+        # Step 4: Update states
+        hold = new_hold
+        sold = new_sold
+        rest = new_rest
+
+    # Step 5: Max of sold or rest (can't be holding at the end)
+    return max(sold, rest)
+```
+
+**Python Solution (Array DP)**:
+```python
+def maxProfit(prices: list[int]) -> int:
+    """
+    Array-based DP for clarity.
+    """
+    n = len(prices)
+    if n <= 1:
+        return 0
+
+    # Step 1: Create state arrays
+    hold = [0] * n
+    sold = [0] * n
+    rest = [0] * n
+
+    # Step 2: Base cases
+    hold[0] = -prices[0]
+    sold[0] = 0
+    rest[0] = 0
+
+    # Step 3: Fill arrays
+    for i in range(1, n):
+        hold[i] = max(hold[i-1], rest[i-1] - prices[i])
+        sold[i] = hold[i-1] + prices[i]
+        rest[i] = max(rest[i-1], sold[i-1])
+
+    return max(sold[n-1], rest[n-1])
+```
+
+**TypeScript Solution**:
+```typescript
+function maxProfit(prices: number[]): number {
+    if (prices.length <= 1) return 0;
+
+    // Step 1: Initialize three states
+    let hold = -prices[0];
+    let sold = 0;
+    let rest = 0;
+
+    // Step 2: Process each day
+    for (let i = 1; i < prices.length; i++) {
+        // Step 3: Calculate new states
+        const newHold = Math.max(hold, rest - prices[i]);
+        const newSold = hold + prices[i];
+        const newRest = Math.max(rest, sold);
+
+        // Step 4: Update
+        hold = newHold;
+        sold = newSold;
+        rest = newRest;
+    }
+
+    // Step 5: Return max of sold or rest
+    return Math.max(sold, rest);
+}
+```
+
+**Complexity**:
+- Time: O(n)
+- Space: O(1)
+
+---
+
+### 18. Counting Bits (Easy)
+**LeetCode**: https://leetcode.com/problems/counting-bits/
+
+**Description**: Given an integer n, return an array where ans[i] is the number of 1's in the binary representation of i.
+
+**State Transition**:
+```
+dp[i] = number of 1-bits in i
+
+Key insight:
+  i >> 1 removes the last bit
+  i & 1 gets the last bit
+
+  dp[i] = dp[i >> 1] + (i & 1)
+
+Example: n = 5
+Number  Binary   1-bits  Calculation
+  0     0000      0      base case
+  1     0001      1      base case
+  2     0010      1      dp[2>>1] + (2&1) = dp[1] + 0 = 1
+  3     0011      2      dp[3>>1] + (3&1) = dp[1] + 1 = 2
+  4     0100      1      dp[4>>1] + (4&1) = dp[2] + 0 = 1
+  5     0101      2      dp[5>>1] + (5&1) = dp[2] + 1 = 2
+
+Visualization:
+  i=5 (0101)
+    │
+    ├─ i>>1 = 2 (010)  → has 1 one-bit
+    └─ i&1  = 1        → last bit is 1
+
+  Total: 1 + 1 = 2 one-bits
+```
+
+**Python Solution (DP with Bit Manipulation)**:
+```python
+def countBits(n: int) -> list[int]:
+    """
+    Use DP with right shift operation.
+
+    Key insight: Removing last bit (i >> 1) gives us a smaller number
+    we've already solved. Add back the last bit (i & 1).
+    """
+    # Step 1: Initialize result array
+    dp = [0] * (n + 1)
+
+    # Step 2: Base case (0 has zero 1-bits)
+    dp[0] = 0
+
+    # Step 3: Build solution for each number
+    for i in range(1, n + 1):
+        # Step 4: Number of bits in i = bits in (i without last bit) + last bit
+        dp[i] = dp[i >> 1] + (i & 1)
+
+        # Explanation:
+        # i >> 1: shift right by 1 (divide by 2, remove last bit)
+        # i & 1: check if last bit is 1
+
+    return dp
+```
+
+**Alternative Solution (Last Set Bit)**:
+```python
+def countBits(n: int) -> list[int]:
+    """
+    Using i & (i-1) which removes the rightmost 1-bit.
+
+    Example:
+      i = 6 (110)
+      i-1 = 5 (101)
+      i & (i-1) = 4 (100)  ← rightmost 1 removed
+    """
+    dp = [0] * (n + 1)
+
+    for i in range(1, n + 1):
+        # dp[i] = dp[number with rightmost 1 removed] + 1
+        dp[i] = dp[i & (i - 1)] + 1
+
+    return dp
+```
+
+**TypeScript Solution**:
+```typescript
+function countBits(n: number): number[] {
+    // Step 1: Initialize array
+    const dp: number[] = Array(n + 1).fill(0);
+
+    // Step 2: Fill using DP relation
+    for (let i = 1; i <= n; i++) {
+        // Step 3: Bits in i = bits in (i>>1) + last bit
+        dp[i] = dp[i >> 1] + (i & 1);
+    }
+
+    return dp;
+}
+```
+
+**Complexity**:
+- Time: O(n)
+- Space: O(n) for result array (required by problem)
+
+---
+
+### 19. Perfect Squares (Medium)
+**LeetCode**: https://leetcode.com/problems/perfect-squares/
+
+**Description**: Given an integer n, return the least number of perfect square numbers that sum to n.
+
+**State Transition**:
+```
+dp[i] = minimum number of perfect squares that sum to i
+dp[i] = min(dp[i - j²] + 1) for all j where j² ≤ i
+
+Example: n = 12
+Perfect squares ≤ 12: 1, 4, 9
+
+Building DP table:
+  i    Calculation                              Result
+  0    base case                                0
+  1    1 = 1²                                   1
+  2    2 = 1² + 1²                              2
+  3    3 = 1² + 1² + 1²                         3
+  4    4 = 2²                                   1
+  5    5 = 2² + 1²                              2
+  6    6 = 2² + 1² + 1²                         3
+  7    7 = 2² + 1² + 1² + 1²                    4
+  8    8 = 2² + 2²                              2
+  9    9 = 3²                                   1
+  10   10 = 3² + 1²                             2
+  11   11 = 3² + 1² + 1²                        3
+  12   12 = 2² + 2² + 2²  OR  3² + 1² + 1² + 1² 3
+
+Detailed for i=12:
+  Try 1²: dp[12-1] + 1 = dp[11] + 1 = 3 + 1 = 4
+  Try 2²: dp[12-4] + 1 = dp[8] + 1 = 2 + 1 = 3  ✓ best
+  Try 3²: dp[12-9] + 1 = dp[3] + 1 = 3 + 1 = 4
+
+  Answer: min(4, 3, 4) = 3
+```
+
+**Python Solution (BFS Approach)**:
+```python
+def numSquares(n: int) -> int:
+    """
+    BFS: find shortest path to n using perfect square steps.
+    """
+    from collections import deque
+
+    # Step 1: Generate perfect squares up to n
+    squares = []
+    i = 1
+    while i * i <= n:
+        squares.append(i * i)
+        i += 1
+
+    # Step 2: BFS
+    queue = deque([(n, 0)])  # (remaining, steps)
+    visited = {n}
+
+    while queue:
+        remaining, steps = queue.popleft()
+
+        # Step 3: Try each perfect square
+        for square in squares:
+            next_val = remaining - square
+
+            # Step 4: Found answer
+            if next_val == 0:
+                return steps + 1
+
+            # Step 5: Continue search
+            if next_val > 0 and next_val not in visited:
+                visited.add(next_val)
+                queue.append((next_val, steps + 1))
+
+    return 0
+```
+
+**Python Solution (DP)**:
+```python
+def numSquares(n: int) -> int:
+    """
+    Dynamic Programming approach.
+    """
+    # Step 1: Initialize DP array
+    dp = [float('inf')] * (n + 1)
+    dp[0] = 0
+
+    # Step 2: Pre-compute perfect squares
+    squares = []
+    i = 1
+    while i * i <= n:
+        squares.append(i * i)
+        i += 1
+
+    # Step 3: For each number from 1 to n
+    for i in range(1, n + 1):
+        # Step 4: Try each perfect square
+        for square in squares:
+            if square > i:
+                break
+            # Step 5: Update minimum
+            dp[i] = min(dp[i], dp[i - square] + 1)
+
+    return dp[n]
+```
+
+**TypeScript Solution**:
+```typescript
+function numSquares(n: number): number {
+    // Step 1: Initialize DP
+    const dp: number[] = Array(n + 1).fill(Infinity);
+    dp[0] = 0;
+
+    // Step 2: Generate perfect squares
+    const squares: number[] = [];
+    for (let i = 1; i * i <= n; i++) {
+        squares.push(i * i);
+    }
+
+    // Step 3: Fill DP table
+    for (let i = 1; i <= n; i++) {
+        for (const square of squares) {
+            if (square > i) break;
+            dp[i] = Math.min(dp[i], dp[i - square] + 1);
+        }
+    }
+
+    return dp[n];
+}
+```
+
+**Complexity**:
+- Time: O(n × √n)
+- Space: O(n)
+
+---
+
+### 20. Coin Change II (Medium)
+**LeetCode**: https://leetcode.com/problems/coin-change-2/
+
+**Description**: Given coins of different denominations and an amount, return the number of combinations that make up that amount.
+
+**State Transition**:
+```
+dp[i] = number of ways to make amount i
+
+This is an UNBOUNDED knapsack (can use each coin multiple times)
+
+Example: coins = [1, 2, 5], amount = 5
+
+DP Table Building:
+Amount:    0  1  2  3  4  5
+No coins:  1  0  0  0  0  0  ← base case (1 way to make 0)
+
+Using [1]: 1  1  1  1  1  1  ← can make any amount with 1s
+           ↑  ↑  ↑
+        i=0 i=1 i=2
+           dp[1] = dp[1-1] = dp[0] = 1
+           dp[2] = dp[2-1] = dp[1] = 1
+
+Using [1,2]:  1  1  2  2  3  3
+                    ↑
+                  dp[2] = dp[2](from coin 1) + dp[0] = 1 + 1 = 2
+                  Ways: (1+1), (2)
+
+Using [1,2,5]: 1  1  2  2  3  4
+                              ↑
+                          dp[5] combinations:
+                          - 1+1+1+1+1
+                          - 1+1+1+2
+                          - 1+2+2
+                          - 5
+                          Total: 4 ways
+```
+
+**Python Solution (2D DP)**:
+```python
+def change(amount: int, coins: list[int]) -> int:
+    """
+    2D DP: dp[i][j] = ways to make amount j using first i coins.
+
+    DP Table Visualization (coins=[1,2,5], amount=5):
+           0  1  2  3  4  5
+       []  1  0  0  0  0  0
+      [1]  1  1  1  1  1  1
+    [1,2]  1  1  2  2  3  3
+  [1,2,5]  1  1  2  2  3  4
+    """
+    n = len(coins)
+
+    # Step 1: Create DP table
+    dp = [[0] * (amount + 1) for _ in range(n + 1)]
+
+    # Step 2: Base case - one way to make 0
+    for i in range(n + 1):
+        dp[i][0] = 1
+
+    # Step 3: Fill table
+    for i in range(1, n + 1):
+        for j in range(amount + 1):
+            # Step 4: Don't use current coin
+            dp[i][j] = dp[i-1][j]
+
+            # Step 5: Use current coin (if possible)
+            if j >= coins[i-1]:
+                dp[i][j] += dp[i][j - coins[i-1]]
+                # Note: dp[i] not dp[i-1] because we can reuse the same coin
+
+    return dp[n][amount]
+```
+
+**Python Solution (1D DP - Space Optimized)**:
+```python
+def change(amount: int, coins: list[int]) -> int:
+    """
+    1D DP: optimize space to O(amount).
+    """
+    # Step 1: Initialize DP array
+    dp = [0] * (amount + 1)
+    dp[0] = 1  # One way to make 0
+
+    # Step 2: Process each coin
+    for coin in coins:
+        # Step 3: Update all amounts that can use this coin
+        for amt in range(coin, amount + 1):
+            # Step 4: Add ways using this coin
+            dp[amt] += dp[amt - coin]
+
+            # Why iterate forward? Because we CAN reuse the same coin
+            # (unbounded knapsack)
+
+    return dp[amount]
+```
+
+**TypeScript Solution**:
+```typescript
+function change(amount: number, coins: number[]): number {
+    // Step 1: Initialize DP
+    const dp: number[] = Array(amount + 1).fill(0);
+    dp[0] = 1;
+
+    // Step 2: Process each coin type
+    for (const coin of coins) {
+        // Step 3: Update amounts
+        for (let amt = coin; amt <= amount; amt++) {
+            // Step 4: Add combinations using this coin
+            dp[amt] += dp[amt - coin];
+        }
+    }
+
+    return dp[amount];
+}
+```
+
+**Complexity**:
+- Time: O(amount × coins.length)
+- Space: O(amount)
+
+---
+
+### 21. Palindromic Substrings (Medium)
+**LeetCode**: https://leetcode.com/problems/palindromic-substrings/
+
+**Description**: Count how many palindromic substrings are in a given string.
+
+**State Transition**:
+```
+dp[i][j] = true if s[i:j+1] is a palindrome
+
+Base cases:
+  Single char: dp[i][i] = true
+  Two chars: dp[i][i+1] = (s[i] == s[i+1])
+
+Recurrence:
+  dp[i][j] = (s[i] == s[j]) && dp[i+1][j-1]
+
+Example: s = "aaa"
+Substrings and their palindrome status:
+  "a" (index 0) ✓
+  "a" (index 1) ✓
+  "a" (index 2) ✓
+  "aa" (0,1) ✓
+  "aa" (1,2) ✓
+  "aaa" (0,2) ✓
+  Total: 6 palindromes
+
+DP Table (1=palindrome):
+     0  1  2
+  0  1  1  1
+  1     1  1
+  2        1
+
+Fill order (by length):
+  Length 1: diagonal (all 1)
+  Length 2: (0,1), (1,2)
+  Length 3: (0,2)
+```
+
+**Python Solution (DP)**:
+```python
+def countSubstrings(s: str) -> int:
+    """
+    2D DP to track all palindromic substrings.
+
+    Visualization for "aba":
+         a  b  a
+      a  T  F  T    ← "a", "aba" are palindromes
+      b     T  F    ← "b" is palindrome
+      a        T    ← "a" is palindrome
+
+    Count: 4 palindromes
+    """
+    n = len(s)
+
+    # Step 1: Create DP table
+    dp = [[False] * n for _ in range(n)]
+    count = 0
+
+    # Step 2: Every single character is a palindrome
+    for i in range(n):
+        dp[i][i] = True
+        count += 1
+
+    # Step 3: Check all substrings of length 2
+    for i in range(n - 1):
+        if s[i] == s[i + 1]:
+            dp[i][i + 1] = True
+            count += 1
+
+    # Step 4: Check substrings of length 3 to n
+    for length in range(3, n + 1):
+        for i in range(n - length + 1):
+            j = i + length - 1
+
+            # Step 5: Check if current substring is palindrome
+            if s[i] == s[j] and dp[i + 1][j - 1]:
+                dp[i][j] = True
+                count += 1
+
+    return count
+```
+
+**Python Solution (Expand Around Center)**:
+```python
+def countSubstrings(s: str) -> int:
+    """
+    Expand around each possible center (more space efficient).
+    """
+    def expand(left: int, right: int) -> int:
+        # Step 1: Expand while characters match
+        count = 0
+        while left >= 0 and right < len(s) and s[left] == s[right]:
+            count += 1
+            left -= 1
+            right += 1
+        return count
+
+    result = 0
+
+    # Step 2: Try each position as center
+    for i in range(len(s)):
+        # Step 3: Odd length palindromes (single center)
+        result += expand(i, i)
+
+        # Step 4: Even length palindromes (two centers)
+        result += expand(i, i + 1)
+
+    return result
+```
+
+**TypeScript Solution**:
+```typescript
+function countSubstrings(s: string): number {
+    function expand(left: number, right: number): number {
+        let count = 0;
+
+        // Step 1: Expand while valid palindrome
+        while (left >= 0 && right < s.length && s[left] === s[right]) {
+            count++;
+            left--;
+            right++;
+        }
+
+        return count;
+    }
+
+    let result = 0;
+
+    // Step 2: Check each center
+    for (let i = 0; i < s.length; i++) {
+        // Odd and even length palindromes
+        result += expand(i, i);
+        result += expand(i, i + 1);
+    }
+
+    return result;
+}
+```
+
+**Complexity**:
+- Time: O(n²)
+- Space: O(1) for expand method, O(n²) for DP
+
+---
+
+### 22. Target Sum (Medium)
+**LeetCode**: https://leetcode.com/problems/target-sum/
+
+**Description**: Assign + or - to each number in array to make them sum to target. Count number of ways.
+
+**State Transition**:
+```
+Key insight: This is a subset sum problem in disguise!
+
+Let P = subset with positive sign
+Let N = subset with negative sign
+
+sum(P) - sum(N) = target
+sum(P) + sum(N) = sum(nums)
+
+Adding these equations:
+2 * sum(P) = target + sum(nums)
+sum(P) = (target + sum(nums)) / 2
+
+So we need to find: number of subsets with sum = (target + sum) / 2
+
+Example: nums = [1,1,1,1,1], target = 3
+sum(nums) = 5
+sum(P) = (3 + 5) / 2 = 4
+
+Find subsets summing to 4:
+[1,1,1,1] → 5 ways to choose 4 elements from 5
+
+DP Table (subset sum count):
+       0  1  2  3  4
+    []  1  0  0  0  0
+   [1]  1  1  0  0  0
+ [1,1]  1  2  1  0  0
+[1,1,1] 1  3  3  1  0
+...
+```
+
+**Python Solution (Subset Sum DP)**:
+```python
+def findTargetSumWays(nums: list[int], target: int) -> int:
+    """
+    Convert to subset sum problem.
+
+    Visualization:
+    nums = [1,2,3,4,5], target = 3
+    sum = 15, need subset sum = (3+15)/2 = 9
+
+    Find ways to make sum 9:
+    {4,5}, {1,3,5}, {2,3,4}, {1,2,3,3} (if dups exist)
+    """
+    total = sum(nums)
+
+    # Step 1: Check if solution is possible
+    if abs(target) > total or (target + total) % 2 != 0:
+        return 0
+
+    # Step 2: Calculate target subset sum
+    subset_sum = (target + total) // 2
+
+    # Step 3: DP - count ways to make each sum
+    dp = [0] * (subset_sum + 1)
+    dp[0] = 1  # One way to make 0 (empty subset)
+
+    # Step 4: Process each number
+    for num in nums:
+        # Step 5: Iterate backwards (0/1 knapsack)
+        for s in range(subset_sum, num - 1, -1):
+            # Step 6: Add ways by including current number
+            dp[s] += dp[s - num]
+
+    return dp[subset_sum]
+```
+
+**Python Solution (Memoization)**:
+```python
+def findTargetSumWays(nums: list[int], target: int) -> int:
+    """
+    Top-down memoization approach.
+    """
+    memo = {}
+
+    def dp(index: int, current_sum: int) -> int:
+        # Step 1: Base case - processed all numbers
+        if index == len(nums):
+            return 1 if current_sum == target else 0
+
+        # Step 2: Check memo
+        if (index, current_sum) in memo:
+            return memo[(index, current_sum)]
+
+        # Step 3: Try both + and -
+        positive = dp(index + 1, current_sum + nums[index])
+        negative = dp(index + 1, current_sum - nums[index])
+
+        # Step 4: Store and return
+        memo[(index, current_sum)] = positive + negative
+        return memo[(index, current_sum)]
+
+    return dp(0, 0)
+```
+
+**TypeScript Solution**:
+```typescript
+function findTargetSumWays(nums: number[], target: number): number {
+    const total = nums.reduce((a, b) => a + b, 0);
+
+    // Step 1: Check validity
+    if (Math.abs(target) > total || (target + total) % 2 !== 0) {
+        return 0;
+    }
+
+    // Step 2: Calculate subset sum
+    const subsetSum = (target + total) / 2;
+
+    // Step 3: DP array
+    const dp: number[] = Array(subsetSum + 1).fill(0);
+    dp[0] = 1;
+
+    // Step 4: Fill DP table
+    for (const num of nums) {
+        for (let s = subsetSum; s >= num; s--) {
+            dp[s] += dp[s - num];
+        }
+    }
+
+    return dp[subsetSum];
+}
+```
+
+**Complexity**:
+- Time: O(n × sum)
+- Space: O(sum)
+
+---
+
+### 23. Delete and Earn (Medium)
+**LeetCode**: https://leetcode.com/problems/delete-and-earn/
+
+**Description**: Given an array, you can take any element and earn points equal to it, but must delete all elements equal to num-1 and num+1. Maximize points.
+
+**State Transition**:
+```
+Key insight: This is like House Robber on a frequency array!
+
+Transform: nums = [3,4,2] → points = [0,0,2,3,4]
+                             index     0 1 2 3 4
+
+If we take value 3, we earn 3 points but can't take 2 or 4
+This is identical to house robber!
+
+Example: nums = [2,2,3,3,3,4]
+Frequency count:
+  2 appears 2 times → earn 2*2 = 4
+  3 appears 3 times → earn 3*3 = 9
+  4 appears 1 time  → earn 4*1 = 4
+
+dp[i] = max points we can earn considering values 0 to i
+dp[i] = max(
+    dp[i-1],           # skip value i
+    dp[i-2] + points[i] # take value i
+)
+
+DP Table:
+Value:    0  1  2  3  4
+Points:   0  0  4  9  4
+dp[i]:    0  0  4  9  13
+
+dp[2] = max(0, 0+4) = 4
+dp[3] = max(4, 0+9) = 9
+dp[4] = max(9, 4+4) = 13  ← can't take 3 and 4 together
+```
+
+**Python Solution**:
+```python
+def deleteAndEarn(nums: list[int]) -> int:
+    """
+    Transform to House Robber problem.
+
+    Visualization for nums = [3,4,2]:
+
+    Step 1: Create points array
+      points[2] = 2 (one 2)
+      points[3] = 3 (one 3)
+      points[4] = 4 (one 4)
+
+    Step 2: Apply house robber logic
+      Can't take adjacent values
+      dp[3] = max(take 3, skip 3)
+            = max(points[3] + dp[1], dp[2])
+    """
+    if not nums:
+        return 0
+
+    # Step 1: Find max value to determine array size
+    max_num = max(nums)
+
+    # Step 2: Calculate total points for each value
+    points = [0] * (max_num + 1)
+    for num in nums:
+        points[num] += num
+
+    # Step 3: House Robber DP
+    if len(points) == 1:
+        return points[0]
+
+    prev2 = points[0]
+    prev1 = max(points[0], points[1])
+
+    for i in range(2, len(points)):
+        # Step 4: Max of take current or skip
+        current = max(prev1, prev2 + points[i])
+        prev2 = prev1
+        prev1 = current
+
+    return prev1
+```
+
+**Python Solution (With DP Array)**:
+```python
+def deleteAndEarn(nums: list[int]) -> int:
+    """
+    Explicit DP array version for clarity.
+    """
+    if not nums:
+        return 0
+
+    max_num = max(nums)
+    points = [0] * (max_num + 1)
+
+    # Step 1: Count points for each number
+    for num in nums:
+        points[num] += num
+
+    # Step 2: Initialize DP
+    n = len(points)
+    if n == 1:
+        return points[0]
+
+    dp = [0] * n
+    dp[0] = points[0]
+    dp[1] = max(points[0], points[1])
+
+    # Step 3: Fill DP table
+    for i in range(2, n):
+        # Take current or skip
+        dp[i] = max(dp[i-1], dp[i-2] + points[i])
+
+    return dp[n-1]
+```
+
+**TypeScript Solution**:
+```typescript
+function deleteAndEarn(nums: number[]): number {
+    if (nums.length === 0) return 0;
+
+    // Step 1: Find max and create points array
+    const maxNum = Math.max(...nums);
+    const points: number[] = Array(maxNum + 1).fill(0);
+
+    // Step 2: Calculate points
+    for (const num of nums) {
+        points[num] += num;
+    }
+
+    // Step 3: Apply House Robber logic
+    if (points.length === 1) return points[0];
+
+    let prev2 = points[0];
+    let prev1 = Math.max(points[0], points[1]);
+
+    for (let i = 2; i < points.length; i++) {
+        const current = Math.max(prev1, prev2 + points[i]);
+        prev2 = prev1;
+        prev1 = current;
+    }
+
+    return prev1;
+}
+```
+
+**Complexity**:
+- Time: O(n + m) where m is max(nums)
+- Space: O(m)
+
+---
+
+### 24. Minimum Cost For Tickets (Medium)
+**LeetCode**: https://leetcode.com/problems/minimum-cost-for-tickets/
+
+**Description**: Travel on certain days. Can buy 1-day, 7-day, or 30-day passes with different costs. Find minimum cost to cover all travel days.
+
+**State Transition**:
+```
+dp[i] = minimum cost to cover all travel days up to day i
+
+For each day:
+  If not traveling: dp[i] = dp[i-1]
+  If traveling:
+    dp[i] = min(
+      dp[i-1] + cost[1-day],
+      dp[i-7] + cost[7-day],
+      dp[i-30] + cost[30-day]
+    )
+
+Example: days = [1,4,6,7,8,20], costs = [2,7,15]
+
+Day-by-day analysis:
+Day 1: Buy 1-day ($2) → total $2
+Day 4: Buy 1-day ($2) → total $4
+Day 6: Buy 7-day ($7) covers days 6,7,8 → total $9
+Day 20: Buy 1-day ($2) → total $11
+
+DP Table (for each travel day):
+Day   1  4  6  7  8  20
+dp[i] 2  4  7  7  7  11
+
+Detailed for day 8:
+  Option 1: Buy 1-day: dp[7] + 2 = 7 + 2 = 9
+  Option 2: Buy 7-day on day 2: dp[1] + 7 = 2 + 7 = 9
+  Option 3: Buy 30-day on day -22: 0 + 15 = 15
+
+  Best: min(9, 9, 15) = 9
+  But we already covered 8 with the 7-day pass bought for day 6!
+```
+
+**Python Solution (DP on Travel Days)**:
+```python
+def mincostTickets(days: list[int], costs: list[int]) -> int:
+    """
+    DP on travel days only (sparse DP).
+
+    Visualization:
+    days = [1, 4, 6, 7, 8, 20]
+
+    For each day, try 3 options:
+      1-day  pass: covers just this day
+      7-day  pass: covers last 7 days
+      30-day pass: covers last 30 days
+    """
+    day_set = set(days)
+    last_day = days[-1]
+
+    # Step 1: DP array for all days from 0 to last_day
+    dp = [0] * (last_day + 1)
+
+    # Step 2: Fill DP table
+    for i in range(1, last_day + 1):
+        if i not in day_set:
+            # Step 3: Not traveling this day
+            dp[i] = dp[i - 1]
+        else:
+            # Step 4: Traveling - try all pass options
+            # Option 1: 1-day pass
+            option1 = dp[i - 1] + costs[0]
+
+            # Option 2: 7-day pass
+            option2 = dp[max(0, i - 7)] + costs[1]
+
+            # Option 3: 30-day pass
+            option3 = dp[max(0, i - 30)] + costs[2]
+
+            # Step 5: Take minimum
+            dp[i] = min(option1, option2, option3)
+
+    return dp[last_day]
+```
+
+**Python Solution (Optimized - Travel Days Only)**:
+```python
+def mincostTickets(days: list[int], costs: list[int]) -> int:
+    """
+    Only store DP values for actual travel days.
+    """
+    from collections import deque
+
+    # Step 1: Queues to track costs within 7 and 30 day windows
+    last_7 = deque()   # (day, cost)
+    last_30 = deque()  # (day, cost)
+    cost = 0
+
+    for day in days:
+        # Step 2: Remove expired 7-day passes
+        while last_7 and last_7[0][0] + 7 <= day:
+            last_7.popleft()
+
+        # Step 3: Remove expired 30-day passes
+        while last_30 and last_30[0][0] + 30 <= day:
+            last_30.popleft()
+
+        # Step 4: Add current day with each pass type
+        last_7.append((day, cost + costs[1]))
+        last_30.append((day, cost + costs[2]))
+
+        # Step 5: Update cost with minimum option
+        cost = min(
+            cost + costs[0],      # 1-day pass
+            last_7[0][1],         # 7-day pass
+            last_30[0][1]         # 30-day pass
+        )
+
+    return cost
+```
+
+**TypeScript Solution**:
+```typescript
+function mincostTickets(days: number[], costs: number[]): number {
+    const daySet = new Set(days);
+    const lastDay = days[days.length - 1];
+
+    // Step 1: DP array
+    const dp: number[] = Array(lastDay + 1).fill(0);
+
+    // Step 2: Process each day
+    for (let i = 1; i <= lastDay; i++) {
+        if (!daySet.has(i)) {
+            // Step 3: Not traveling
+            dp[i] = dp[i - 1];
+        } else {
+            // Step 4: Try all pass options
+            const option1 = dp[i - 1] + costs[0];
+            const option2 = dp[Math.max(0, i - 7)] + costs[1];
+            const option3 = dp[Math.max(0, i - 30)] + costs[2];
+
+            dp[i] = Math.min(option1, option2, option3);
+        }
+    }
+
+    return dp[lastDay];
+}
+```
+
+**Complexity**:
+- Time: O(max(days)) or O(n) for optimized
+- Space: O(max(days)) or O(1) for optimized
+
+---
+
+### 25. Unique Binary Search Trees (Medium)
+**LeetCode**: https://leetcode.com/problems/unique-binary-search-trees/
+
+**Description**: Given n, how many structurally unique BSTs can store values 1...n?
+
+**State Transition**:
+```
+dp[n] = number of unique BSTs with n nodes
+
+Key insight: For each value i as root:
+  - Left subtree: values 1 to i-1 (i-1 nodes)
+  - Right subtree: values i+1 to n (n-i nodes)
+
+dp[n] = sum(dp[i-1] * dp[n-i]) for i from 1 to n
+
+This is the Catalan number!
+
+Example: n = 3
+Try each value as root:
+  Root = 1: left has 0 nodes, right has 2 nodes
+            dp[0] * dp[2] = 1 * 2 = 2
+
+  Root = 2: left has 1 node, right has 1 node
+            dp[1] * dp[1] = 1 * 1 = 1
+
+  Root = 3: left has 2 nodes, right has 0 nodes
+            dp[2] * dp[0] = 2 * 1 = 2
+
+Total: 2 + 1 + 2 = 5
+
+Visualizations for n=3:
+   1         1        2        3      3
+    \         \      / \      /      /
+     3         2    1   3    2      1
+    /           \          /        \
+   2             3        1          2
+
+DP Table:
+n     0  1  2  3  4  5
+dp[n] 1  1  2  5  14 42  ← Catalan numbers
+```
+
+**Python Solution (DP)**:
+```python
+def numTrees(n: int) -> int:
+    """
+    Dynamic Programming using Catalan number formula.
+
+    Visualization for n=4:
+    For each root position i (1 to 4):
+      i=1: left=0, right=3 → dp[0]*dp[3] = 1*5 = 5
+      i=2: left=1, right=2 → dp[1]*dp[2] = 1*2 = 2
+      i=3: left=2, right=1 → dp[2]*dp[1] = 2*1 = 2
+      i=4: left=3, right=0 → dp[3]*dp[0] = 5*1 = 5
+    Total: 5+2+2+5 = 14
+    """
+    # Step 1: Initialize DP array
+    dp = [0] * (n + 1)
+
+    # Step 2: Base cases
+    dp[0] = 1  # Empty tree
+    dp[1] = 1  # Single node
+
+    # Step 3: Build up for each number of nodes
+    for nodes in range(2, n + 1):
+        # Step 4: Try each value as root
+        for root in range(1, nodes + 1):
+            # Step 5: Left subtree has (root-1) nodes
+            left_trees = dp[root - 1]
+
+            # Step 6: Right subtree has (nodes-root) nodes
+            right_trees = dp[nodes - root]
+
+            # Step 7: Multiply combinations
+            dp[nodes] += left_trees * right_trees
+
+    return dp[n]
+```
+
+**Python Solution (Mathematical - Catalan Number)**:
+```python
+def numTrees(n: int) -> int:
+    """
+    Direct Catalan number calculation.
+
+    Catalan(n) = C(2n, n) / (n + 1)
+                = (2n)! / ((n+1)! * n!)
+    """
+    # Step 1: Calculate binomial coefficient C(2n, n)
+    catalan = 1
+
+    for i in range(n):
+        # Step 2: Catalan formula optimization
+        catalan = catalan * 2 * (2 * i + 1) // (i + 2)
+
+    return catalan
+```
+
+**Python Solution (Memoization)**:
+```python
+def numTrees(n: int) -> int:
+    """
+    Top-down with memoization.
+    """
+    memo = {}
+
+    def dp(n: int) -> int:
+        # Step 1: Base cases
+        if n <= 1:
+            return 1
+
+        # Step 2: Check memo
+        if n in memo:
+            return memo[n]
+
+        # Step 3: Calculate for n nodes
+        total = 0
+        for root in range(1, n + 1):
+            # Left and right subtree combinations
+            left = dp(root - 1)
+            right = dp(n - root)
+            total += left * right
+
+        # Step 4: Store and return
+        memo[n] = total
+        return total
+
+    return dp(n)
+```
+
+**TypeScript Solution**:
+```typescript
+function numTrees(n: number): number {
+    // Step 1: DP array
+    const dp: number[] = Array(n + 1).fill(0);
+
+    // Step 2: Base cases
+    dp[0] = 1;
+    dp[1] = 1;
+
+    // Step 3: Build for each size
+    for (let nodes = 2; nodes <= n; nodes++) {
+        // Step 4: Try each root position
+        for (let root = 1; root <= nodes; root++) {
+            const leftTrees = dp[root - 1];
+            const rightTrees = dp[nodes - root];
+
+            dp[nodes] += leftTrees * rightTrees;
+        }
+    }
+
+    return dp[n];
+}
+```
+
+**Complexity**:
+- Time: O(n²)
+- Space: O(n)
 
 ---
 

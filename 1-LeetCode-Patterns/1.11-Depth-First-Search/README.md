@@ -24,33 +24,327 @@ Depth-First Search (DFS) is a graph/tree traversal algorithm that explores as fa
 
 ### Visual Diagram
 
-```
-DFS Traversal Example:
+#### 🗺️ Cave Exploration Metaphor - How DFS Works
 
+Imagine you're exploring a cave system with multiple tunnels. DFS is like following each tunnel to its absolute end before backtracking:
+
+```
+CAVE EXPLORATION WITH DFS:
+
+         [Entrance]
+            |
+    ┌───────┴───────┐
+    |               |
+ Tunnel A       Tunnel B
+    |               |
+┌───┴───┐       ┌───┴───┐
+|       |       |       |
+Cave1  Cave2   Cave3  Cave4
+       |               |
+       └──Cave5     Cave6
+
+DFS Exploration Path (like a spelunker with a rope):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Step 1: Enter cave, go down Tunnel A (explore deeply!)
+        Path: Entrance → Tunnel A
+
+Step 2: At Tunnel A, go left to Cave1 (dead end)
+        Path: Entrance → Tunnel A → Cave1 ✓
+        Backtrack to Tunnel A
+
+Step 3: From Tunnel A, go right to Cave2
+        Path: Entrance → Tunnel A → Cave2
+
+Step 4: Cave2 has deeper passage to Cave5 (keep going!)
+        Path: Entrance → Tunnel A → Cave2 → Cave5 ✓
+        Backtrack to Cave2, then Tunnel A, then Entrance
+
+Step 5: Now try Tunnel B (first tunnel fully explored)
+        Path: Entrance → Tunnel B
+
+Step 6: From Tunnel B, go left to Cave3 (dead end)
+        Path: Entrance → Tunnel B → Cave3 ✓
+        Backtrack to Tunnel B
+
+Step 7: From Tunnel B, go right to Cave4
+        Path: Entrance → Tunnel B → Cave4
+
+Step 8: Cave4 leads to Cave6 (final chamber)
+        Path: Entrance → Tunnel B → Cave4 → Cave6 ✓
+
+Complete exploration: Every tunnel followed to its end!
+Full DFS Order: Entrance → A → Cave1 → Cave2 → Cave5 → B → Cave3 → Cave4 → Cave6
+```
+
+#### 📚 The Recursion Stack - DFS's Memory
+
+The call stack acts like a stack of books - last book placed is first removed (LIFO):
+
+```
+TREE STRUCTURE:                    RECURSION STACK VISUALIZATION:
+                                   (Read from bottom to top)
+      1
+     / \
+    2   3                          ┌─────────────────────────────────┐
+   / \   \                         │ Recursion Stack Growth & Shrink │
+  4   5   6                        └─────────────────────────────────┘
+
+Recursive Calls:                   Stack State at Each Step:
+
+1. dfs(1)                          │ dfs(1)          │ ← START
+   ├─ dfs(2)                       └─────────────────┘
+   │  ├─ dfs(4)
+   │  └─ dfs(5)
+   └─ dfs(3)                       │ dfs(2)          │
+      └─ dfs(6)                    │ dfs(1)          │
+                                   └─────────────────┘
+
+                                   │ dfs(4)          │ ← MAX DEPTH (3)
+                                   │ dfs(2)          │
+Step-by-Step Stack:                │ dfs(1)          │
+                                   └─────────────────┘
+[dfs(1)]                    ← Visit 1
+[dfs(1), dfs(2)]           ← Visit 2 (go left)       │ dfs(2)          │ ← 4 returns
+[dfs(1), dfs(2), dfs(4)]   ← Visit 4 (leaf)         │ dfs(1)          │
+[dfs(1), dfs(2)]           ← 4 returns, pop         └─────────────────┘
+[dfs(1), dfs(2), dfs(5)]   ← Visit 5 (leaf)
+[dfs(1), dfs(2)]           ← 5 returns, pop         │ dfs(5)          │
+[dfs(1)]                    ← 2 returns, pop         │ dfs(2)          │
+[dfs(1), dfs(3)]           ← Visit 3 (go right)     │ dfs(1)          │
+[dfs(1), dfs(3), dfs(6)]   ← Visit 6 (leaf)         └─────────────────┘
+[dfs(1), dfs(3)]           ← 6 returns, pop
+[dfs(1)]                    ← 3 returns, pop         │ dfs(3)          │
+[]                          ← 1 returns, DONE        │ dfs(1)          │
+                                                     └─────────────────┘
+
+Notice: Stack grows as we go DEEPER, shrinks as we BACKTRACK
+```
+
+#### 🎯 Step-by-Step DFS Maze Traversal
+
+Watch DFS navigate a maze, always going as deep as possible:
+
+```
+MAZE GRID:                         DFS EXPLORATION:
+S = Start                          Numbers = visit order
+E = Exit
+# = Wall                           Start at S, find path to E
+. = Path
+
+  0 1 2 3 4                           0 1 2 3 4
+0 S . # . .                         0 ① ② # . .
+1 # . # . #                         1 # ③ # . #
+2 . . . . #                         2 . ④ ⑤ ⑥ #
+3 # . # . .                         3 # ⑦ # ⑧ ⑨
+4 . . # . E                         4 . . # .⑩E
+
+Step-by-Step DFS Navigation:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Step ①: Start at (0,0) - S
+        Choices: Right(0,1), Down(blocked by wall)
+        → Go RIGHT (explore first valid path)
+
+Step ②: At (0,1)
+        Choices: Right(blocked), Down(1,1), Up(out), Left(visited)
+        → Go DOWN
+
+Step ③: At (1,1)
+        Choices: Down(2,1), all others blocked/visited
+        → Go DOWN (keep going deep!)
+
+Step ④: At (2,1)
+        Choices: Right(2,2), Down(blocked), Left(2,0), Up(visited)
+        → Go RIGHT
+
+Step ⑤: At (2,2)
+        Choices: Right(2,3), Down(blocked), Left(visited), Up(blocked)
+        → Go RIGHT (continuing deep)
+
+Step ⑥: At (2,3)
+        Choices: Right(blocked), Down(3,3), Up(blocked), Left(visited)
+        → Go DOWN
+
+Step ⑦: BACKTRACK! (3,3) leads nowhere useful, return to (2,3)
+        Then to (2,2), then try Down from (2,3)
+
+Step ⑧: At (3,3)
+        Choices: Down(4,3), Right(3,4), others blocked
+        → Go RIGHT
+
+Step ⑨: At (3,4)
+        Choices: Down(4,4), others blocked
+        → Go DOWN
+
+Step ⑩: At (4,4) - FOUND EXIT E!
+
+DFS explores: ① → ② → ③ → ④ → ⑤ → ⑥ → ⑧ → ⑨ → ⑩
+              (Goes as DEEP as possible before backtracking)
+```
+
+#### 🔄 DFS vs BFS - Side by Side Comparison
+
+```
+Same tree, different exploration strategies:
+
+TREE:                  1
+                      /|\
+                     2 3 4
+                    /|   |\
+                   5 6   7 8
+
+
+DFS (Depth-First):                BFS (Breadth-First):
+━━━━━━━━━━━━━━━━━                 ━━━━━━━━━━━━━━━━━━━━
+Uses: STACK (LIFO)                Uses: QUEUE (FIFO)
+Strategy: Go DEEP                 Strategy: Go WIDE
+
+Visit Order:                      Visit Order:
+  1 (start)                         1 (start)
+  ├─ 2 (go deep left)              ├─ Level 1: 2, 3, 4
+  │  ├─ 5 (deeper)                 └─ Level 2: 5, 6, 7, 8
+  │  └─ 6 (backtrack to 2)
+  ├─ 3 (backtrack to 1)            Order: 1→2→3→4→5→6→7→8
+  └─ 4 (go deep right)             (Level by level)
+     ├─ 7 (deeper)
+     └─ 8 (backtrack to 4)
+
+Order: 1→2→5→6→3→4→7→8
+(Depth first)
+
+
+VISUALIZATION WITH STEPS:
+
+DFS Steps:                        BFS Steps:
+━━━━━━━━━                         ━━━━━━━━━━
+
+Step 1:  ①                        Step 1:  ①
+        /|\                               /|\
+       . . .                             . . .
+
+Step 2:  ①                        Step 2:  ①
+        /|\                               /|\
+       ② . .                             ② ③ ④
+      /|
+     . .
+
+Step 3:  ①                        Step 3:  ①
+        /|\                               /|\
+       ② . .                             ② ③ ④
+      /|                                /|   |\
+     ③ .                               ⑤ ⑥   ⑦ ⑧
+
+Step 4:  ①
+        /|\
+       ② . .                       KEY DIFFERENCES:
+      /|                           ════════════════
+     ③ ④                           DFS: Like reading a book chapter by chapter
+                                        (finish chapter 1 completely before 2)
+Step 5:  ①
+        /|\                        BFS: Like scanning all headlines first
+       ② ⑤ .                           (read all chapter titles, then contents)
+      /|
+     ③ ④                           DFS: Better for: paths, mazes, puzzles
+                                  BFS: Better for: shortest paths, levels
+... continues
+
+Final:   ①
+        /|\
+       ② ⑤ ⑥
+      /|   |\
+     ③ ④   ⑦ ⑧
+
+
+MEMORY USAGE:                     PATH FINDING:
+━━━━━━━━━━━                      ━━━━━━━━━━━━━
+
+DFS Memory: O(height)             DFS: Finds A path (not necessarily shortest)
+Max stack for tree above: 3          Good for: "Does path exist?"
+  [1] → [1,2] → [1,2,5]
+                                  BFS: Finds SHORTEST path
+BFS Memory: O(width)                 Good for: "What's the shortest path?"
+Max queue for tree above: 4
+  [1] → [2,3,4] → [5,6,7,8]
+
+
+WHEN TO USE EACH:
+━━━━━━━━━━━━━━━
+Use DFS when:                     Use BFS when:
+✓ Need to explore all paths       ✓ Need shortest path
+✓ Detecting cycles                ✓ Level-order traversal needed
+✓ Backtracking problems           ✓ Finding closest/nearest
+✓ Memory constrained (tall tree)  ✓ Memory constrained (wide tree)
+✓ Topological sorting             ✓ Social network connections
+```
+
+#### 🌲 DFS Traversal Orders (Tree)
+
+```
 Tree:           1
                / \
               2   3
-             / \   \
-            4   5   6
+             / \
+            4   5
 
-DFS Order (Preorder): 1 → 2 → 4 → 5 → 3 → 6
+PREORDER (Root → Left → Right):    Visit ROOT first, then explore
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Order: 1 → 2 → 4 → 5 → 3
 
-Stack States:
-Step 1: [1]           Visit 1
-Step 2: [2, 3]        Push children (right first for left-first traversal)
-Step 3: [4, 5, 3]     Visit 2, push children
-Step 4: [5, 3]        Visit 4 (leaf)
-Step 5: [3]           Visit 5 (leaf)
-Step 6: [6]           Visit 3, push children
-Step 7: []            Visit 6 (leaf)
+Step 1:  ①              Visit 1 (root)
+        / \
+       .   .
 
-Graph DFS:
-    A --- B
-    |     |
-    C --- D
+Step 2:  ①              Visit 2 (left subtree root)
+        / \
+       ②   .
+      / \
+     .   .
 
-DFS from A: A → B → D → C (or A → C → D → B)
-Explores one path completely before backtracking
+Step 3:  ①              Visit 4 (leftmost leaf)
+        / \
+       ②   .
+      / \
+     ③   .
+
+Step 4:  ①              Visit 5 (right child of 2)
+        / \
+       ②   .
+      / \
+     ③   ④
+
+Step 5:  ①              Visit 3 (right subtree)
+        / \
+       ②   ⑤
+      / \
+     ③   ④
+
+Use case: Creating a copy of tree, prefix expression
+
+
+INORDER (Left → Root → Right):    Visit LEFT subtree, ROOT, then RIGHT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Order: 4 → 2 → 5 → 1 → 3
+
+Visit leftmost first: 4
+Then its parent: 2
+Then sibling: 5
+Then root: 1
+Then right: 3
+
+Use case: BST traversal (gets sorted order), infix expression
+
+
+POSTORDER (Left → Right → Root):   Visit children first, ROOT last
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Order: 4 → 5 → 2 → 3 → 1
+
+Visit all leaves first: 4, 5
+Then their parent: 2
+Then right leaf: 3
+Finally root: 1
+
+Use case: Deleting tree, postfix expression, calculating directory sizes
 ```
 
 ## Recognition Guidelines
@@ -1348,6 +1642,1459 @@ function findItinerary(tickets: string[][]): string[] {
 **Complexity Analysis**:
 - Time: O(E log E) - E edges, sorting tickets
 - Space: O(E) - graph storage
+
+---
+
+### Problem 14: Validate Binary Search Tree (Medium)
+**LeetCode Link**: [98. Validate Binary Search Tree](https://leetcode.com/problems/validate-binary-search-tree/)
+
+**Description**: Given the root of a binary tree, determine if it is a valid binary search tree (BST). A valid BST is defined as follows:
+- The left subtree of a node contains only nodes with keys less than the node's key.
+- The right subtree contains only nodes with keys greater than the node's key.
+- Both left and right subtrees must also be binary search trees.
+
+#### Python Solution
+```python
+def isValidBST(root: TreeNode) -> bool:
+    """
+    DFS approach with range validation.
+    Each node must be within a valid range (min, max).
+
+    Visualization of valid vs invalid BST:
+
+    VALID BST:              INVALID BST:
+         5                       5
+        / \                     / \
+       3   7                   3   7
+      / \   \                 / \   \
+     2   4   8               2   6   8  ← 6 > 5 (violates BST property)
+
+    For node 5: range (-inf, +inf)
+    For node 3: range (-inf, 5)   ✓ 3 < 5
+    For node 7: range (5, +inf)   ✓ 7 > 5
+    For node 6: range (5, 7)      ✗ 6 < 7 but 6 > 5 (parent's parent)
+    """
+
+    def dfs(node, min_val, max_val):
+        # Step 1: Empty tree is valid BST
+        if not node:
+            return True
+
+        # Step 2: Check if current node violates BST property
+        # Node must be strictly greater than min and less than max
+        if node.val <= min_val or node.val >= max_val:
+            return False
+
+        # Step 3: Recursively validate left subtree
+        # All nodes in left subtree must be < current node
+        # So max_val becomes current node's value
+        left_valid = dfs(node.left, min_val, node.val)
+
+        # Step 4: Recursively validate right subtree
+        # All nodes in right subtree must be > current node
+        # So min_val becomes current node's value
+        right_valid = dfs(node.right, node.val, max_val)
+
+        # Step 5: Both subtrees must be valid
+        return left_valid and right_valid
+
+    # Step 6: Start DFS with infinite range
+    return dfs(root, float('-inf'), float('inf'))
+
+# Alternative: Inorder traversal approach
+def isValidBST_inorder(root: TreeNode) -> bool:
+    """
+    Inorder traversal of BST produces sorted sequence.
+    If sequence is not strictly increasing, not a valid BST.
+    """
+    # Step 1: Track previous value in inorder traversal
+    prev = [float('-inf')]
+
+    def inorder(node):
+        if not node:
+            return True
+
+        # Step 2: Check left subtree
+        if not inorder(node.left):
+            return False
+
+        # Step 3: Check current node
+        if node.val <= prev[0]:
+            return False
+        prev[0] = node.val
+
+        # Step 4: Check right subtree
+        return inorder(node.right)
+
+    return inorder(root)
+```
+
+#### TypeScript Solution
+```typescript
+function isValidBST(root: TreeNode | null): boolean {
+    // DFS with range validation
+    function dfs(node: TreeNode | null, minVal: number, maxVal: number): boolean {
+        // Step 1: Base case
+        if (!node) return true;
+
+        // Step 2: Validate current node
+        if (node.val <= minVal || node.val >= maxVal) {
+            return false;
+        }
+
+        // Step 3: Validate subtrees with updated ranges
+        return dfs(node.left, minVal, node.val) &&
+               dfs(node.right, node.val, maxVal);
+    }
+
+    return dfs(root, -Infinity, Infinity);
+}
+
+// Alternative: Inorder traversal
+function isValidBST_inorder(root: TreeNode | null): boolean {
+    let prev = -Infinity;
+
+    function inorder(node: TreeNode | null): boolean {
+        if (!node) return true;
+
+        if (!inorder(node.left)) return false;
+
+        if (node.val <= prev) return false;
+        prev = node.val;
+
+        return inorder(node.right);
+    }
+
+    return inorder(root);
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n) - visit each node once
+- Space: O(h) - recursion stack, h is height
+
+---
+
+### Problem 15: Symmetric Tree (Easy)
+**LeetCode Link**: [101. Symmetric Tree](https://leetcode.com/problems/symmetric-tree/)
+
+**Description**: Given the root of a binary tree, check whether it is a mirror of itself (i.e., symmetric around its center).
+
+#### Python Solution
+```python
+def isSymmetric(root: TreeNode) -> bool:
+    """
+    Use DFS to compare left and right subtrees.
+
+    Visualization:
+
+    SYMMETRIC:              NOT SYMMETRIC:
+         1                       1
+        / \                     / \
+       2   2                   2   2
+      / \ / \                   \   \
+     3  4 4  3                   3   3
+
+    Mirror check:
+    Left subtree:  2 → 3, 4        Right subtree: 2 → 4, 3
+                   ↓                              ↓
+    Compare: 2=2 ✓, 3=3 ✓, 4=4 ✓   Compare outer-inner pairs
+    """
+
+    def is_mirror(left, right):
+        # Step 1: Both null - symmetric
+        if not left and not right:
+            return True
+
+        # Step 2: One null, one not - not symmetric
+        if not left or not right:
+            return False
+
+        # Step 3: Values must match
+        if left.val != right.val:
+            return False
+
+        # Step 4: Check mirror positions
+        # Left's left mirrors right's right
+        # Left's right mirrors right's left
+        outer_match = is_mirror(left.left, right.right)
+        inner_match = is_mirror(left.right, right.left)
+
+        return outer_match and inner_match
+
+    # Step 5: Tree is symmetric if left and right subtrees mirror each other
+    if not root:
+        return True
+
+    return is_mirror(root.left, root.right)
+
+# Example walkthrough:
+#       1
+#      / \
+#     2   2
+#    / \ / \
+#   3  4 4  3
+#
+# Step 1: Compare left(2) and right(2): values match ✓
+# Step 2: Compare left.left(3) and right.right(3): match ✓
+# Step 3: Compare left.right(4) and right.left(4): match ✓
+# Step 4: All comparisons pass → Symmetric!
+```
+
+#### TypeScript Solution
+```typescript
+function isSymmetric(root: TreeNode | null): boolean {
+    function isMirror(left: TreeNode | null, right: TreeNode | null): boolean {
+        // Both null
+        if (!left && !right) return true;
+
+        // One null
+        if (!left || !right) return false;
+
+        // Values must match and subtrees must mirror
+        return left.val === right.val &&
+               isMirror(left.left, right.right) &&
+               isMirror(left.right, right.left);
+    }
+
+    if (!root) return true;
+    return isMirror(root.left, root.right);
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n) - visit each node once
+- Space: O(h) - recursion stack
+
+---
+
+### Problem 16: Path Sum II (Medium)
+**LeetCode Link**: [113. Path Sum II](https://leetcode.com/problems/path-sum-ii/)
+
+**Description**: Given the root of a binary tree and an integer `targetSum`, return all root-to-leaf paths where the sum of node values equals `targetSum`. Each path should be returned as a list of node values.
+
+#### Python Solution
+```python
+def pathSum(root: TreeNode, targetSum: int) -> list[list[int]]:
+    """
+    DFS with backtracking to find all valid paths.
+
+    Visualization:
+    Tree:          5
+                  / \
+                 4   8
+                /   / \
+               11  13  4
+              /  \      \
+             7    2      1
+
+    targetSum = 22
+
+    DFS Path Exploration:
+    Path 1: [5, 4, 11, 7]  → Sum = 27 ✗
+    Path 2: [5, 4, 11, 2]  → Sum = 22 ✓ (Found!)
+    Path 3: [5, 8, 13]     → Sum = 26 ✗
+    Path 4: [5, 8, 4, 1]   → Sum = 18 ✗
+
+    Result: [[5, 4, 11, 2]]
+    """
+
+    # Step 1: Store all valid paths
+    result = []
+
+    def dfs(node, current_path, remaining_sum):
+        # Step 2: Base case - null node
+        if not node:
+            return
+
+        # Step 3: Add current node to path
+        current_path.append(node.val)
+
+        # Step 4: Check if leaf node with target sum
+        if not node.left and not node.right:
+            if remaining_sum == node.val:
+                # Found valid path - add copy to result
+                result.append(current_path[:])
+        else:
+            # Step 5: Explore left and right subtrees
+            new_remaining = remaining_sum - node.val
+            dfs(node.left, current_path, new_remaining)
+            dfs(node.right, current_path, new_remaining)
+
+        # Step 6: Backtrack - remove current node from path
+        current_path.pop()
+
+    # Step 7: Start DFS from root
+    dfs(root, [], targetSum)
+
+    return result
+
+# Detailed execution trace for example:
+# Call stack and path building:
+#
+# dfs(5, [], 22)
+#   path = [5]
+#   dfs(4, [5], 17)
+#     path = [5, 4]
+#     dfs(11, [5, 4], 13)
+#       path = [5, 4, 11]
+#       dfs(7, [5, 4, 11], 2)
+#         path = [5, 4, 11, 7], sum = 27 ✗
+#         backtrack → path = [5, 4, 11]
+#       dfs(2, [5, 4, 11], 2)
+#         path = [5, 4, 11, 2], sum = 22 ✓
+#         Add to result!
+#         backtrack → path = [5, 4, 11]
+#       backtrack → path = [5, 4]
+#     backtrack → path = [5]
+#   dfs(8, [5], 17)
+#     ... continue exploration
+```
+
+#### TypeScript Solution
+```typescript
+function pathSum(root: TreeNode | null, targetSum: number): number[][] {
+    const result: number[][] = [];
+
+    function dfs(node: TreeNode | null, currentPath: number[], remainingSum: number): void {
+        if (!node) return;
+
+        // Add current node
+        currentPath.push(node.val);
+
+        // Check if leaf with target sum
+        if (!node.left && !node.right && remainingSum === node.val) {
+            result.push([...currentPath]);
+        } else {
+            // Explore children
+            const newRemaining = remainingSum - node.val;
+            dfs(node.left, currentPath, newRemaining);
+            dfs(node.right, currentPath, newRemaining);
+        }
+
+        // Backtrack
+        currentPath.pop();
+    }
+
+    dfs(root, [], targetSum);
+    return result;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n²) - visit each node, copy paths (can be O(n) paths with O(n) length)
+- Space: O(h) - recursion stack height
+
+---
+
+### Problem 17: Flood Fill (Easy)
+**LeetCode Link**: [733. Flood Fill](https://leetcode.com/problems/flood-fill/)
+
+**Description**: An image is represented by an `m x n` integer grid where `image[i][j]` represents the pixel value. You are given three integers `sr`, `sc`, and `color`. Perform a flood fill starting from pixel `[sr, sc]`, changing it and all connected pixels of the same color to the new color.
+
+#### Python Solution
+```python
+def floodFill(image: list[list[int]], sr: int, sc: int, color: int) -> list[list[int]]:
+    """
+    DFS to flood fill connected pixels of same color.
+
+    Visualization:
+    Original image:        After flood fill at (1,1) with color 2:
+    1 1 1                  2 2 2
+    1 1 0      →           2 2 0
+    1 0 1                  2 0 1
+
+    DFS Exploration from (1,1):
+    ┌─────────────────────────────────┐
+    │ Start: (1,1) color=1            │
+    │ ├─ Check (0,1): color=1 → Fill │
+    │ │  ├─ Check (0,0): color=1 → Fill
+    │ │  ├─ Check (0,2): color=1 → Fill
+    │ ├─ Check (2,1): color=0 → Skip │
+    │ ├─ Check (1,0): color=1 → Fill │
+    │ ├─ Check (1,2): color=0 → Skip │
+    └─────────────────────────────────┘
+    """
+
+    # Step 1: Get dimensions and starting color
+    rows, cols = len(image), len(image[0])
+    start_color = image[sr][sc]
+
+    # Step 2: If new color same as start color, no work needed
+    if start_color == color:
+        return image
+
+    def dfs(r, c):
+        # Step 3: Boundary checks
+        if r < 0 or r >= rows or c < 0 or c >= cols:
+            return
+
+        # Step 4: Check if pixel is the original color
+        if image[r][c] != start_color:
+            return
+
+        # Step 5: Fill current pixel with new color
+        image[r][c] = color
+
+        # Step 6: DFS to all 4 adjacent pixels
+        dfs(r + 1, c)  # Down
+        dfs(r - 1, c)  # Up
+        dfs(r, c + 1)  # Right
+        dfs(r, c - 1)  # Left
+
+    # Step 7: Start flood fill from starting pixel
+    dfs(sr, sc)
+
+    return image
+
+# Step-by-step execution visualization:
+# Image: [[1,1,1],[1,1,0],[1,0,1]]
+# Start: (1,1), color=2
+#
+# Call Stack:                      Image State:
+# dfs(1,1) → fill                  [1,1,1]
+#   dfs(2,1) → skip (color=0)      [1,2,0]  ← (1,1) filled
+#   dfs(0,1) → fill                [1,0,1]
+#     dfs(-1,1) → skip (boundary)
+#     dfs(1,1) → skip (already 2)  [1,2,1]
+#     dfs(0,0) → fill              [2,2,0]  ← (0,1) filled
+#       ...continues               [1,0,1]
+#     dfs(0,2) → fill
+#   dfs(1,0) → fill                [2,2,2]
+#   dfs(1,2) → skip (color=0)      [2,2,0]  ← Final
+#                                  [2,0,1]
+```
+
+#### TypeScript Solution
+```typescript
+function floodFill(image: number[][], sr: number, sc: number, color: number): number[][] {
+    const rows = image.length;
+    const cols = image[0].length;
+    const startColor = image[sr][sc];
+
+    // If same color, no work needed
+    if (startColor === color) return image;
+
+    function dfs(r: number, c: number): void {
+        // Boundary and color checks
+        if (
+            r < 0 || r >= rows || c < 0 || c >= cols ||
+            image[r][c] !== startColor
+        ) {
+            return;
+        }
+
+        // Fill pixel
+        image[r][c] = color;
+
+        // DFS to neighbors
+        dfs(r + 1, c);
+        dfs(r - 1, c);
+        dfs(r, c + 1);
+        dfs(r, c - 1);
+    }
+
+    dfs(sr, sc);
+    return image;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(m × n) - potentially visit all pixels
+- Space: O(m × n) - recursion stack in worst case
+
+---
+
+### Problem 18: Keys and Rooms (Medium)
+**LeetCode Link**: [841. Keys and Rooms](https://leetcode.com/problems/keys-and-rooms/)
+
+**Description**: There are `n` rooms labeled from 0 to n-1. All rooms are locked except room 0. Your goal is to visit all rooms. When you visit a room, you may find a set of distinct keys in it. Each key has a number on it, allowing you to unlock and visit the corresponding room. Return true if you can visit all rooms.
+
+#### Python Solution
+```python
+def canVisitAllRooms(rooms: list[list[int]]) -> bool:
+    """
+    DFS to explore all reachable rooms.
+
+    Visualization:
+    Rooms: [[1], [2], [3], []]
+           Room 0 has key to room 1
+           Room 1 has key to room 2
+           Room 2 has key to room 3
+           Room 3 is empty
+
+    Graph representation:
+    0 → 1 → 2 → 3
+
+    DFS Exploration:
+    ┌────────────────────────────┐
+    │ Start: Room 0 (unlocked)   │
+    │ ├─ Found key 1 → Visit room 1
+    │ │  ├─ Found key 2 → Visit room 2
+    │ │  │  ├─ Found key 3 → Visit room 3
+    │ │  │  │  └─ No keys
+    └────────────────────────────┘
+
+    Visited: {0, 1, 2, 3} → Can visit all ✓
+
+    Counter-example:
+    Rooms: [[1,3], [3,0,1], [2], [0]]
+                                    ↑
+    Graph: 0 → 1 → 3            Room 2 not reachable!
+           ↑___|
+
+    Can't reach room 2 → Return False
+    """
+
+    # Step 1: Track visited rooms
+    visited = set()
+
+    def dfs(room):
+        # Step 2: Mark room as visited
+        visited.add(room)
+
+        # Step 3: Explore all rooms we can access from here
+        for key in rooms[room]:
+            # Step 4: Only visit unvisited rooms
+            if key not in visited:
+                dfs(key)
+
+    # Step 5: Start from room 0 (always unlocked)
+    dfs(0)
+
+    # Step 6: Check if we visited all rooms
+    return len(visited) == len(rooms)
+
+# Iterative DFS approach
+def canVisitAllRooms_iterative(rooms: list[list[int]]) -> bool:
+    # Step 1: Initialize stack and visited set
+    stack = [0]
+    visited = {0}
+
+    # Step 2: DFS traversal
+    while stack:
+        room = stack.pop()
+
+        # Step 3: Collect all keys in current room
+        for key in rooms[room]:
+            if key not in visited:
+                visited.add(key)
+                stack.append(key)
+
+    # Step 4: Check if all rooms visited
+    return len(visited) == len(rooms)
+
+# Trace example:
+# rooms = [[1,3], [2], [0], [1]]
+#
+# DFS trace:
+# dfs(0): visited={0}, keys=[1,3]
+#   dfs(1): visited={0,1}, keys=[2]
+#     dfs(2): visited={0,1,2}, keys=[0]
+#       dfs(0): already visited, skip
+#   dfs(3): visited={0,1,2,3}, keys=[1]
+#     dfs(1): already visited, skip
+#
+# Final: visited={0,1,2,3}, len=4, total rooms=4 → True
+```
+
+#### TypeScript Solution
+```typescript
+function canVisitAllRooms(rooms: number[][]): boolean {
+    const visited = new Set<number>();
+
+    function dfs(room: number): void {
+        // Mark as visited
+        visited.add(room);
+
+        // Visit all accessible rooms
+        for (const key of rooms[room]) {
+            if (!visited.has(key)) {
+                dfs(key);
+            }
+        }
+    }
+
+    // Start from room 0
+    dfs(0);
+
+    // Check if all rooms visited
+    return visited.size === rooms.length;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n + k) - n rooms, k total keys
+- Space: O(n) - visited set and recursion stack
+
+---
+
+### Problem 19: Find Eventual Safe States (Medium)
+**LeetCode Link**: [802. Find Eventual Safe States](https://leetcode.com/problems/find-eventual-safe-states/)
+
+**Description**: There is a directed graph of `n` nodes numbered from 0 to n-1. A node is a terminal node if there are no outgoing edges. A node is a safe node if every possible path starting from that node leads to a terminal node. Return an array containing all the safe nodes in sorted order.
+
+#### Python Solution
+```python
+def eventualSafeNodes(graph: list[list[int]]) -> list[int]:
+    """
+    DFS with cycle detection using three-color approach.
+
+    Node states:
+    - WHITE (0): Unvisited
+    - GRAY (1): Visiting (in current DFS path)
+    - BLACK (2): Visited (safe node)
+
+    Visualization:
+    Graph: [[1,2],[2,3],[5],[0],[5],[],[]]
+
+         0 → 1
+         ↓   ↓
+         2 ← ┘
+         ↓
+         5 → (terminal)
+
+         3 → 0 (creates cycle)
+
+         4 → 5 (safe path)
+
+         6 (terminal)
+
+    Analysis:
+    - Node 0: path 0→1→2→5 (terminal) OR 0→2→5 ✓ Safe
+    - Node 1: path 1→2→5 ✓ Safe
+    - Node 2: path 2→5 ✓ Safe
+    - Node 3: path 3→0→1→2→5→... creates cycle ✗ Unsafe
+    - Node 4: path 4→5 ✓ Safe
+    - Node 5: terminal ✓ Safe
+    - Node 6: terminal ✓ Safe
+
+    Safe nodes: [0,1,2,4,5,6]
+    """
+
+    n = len(graph)
+
+    # Step 1: Track node states
+    # 0 = unvisited, 1 = visiting, 2 = safe
+    state = [0] * n
+
+    def dfs(node):
+        # Step 2: If visiting (gray), found cycle
+        if state[node] == 1:
+            return False
+
+        # Step 3: If already processed (black), return result
+        if state[node] == 2:
+            return True
+
+        # Step 4: Mark as visiting (gray)
+        state[node] = 1
+
+        # Step 5: Check all neighbors
+        for neighbor in graph[node]:
+            if not dfs(neighbor):
+                # Found cycle through neighbor
+                return False
+
+        # Step 6: All paths from this node are safe
+        # Mark as safe (black)
+        state[node] = 2
+        return True
+
+    # Step 7: Check each node
+    safe_nodes = []
+    for node in range(n):
+        if dfs(node):
+            safe_nodes.append(node)
+
+    return safe_nodes
+
+# Detailed trace for node 3:
+# graph = [[1,2],[2,3],[5],[0],[5],[],[]]
+#
+# dfs(3):
+#   state[3] = 1 (visiting)
+#   Check neighbor 0:
+#     dfs(0):
+#       state[0] = 1 (visiting)
+#       Check neighbor 1:
+#         dfs(1):
+#           state[1] = 1 (visiting)
+#           Check neighbor 2:
+#             dfs(2):
+#               state[2] = 1 (visiting)
+#               Check neighbor 5:
+#                 dfs(5):
+#                   state[5] = 1 (visiting)
+#                   No neighbors
+#                   state[5] = 2 (safe) ✓
+#               state[2] = 2 (safe) ✓
+#           Check neighbor 3:
+#             dfs(3):
+#               state[3] == 1 → CYCLE! ✗
+#               return False
+#     Cycle found → 3 is unsafe
+```
+
+#### TypeScript Solution
+```typescript
+function eventualSafeNodes(graph: number[][]): number[] {
+    const n = graph.length;
+    const state = new Array(n).fill(0); // 0=unvisited, 1=visiting, 2=safe
+
+    function dfs(node: number): boolean {
+        // Cycle detected
+        if (state[node] === 1) return false;
+
+        // Already processed
+        if (state[node] === 2) return true;
+
+        // Mark as visiting
+        state[node] = 1;
+
+        // Check all neighbors
+        for (const neighbor of graph[node]) {
+            if (!dfs(neighbor)) {
+                return false;
+            }
+        }
+
+        // Mark as safe
+        state[node] = 2;
+        return true;
+    }
+
+    const safeNodes: number[] = [];
+    for (let i = 0; i < n; i++) {
+        if (dfs(i)) {
+            safeNodes.push(i);
+        }
+    }
+
+    return safeNodes;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(V + E) - visit each vertex and edge once
+- Space: O(V) - state array and recursion stack
+
+---
+
+### Problem 20: Evaluate Division (Medium)
+**LeetCode Link**: [399. Evaluate Division](https://leetcode.com/problems/evaluate-division/)
+
+**Description**: Given equations in the format `A / B = k`, where `A` and `B` are variables and `k` is a real number, answer queries of the form `C / D`. Return an array of answers where `answers[i]` is the answer to the ith query, or -1 if the answer cannot be determined.
+
+#### Python Solution
+```python
+from collections import defaultdict
+
+def calcEquation(equations: list[list[str]], values: list[float],
+                 queries: list[list[str]]) -> list[float]:
+    """
+    Build graph and use DFS to find paths and compute products.
+
+    Visualization:
+    equations = [["a","b"],["b","c"]]
+    values = [2.0, 3.0]
+
+    This means: a/b = 2.0, so a = 2b
+                b/c = 3.0, so b = 3c
+
+    Build bidirectional graph:
+    a --(2.0)--> b --(3.0)--> c
+    a <-(0.5)--- b <-(1/3)--- c
+
+    Query: a/c = ?
+    Path: a → b → c
+    Product: 2.0 × 3.0 = 6.0
+
+    Query: c/a = ?
+    Path: c → b → a
+    Product: (1/3) × 0.5 = 1/6 ≈ 0.167
+
+    Query: a/e = ?
+    No path exists → -1.0
+    """
+
+    # Step 1: Build adjacency list graph
+    graph = defaultdict(dict)
+
+    for (dividend, divisor), value in zip(equations, values):
+        # a/b = value means a = value * b
+        graph[dividend][divisor] = value
+        # b/a = 1/value
+        graph[divisor][dividend] = 1 / value
+
+    def dfs(start, end, visited):
+        # Step 2: Check if variables exist
+        if start not in graph or end not in graph:
+            return -1.0
+
+        # Step 3: Found direct connection
+        if end in graph[start]:
+            return graph[start][end]
+
+        # Step 4: Mark as visited
+        visited.add(start)
+
+        # Step 5: Try all neighbors
+        for neighbor, value in graph[start].items():
+            if neighbor not in visited:
+                # Step 6: Recursively search from neighbor
+                result = dfs(neighbor, end, visited)
+
+                # Step 7: If path found, multiply values
+                if result != -1.0:
+                    return value * result
+
+        # Step 8: No path found
+        return -1.0
+
+    # Step 9: Process each query
+    results = []
+    for dividend, divisor in queries:
+        # Step 10: Same variable
+        if dividend == divisor and dividend in graph:
+            results.append(1.0)
+        else:
+            # DFS to find path
+            results.append(dfs(dividend, divisor, set()))
+
+    return results
+
+# Example trace:
+# equations = [["a","b"],["b","c"],["c","d"]]
+# values = [2.0, 3.0, 4.0]
+# query = ["a", "d"]
+#
+# Graph:
+# a --(2.0)--> b --(3.0)--> c --(4.0)--> d
+#
+# DFS from a to d:
+# dfs(a, d, {})
+#   visited = {a}
+#   neighbor b, value 2.0
+#     dfs(b, d, {a})
+#       visited = {a, b}
+#       neighbor c, value 3.0
+#         dfs(c, d, {a, b})
+#           visited = {a, b, c}
+#           neighbor d, value 4.0
+#             d in graph[c] → return 4.0
+#           return 3.0 × 4.0 = 12.0
+#       return 2.0 × 12.0 = 24.0
+#   return 24.0
+#
+# Result: a/d = 24.0
+```
+
+#### TypeScript Solution
+```typescript
+function calcEquation(equations: string[][], values: number[], queries: string[][]): number[] {
+    // Build graph
+    const graph = new Map<string, Map<string, number>>();
+
+    for (let i = 0; i < equations.length; i++) {
+        const [dividend, divisor] = equations[i];
+        const value = values[i];
+
+        if (!graph.has(dividend)) graph.set(dividend, new Map());
+        if (!graph.has(divisor)) graph.set(divisor, new Map());
+
+        graph.get(dividend)!.set(divisor, value);
+        graph.get(divisor)!.set(dividend, 1 / value);
+    }
+
+    function dfs(start: string, end: string, visited: Set<string>): number {
+        // Variables don't exist
+        if (!graph.has(start) || !graph.has(end)) {
+            return -1.0;
+        }
+
+        // Direct connection
+        if (graph.get(start)!.has(end)) {
+            return graph.get(start)!.get(end)!;
+        }
+
+        visited.add(start);
+
+        // Try all neighbors
+        for (const [neighbor, value] of graph.get(start)!) {
+            if (!visited.has(neighbor)) {
+                const result = dfs(neighbor, end, visited);
+                if (result !== -1.0) {
+                    return value * result;
+                }
+            }
+        }
+
+        return -1.0;
+    }
+
+    // Process queries
+    const results: number[] = [];
+    for (const [dividend, divisor] of queries) {
+        if (dividend === divisor && graph.has(dividend)) {
+            results.push(1.0);
+        } else {
+            results.push(dfs(dividend, divisor, new Set()));
+        }
+    }
+
+    return results;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(E + Q × (V + E)) - E equations, Q queries, V variables
+- Space: O(V + E) - graph storage
+
+---
+
+### Problem 21: Minimum Height Trees (Medium)
+**LeetCode Link**: [310. Minimum Height Trees](https://leetcode.com/problems/minimum-height-trees/)
+
+**Description**: A tree is an undirected graph where any two vertices are connected by exactly one path. Given such a tree of `n` nodes labeled from 0 to n-1, find all root labels that give minimum height trees.
+
+#### Python Solution
+```python
+from collections import deque, defaultdict
+
+def findMinHeightTrees(n: int, edges: list[list[int]]) -> list[int]:
+    """
+    Use topological sort approach (peel leaves layer by layer).
+    The last remaining nodes are the centroids - roots of MHTs.
+
+    Visualization:
+    Tree:       0
+               / \
+              1   2
+             /     \
+            3       4
+
+    If root = 0: height = 2 (0→2→4)
+    If root = 1: height = 2 (1→3 or 1→0→2→4)
+    If root = 2: height = 2 (2→0→1→3)
+    If root = 3: height = 3 (3→1→0→2→4) ✗
+    If root = 4: height = 3 (4→2→0→1→3) ✗
+
+    MHT roots: [0, 1, 2] all give height 2
+
+    Peeling approach (like BFS from outside):
+    Round 1: Remove leaves 3, 4
+             Remaining: 0, 1, 2
+    Round 2: Remove leaf 1
+             Remaining: 0, 2
+    Round 3: Can't remove more (would disconnect)
+             Result: [0, 2] are centroids
+
+    Actually correct approach - keep peeling until 1 or 2 nodes remain:
+    """
+
+    # Step 1: Handle edge cases
+    if n <= 2:
+        return list(range(n))
+
+    # Step 2: Build adjacency list
+    graph = defaultdict(set)
+    for u, v in edges:
+        graph[u].add(v)
+        graph[v].add(u)
+
+    # Step 3: Find initial leaves (degree = 1)
+    leaves = deque()
+    for node in range(n):
+        if len(graph[node]) == 1:
+            leaves.append(node)
+
+    # Step 4: Peel leaves layer by layer
+    remaining_nodes = n
+
+    while remaining_nodes > 2:
+        # Step 5: Remove current layer of leaves
+        leaves_count = len(leaves)
+        remaining_nodes -= leaves_count
+
+        # Step 6: Process each leaf
+        for _ in range(leaves_count):
+            leaf = leaves.popleft()
+
+            # Step 7: Remove leaf from neighbor's adjacency
+            neighbor = graph[leaf].pop()  # Leaf has only 1 neighbor
+            graph[neighbor].remove(leaf)
+
+            # Step 8: If neighbor becomes new leaf, add to queue
+            if len(graph[neighbor]) == 1:
+                leaves.append(neighbor)
+
+    # Step 9: Remaining nodes are MHT roots
+    return list(leaves)
+
+# DFS approach to calculate height (less efficient, for understanding):
+def findMinHeightTrees_dfs(n: int, edges: list[list[int]]) -> list[int]:
+    """Alternative: Calculate height for each possible root."""
+
+    if n <= 2:
+        return list(range(n))
+
+    # Build graph
+    graph = defaultdict(list)
+    for u, v in edges:
+        graph[u].append(v)
+        graph[v].append(u)
+
+    def get_height(root):
+        """DFS to find height of tree with given root."""
+        def dfs(node, parent):
+            if not graph[node]:
+                return 0
+
+            max_height = 0
+            for neighbor in graph[node]:
+                if neighbor != parent:
+                    height = 1 + dfs(neighbor, node)
+                    max_height = max(max_height, height)
+
+            return max_height
+
+        return dfs(root, -1)
+
+    # Find minimum height
+    heights = [get_height(i) for i in range(n)]
+    min_height = min(heights)
+
+    # Return all roots with minimum height
+    return [i for i, h in enumerate(heights) if h == min_height]
+```
+
+#### TypeScript Solution
+```typescript
+function findMinHeightTrees(n: number, edges: number[][]): number[] {
+    // Edge cases
+    if (n <= 2) return Array.from({length: n}, (_, i) => i);
+
+    // Build graph
+    const graph = new Map<number, Set<number>>();
+    for (let i = 0; i < n; i++) {
+        graph.set(i, new Set());
+    }
+
+    for (const [u, v] of edges) {
+        graph.get(u)!.add(v);
+        graph.get(v)!.add(u);
+    }
+
+    // Find initial leaves
+    let leaves: number[] = [];
+    for (let i = 0; i < n; i++) {
+        if (graph.get(i)!.size === 1) {
+            leaves.push(i);
+        }
+    }
+
+    // Peel leaves
+    let remainingNodes = n;
+
+    while (remainingNodes > 2) {
+        const leavesCount = leaves.length;
+        remainingNodes -= leavesCount;
+
+        const newLeaves: number[] = [];
+
+        for (const leaf of leaves) {
+            const neighbors = graph.get(leaf)!;
+            const neighbor = neighbors.values().next().value;
+
+            graph.get(neighbor)!.delete(leaf);
+
+            if (graph.get(neighbor)!.size === 1) {
+                newLeaves.push(neighbor);
+            }
+        }
+
+        leaves = newLeaves;
+    }
+
+    return leaves;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n) - process each node once in topological sort
+- Space: O(n) - graph storage
+
+---
+
+### Problem 22: Critical Connections in a Network (Hard)
+**LeetCode Link**: [1192. Critical Connections in a Network](https://leetcode.com/problems/critical-connections-in-a-network/)
+
+**Description**: There are `n` servers numbered from 0 to n-1 connected by undirected connections. A connection is critical if removing it will make some servers unable to reach others. Find all critical connections.
+
+#### Python Solution
+```python
+def criticalConnections(n: int, connections: list[list[int]]) -> list[list[int]]:
+    """
+    Use Tarjan's algorithm with DFS to find bridges (critical edges).
+
+    Visualization:
+    Network:  0 --- 1 --- 2
+              |     |
+              +-----+
+                    |
+                    3
+
+    Analysis:
+    - Edge 0-1: Part of cycle, not critical
+    - Edge 1-2: Bridge! Removing disconnects 2 from rest
+    - Edge 1-3: Bridge! Removing disconnects 3 from rest
+    - Edge 0-1 (lower): Part of cycle, not critical
+
+    Critical connections: [[1,2], [1,3]]
+
+    Algorithm:
+    For each node, track:
+    - discovery_time: When node was first visited
+    - low_link: Lowest discovery time reachable from node
+
+    Edge (u,v) is bridge if: low_link[v] > discovery_time[u]
+    (meaning v can't reach any node discovered before u without using u-v edge)
+    """
+
+    # Step 1: Build adjacency list
+    graph = [[] for _ in range(n)]
+    for u, v in connections:
+        graph[u].append(v)
+        graph[v].append(u)
+
+    # Step 2: Initialize tracking arrays
+    discovery_time = [-1] * n  # When node was discovered
+    low_link = [-1] * n         # Lowest discovery time reachable
+    time = [0]                  # Current time counter
+    result = []
+
+    def dfs(node, parent):
+        # Step 3: Mark discovery time and low link
+        discovery_time[node] = low_link[node] = time[0]
+        time[0] += 1
+
+        # Step 4: Explore all neighbors
+        for neighbor in graph[node]:
+            # Step 5: Skip parent edge (undirected graph)
+            if neighbor == parent:
+                continue
+
+            # Step 6: If neighbor unvisited, DFS
+            if discovery_time[neighbor] == -1:
+                dfs(neighbor, node)
+
+                # Step 7: Update low link after returning
+                low_link[node] = min(low_link[node], low_link[neighbor])
+
+                # Step 8: Check if edge is a bridge
+                # neighbor can't reach anything discovered before node
+                if low_link[neighbor] > discovery_time[node]:
+                    result.append([node, neighbor])
+            else:
+                # Step 9: Back edge, update low link
+                low_link[node] = min(low_link[node], discovery_time[neighbor])
+
+    # Step 10: Start DFS from node 0
+    dfs(0, -1)
+
+    return result
+
+# Detailed trace example:
+# n=4, connections=[[0,1],[1,2],[2,0],[1,3]]
+#
+# Graph:  0 --- 1 --- 3
+#         |     |
+#         +-----2
+#
+# DFS trace:
+# dfs(0, -1):
+#   discovery[0] = low[0] = 0, time = 1
+#   neighbor 1:
+#     dfs(1, 0):
+#       discovery[1] = low[1] = 1, time = 2
+#       neighbor 2:
+#         dfs(2, 1):
+#           discovery[2] = low[2] = 2, time = 3
+#           neighbor 0: already visited
+#             low[2] = min(2, discovery[0]) = min(2, 0) = 0
+#           neighbor 1: parent, skip
+#         low[1] = min(1, low[2]) = min(1, 0) = 0
+#         low[2]=0 not > discovery[1]=1 → NOT bridge
+#       neighbor 3:
+#         dfs(3, 1):
+#           discovery[3] = low[3] = 3, time = 4
+#           neighbor 1: parent, skip
+#         low[1] = min(0, low[3]) = min(0, 3) = 0
+#         low[3]=3 > discovery[1]=1 → BRIDGE! [1,3]
+#   low[0] = min(0, low[1]) = min(0, 0) = 0
+#
+# Result: [[1, 3]]
+```
+
+#### TypeScript Solution
+```typescript
+function criticalConnections(n: number, connections: number[][]): number[][] {
+    // Build graph
+    const graph: number[][] = Array.from({length: n}, () => []);
+    for (const [u, v] of connections) {
+        graph[u].push(v);
+        graph[v].push(u);
+    }
+
+    const discoveryTime = new Array(n).fill(-1);
+    const lowLink = new Array(n).fill(-1);
+    let time = 0;
+    const result: number[][] = [];
+
+    function dfs(node: number, parent: number): void {
+        discoveryTime[node] = lowLink[node] = time++;
+
+        for (const neighbor of graph[node]) {
+            if (neighbor === parent) continue;
+
+            if (discoveryTime[neighbor] === -1) {
+                dfs(neighbor, node);
+                lowLink[node] = Math.min(lowLink[node], lowLink[neighbor]);
+
+                // Check if bridge
+                if (lowLink[neighbor] > discoveryTime[node]) {
+                    result.push([node, neighbor]);
+                }
+            } else {
+                lowLink[node] = Math.min(lowLink[node], discoveryTime[neighbor]);
+            }
+        }
+    }
+
+    dfs(0, -1);
+    return result;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(V + E) - visit each vertex and edge once
+- Space: O(V + E) - graph storage and recursion stack
+
+---
+
+### Problem 23: Word Search II (Hard)
+**LeetCode Link**: [212. Word Search II](https://leetcode.com/problems/word-search-ii/)
+
+**Description**: Given an `m x n` board of characters and a list of strings `words`, return all words on the board. Each word must be constructed from letters of adjacent cells (horizontally or vertically), and each cell may not be used more than once in a word.
+
+#### Python Solution
+```python
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.word = None  # Store complete word at end node
+
+def findWords(board: list[list[str]], words: list[str]) -> list[str]:
+    """
+    Combine Trie + DFS for efficient word search.
+
+    Visualization:
+    Board:      words = ["oath", "pea", "eat", "rain"]
+    o a a n
+    e t a e     Trie structure:
+    i h k r              root
+    i f l v            /  |  \
+                      o   p   e   r
+    Step 1: Build Trie  /   |   |   |
+           o          a    e   a   a
+          /          /     |   |   |
+         a          t      a   t   i
+        /          /             |   |
+       t          h             *   n
+      /          *              (eat)  *
+     h                                (rain)
+    *
+    (oath)
+
+    Step 2: DFS from each cell
+    Starting at (0,0) 'o':
+      DFS path: o → a → t → h ✓ Found "oath"!
+
+    Starting at (1,1) 't':
+      DFS won't find 'oath' (no 'o' neighbor)
+      But can continue exploring other paths
+
+    Optimization: Remove found words from Trie to avoid duplicates
+    """
+
+    # Step 1: Build Trie from words
+    root = TrieNode()
+
+    for word in words:
+        node = root
+        for char in word:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+        node.word = word  # Mark end of word
+
+    # Step 2: Prepare for DFS
+    rows, cols = len(board), len(board[0])
+    result = []
+
+    def dfs(r, c, parent_node):
+        # Step 3: Get current character
+        char = board[r][c]
+
+        # Step 4: Check if char exists in Trie
+        if char not in parent_node.children:
+            return
+
+        current_node = parent_node.children[char]
+
+        # Step 5: Found a complete word
+        if current_node.word:
+            result.append(current_node.word)
+            # Remove word to avoid duplicates
+            current_node.word = None
+
+        # Step 6: Mark cell as visited
+        board[r][c] = '#'
+
+        # Step 7: Explore all 4 directions
+        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            nr, nc = r + dr, c + dc
+
+            # Step 8: Check bounds and not visited
+            if 0 <= nr < rows and 0 <= nc < cols and board[nr][nc] != '#':
+                dfs(nr, nc, current_node)
+
+        # Step 9: Backtrack - restore cell
+        board[r][c] = char
+
+        # Step 10: Optimization - prune empty branches
+        if not current_node.children:
+            del parent_node.children[char]
+
+    # Step 11: Start DFS from each cell
+    for r in range(rows):
+        for c in range(cols):
+            dfs(r, c, root)
+
+    return result
+
+# Detailed trace for finding "oath":
+# Board: [['o','a','a','n'],
+#         ['e','t','a','e'],
+#         ['i','h','k','r'],
+#         ['i','f','l','v']]
+#
+# DFS from (0,0) 'o':
+#   board[0][0] = '#'  (mark visited)
+#   Check Trie: 'o' exists in root.children ✓
+#   Explore neighbors:
+#     Try (0,1) 'a':
+#       board[0][1] = '#'
+#       Check Trie: 'a' exists in node_o.children ✓
+#       Explore neighbors:
+#         Try (1,1) 't':
+#           board[1][1] = '#'
+#           Check Trie: 't' exists in node_a.children ✓
+#           Explore neighbors:
+#             Try (2,1) 'h':
+#               board[2][1] = '#'
+#               Check Trie: 'h' exists in node_t.children ✓
+#               current_node.word = "oath" → Add to result!
+#               board[2][1] = 'h'  (backtrack)
+#           board[1][1] = 't'  (backtrack)
+#       board[0][1] = 'a'  (backtrack)
+#   board[0][0] = 'o'  (backtrack)
+#
+# Result: ["oath"] (continues for other words)
+```
+
+#### TypeScript Solution
+```typescript
+class TrieNode {
+    children: Map<string, TrieNode>;
+    word: string | null;
+
+    constructor() {
+        this.children = new Map();
+        this.word = null;
+    }
+}
+
+function findWords(board: string[][], words: string[]): string[] {
+    // Build Trie
+    const root = new TrieNode();
+
+    for (const word of words) {
+        let node = root;
+        for (const char of word) {
+            if (!node.children.has(char)) {
+                node.children.set(char, new TrieNode());
+            }
+            node = node.children.get(char)!;
+        }
+        node.word = word;
+    }
+
+    const rows = board.length;
+    const cols = board[0].length;
+    const result: string[] = [];
+
+    function dfs(r: number, c: number, parentNode: TrieNode): void {
+        const char = board[r][c];
+
+        if (!parentNode.children.has(char)) return;
+
+        const currentNode = parentNode.children.get(char)!;
+
+        // Found word
+        if (currentNode.word) {
+            result.push(currentNode.word);
+            currentNode.word = null;
+        }
+
+        // Mark visited
+        board[r][c] = '#';
+
+        // Explore 4 directions
+        const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+        for (const [dr, dc] of directions) {
+            const nr = r + dr;
+            const nc = c + dc;
+
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc] !== '#') {
+                dfs(nr, nc, currentNode);
+            }
+        }
+
+        // Backtrack
+        board[r][c] = char;
+
+        // Prune
+        if (currentNode.children.size === 0) {
+            parentNode.children.delete(char);
+        }
+    }
+
+    // Start DFS from each cell
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            dfs(r, c, root);
+        }
+    }
+
+    return result;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(m × n × 4^L) - m×n cells, explore 4 directions, L is max word length
+- Space: O(W × L) - Trie storage, W is total number of words, L is average word length
 
 ---
 

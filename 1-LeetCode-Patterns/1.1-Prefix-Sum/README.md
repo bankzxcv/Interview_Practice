@@ -19,23 +19,81 @@ Prefix Sum (also called Cumulative Sum) is a technique where we precompute the c
 
 ### Visual Diagram
 
+#### Concept Visualization - Think of it as a Running Total
 ```
 Original Array:     [2,  4,  1,  5,  3]
                      ↓   ↓   ↓   ↓   ↓
 Prefix Sum Array:   [2,  6,  7, 12, 15]
 
-Explanation:
-prefix[0] = 2           (2)
-prefix[1] = 2 + 4       (6)
-prefix[2] = 2 + 4 + 1   (7)
-prefix[3] = 2 + 4 + 1 + 5 (12)
-prefix[4] = 2 + 4 + 1 + 5 + 3 (15)
+Explanation - Building the Prefix Sum:
+prefix[0] = 2                    (just 2)
+prefix[1] = 2 + 4       = 6      (everything up to index 1)
+prefix[2] = 2 + 4 + 1   = 7      (everything up to index 2)
+prefix[3] = 2 + 4 + 1 + 5 = 12   (everything up to index 3)
+prefix[4] = 2 + 4 + 1 + 5 + 3 = 15 (everything up to index 4)
 
+Think of it like a water tank filling up:
+   Tank capacity after each element added
+   [2] → [6] → [7] → [12] → [15]
+```
+
+#### Range Sum Query Visualization
+```
 To find sum from index i to j:
 sum(i, j) = prefix[j] - prefix[i-1]
 
-Example: sum(1, 3) = prefix[3] - prefix[0] = 12 - 2 = 10
-Verification: arr[1] + arr[2] + arr[3] = 4 + 1 + 5 = 10 ✓
+Visual Example: What is the sum from index 1 to 3?
+
+Array:  [2,  4,  1,  5,  3]
+Index:   0   1   2   3   4
+         └───┴───┴───┘
+         We want this range (1 to 3)
+
+prefix[3] = sum of [2, 4, 1, 5] = 12
+prefix[0] = sum of [2] = 2
+sum(1,3) = prefix[3] - prefix[0] = 12 - 2 = 10 ✓
+
+Think: "Total up to 3" minus "Total up to 0" = "Middle portion (1 to 3)"
+
+Visual representation:
+[====2====][====4====][====1====][====5====][====3====]
+ └─prefix[0]─┘
+ └───────────────────prefix[3]─────────────┘
+              └─────────sum(1,3)───────────┘
+```
+
+#### HashMap + Prefix Sum Visualization (For Subarray Sum = K)
+```
+Problem: Find subarrays with sum = 5 in [1, 2, 3, -1, 5]
+
+Step-by-step visualization:
+idx:  0   1   2   3   4
+arr: [1,  2,  3, -1,  5]
+
+i=0: prefix_sum = 1
+     Looking for: 1 - 5 = -4 (not found)
+     map = {0: 1, 1: 1}
+
+i=1: prefix_sum = 3
+     Looking for: 3 - 5 = -2 (not found)
+     map = {0: 1, 1: 1, 3: 1}
+
+i=2: prefix_sum = 6
+     Looking for: 6 - 5 = 1 (FOUND! count += 1)
+     This means: subarray from after index 0 to index 2 = [2, 3] sums to 5
+     map = {0: 1, 1: 1, 3: 1, 6: 1}
+
+i=3: prefix_sum = 5
+     Looking for: 5 - 5 = 0 (FOUND! count += 1)
+     This means: subarray from start to index 3 = [1, 2, 3, -1] sums to 5
+     map = {0: 1, 1: 1, 3: 1, 6: 1, 5: 1}
+
+i=4: prefix_sum = 10
+     Looking for: 10 - 5 = 5 (FOUND! count += 1)
+     This means: subarray from after index 3 to index 4 = [5] sums to 5
+     map = {0: 1, 1: 1, 3: 1, 6: 1, 5: 1, 10: 1}
+
+Total count = 3 subarrays: [2,3], [1,2,3,-1], [5]
 ```
 
 ## Recognition Guidelines
@@ -1380,6 +1438,887 @@ function sumOddLengthSubarrays_prefix(arr: number[]): number {
 
 **Time Complexity**: O(n) for optimized, O(n²) for prefix sum approach
 **Space Complexity**: O(1) for optimized, O(n) for prefix sum approach
+
+---
+
+### Problem 16: Running Sum of 1D Array
+**Difficulty**: Easy
+**LeetCode Link**: [https://leetcode.com/problems/running-sum-of-1d-array/](https://leetcode.com/problems/running-sum-of-1d-array/)
+
+**Description**: Calculate the running sum of an array where running sum is defined as runningSum[i] = sum(nums[0]…nums[i]).
+
+#### Python Solution
+```python
+def runningSum(nums: List[int]) -> List[int]:
+    # Step 1: Initialize result array
+    # This is literally building a prefix sum array
+    result = []
+    running_total = 0
+
+    # Step 2: Iterate through array
+    for num in nums:
+        # Step 3: Add current number to running total
+        running_total += num
+
+        # Step 4: Append to result
+        result.append(running_total)
+
+    return result
+
+# Alternative: In-place modification
+def runningSum_inplace(nums: List[int]) -> List[int]:
+    # Modify array in-place to save space
+    for i in range(1, len(nums)):
+        nums[i] += nums[i - 1]
+
+    return nums
+
+# Visualization for nums = [1, 2, 3, 4]:
+# i=0: running_total=1, result=[1]
+# i=1: running_total=3, result=[1, 3]
+# i=2: running_total=6, result=[1, 3, 6]
+# i=3: running_total=10, result=[1, 3, 6, 10]
+```
+
+#### TypeScript Solution
+```typescript
+function runningSum(nums: number[]): number[] {
+    // Step 1: Initialize result array
+    const result: number[] = [];
+    let runningTotal = 0;
+
+    // Step 2: Build running sum
+    for (const num of nums) {
+        runningTotal += num;
+        result.push(runningTotal);
+    }
+
+    return result;
+}
+
+// In-place version
+function runningSumInPlace(nums: number[]): number[] {
+    for (let i = 1; i < nums.length; i++) {
+        nums[i] += nums[i - 1];
+    }
+    return nums;
+}
+```
+
+**Time Complexity**: O(n) - single pass through array
+**Space Complexity**: O(1) for in-place, O(n) for new array
+
+---
+
+### Problem 17: Find the Middle Index in Array
+**Difficulty**: Easy
+**LeetCode Link**: [https://leetcode.com/problems/find-the-middle-index-in-array/](https://leetcode.com/problems/find-the-middle-index-in-array/)
+
+**Description**: Find the index where sum of elements to the left equals sum of elements to the right.
+
+#### Python Solution
+```python
+def findMiddleIndex(nums: List[int]) -> int:
+    # Step 1: Calculate total sum
+    total_sum = sum(nums)
+
+    # Step 2: Track left sum
+    left_sum = 0
+
+    # Step 3: Iterate through array
+    for i in range(len(nums)):
+        # Step 4: Calculate right sum
+        # right_sum = total - left - current
+        right_sum = total_sum - left_sum - nums[i]
+
+        # Step 5: Check if balanced
+        if left_sum == right_sum:
+            return i
+
+        # Step 6: Update left sum
+        left_sum += nums[i]
+
+    return -1
+
+# Visualization for nums = [2, 3, -1, 8, 4]:
+# total = 16
+# i=0: left=0, right=16-0-2=14, left!=right, left=2
+# i=1: left=2, right=16-2-3=11, left!=right, left=5
+# i=2: left=5, right=16-5-(-1)=12, left!=right, left=4
+# i=3: left=4, right=16-4-8=4, left==right ✓, return 3
+```
+
+#### TypeScript Solution
+```typescript
+function findMiddleIndex(nums: number[]): number {
+    // Step 1: Calculate total sum
+    const totalSum = nums.reduce((acc, num) => acc + num, 0);
+
+    // Step 2: Track left sum
+    let leftSum = 0;
+
+    // Step 3: Find middle index
+    for (let i = 0; i < nums.length; i++) {
+        const rightSum = totalSum - leftSum - nums[i];
+
+        if (leftSum === rightSum) {
+            return i;
+        }
+
+        leftSum += nums[i];
+    }
+
+    return -1;
+}
+```
+
+**Time Complexity**: O(n) - single pass after calculating total
+**Space Complexity**: O(1) - only using constant space
+
+---
+
+### Problem 18: Minimum Value to Get Positive Step by Step Sum
+**Difficulty**: Easy
+**LeetCode Link**: [https://leetcode.com/problems/minimum-value-to-get-positive-step-by-step-sum/](https://leetcode.com/problems/minimum-value-to-get-positive-step-by-step-sum/)
+
+**Description**: Find the minimum positive start value such that the step-by-step sum is never less than 1.
+
+#### Python Solution
+```python
+def minStartValue(nums: List[int]) -> int:
+    # Step 1: Calculate minimum prefix sum
+    # If minimum prefix sum is negative, we need to add enough to make it positive
+
+    prefix_sum = 0
+    min_prefix = 0
+
+    # Step 2: Find minimum prefix sum
+    for num in nums:
+        prefix_sum += num
+        min_prefix = min(min_prefix, prefix_sum)
+
+    # Step 3: Calculate required start value
+    # If min_prefix is -5, we need startValue of 6 (so -5 + 6 = 1)
+    return 1 - min_prefix
+
+# Visualization for nums = [-3, 2, -3, 4, 2]:
+# i=0: prefix=-3, min_prefix=-3
+# i=1: prefix=-1, min_prefix=-3
+# i=2: prefix=-4, min_prefix=-4
+# i=3: prefix=0, min_prefix=-4
+# i=4: prefix=2, min_prefix=-4
+#
+# min_prefix = -4, so startValue = 1 - (-4) = 5
+# With startValue=5: [5, 2, 4, 1, 5, 7] ✓ all positive
+```
+
+#### TypeScript Solution
+```typescript
+function minStartValue(nums: number[]): number {
+    // Step 1: Find minimum prefix sum
+    let prefixSum = 0;
+    let minPrefix = 0;
+
+    for (const num of nums) {
+        prefixSum += num;
+        minPrefix = Math.min(minPrefix, prefixSum);
+    }
+
+    // Step 2: Calculate required start value
+    return 1 - minPrefix;
+}
+```
+
+**Time Complexity**: O(n) - single pass through array
+**Space Complexity**: O(1) - only using constant space
+
+---
+
+### Problem 19: Ways to Split Array Into Three Subarrays
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/ways-to-split-array-into-three-subarrays/](https://leetcode.com/problems/ways-to-split-array-into-three-subarrays/)
+
+**Description**: Count ways to split array into three non-empty contiguous subarrays (left, mid, right) where sum(left) <= sum(mid) <= sum(right).
+
+#### Python Solution
+```python
+def waysToSplit(nums: List[int]) -> int:
+    MOD = 10**9 + 7
+    n = len(nums)
+
+    # Step 1: Build prefix sum
+    prefix = [0] * (n + 1)
+    for i in range(n):
+        prefix[i + 1] = prefix[i] + nums[i]
+
+    total = prefix[n]
+    count = 0
+
+    # Step 2: For each possible left partition
+    for i in range(n - 2):  # Need at least 2 more elements
+        left_sum = prefix[i + 1]
+
+        # Step 3: Find valid range for mid partition using binary search
+        # Condition 1: sum(mid) >= sum(left)
+        # prefix[j+1] - prefix[i+1] >= prefix[i+1]
+        # prefix[j+1] >= 2 * prefix[i+1]
+
+        # Binary search for minimum j
+        lo, hi = i + 1, n - 1
+        min_j = n
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            mid_sum = prefix[mid + 1] - prefix[i + 1]
+            if mid_sum >= left_sum:
+                min_j = mid
+                hi = mid - 1
+            else:
+                lo = mid + 1
+
+        # Condition 2: sum(mid) <= sum(right)
+        # prefix[j+1] - prefix[i+1] <= total - prefix[j+1]
+        # 2 * prefix[j+1] <= total + prefix[i+1]
+
+        # Binary search for maximum j
+        lo, hi = i + 1, n - 1
+        max_j = i
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            mid_sum = prefix[mid + 1] - prefix[i + 1]
+            right_sum = total - prefix[mid + 1]
+            if mid_sum <= right_sum:
+                max_j = mid
+                lo = mid + 1
+            else:
+                hi = mid - 1
+
+        # Step 4: Add valid splits
+        if max_j >= min_j:
+            count = (count + max_j - min_j + 1) % MOD
+
+    return count
+```
+
+#### TypeScript Solution
+```typescript
+function waysToSplit(nums: number[]): number {
+    const MOD = 1e9 + 7;
+    const n = nums.length;
+
+    // Step 1: Build prefix sum
+    const prefix: number[] = new Array(n + 1).fill(0);
+    for (let i = 0; i < n; i++) {
+        prefix[i + 1] = prefix[i] + nums[i];
+    }
+
+    const total = prefix[n];
+    let count = 0;
+
+    // Step 2: Iterate through possible left partitions
+    for (let i = 0; i < n - 2; i++) {
+        const leftSum = prefix[i + 1];
+
+        // Binary search for minimum valid mid endpoint
+        let lo = i + 1, hi = n - 1, minJ = n;
+        while (lo <= hi) {
+            const mid = Math.floor((lo + hi) / 2);
+            const midSum = prefix[mid + 1] - prefix[i + 1];
+            if (midSum >= leftSum) {
+                minJ = mid;
+                hi = mid - 1;
+            } else {
+                lo = mid + 1;
+            }
+        }
+
+        // Binary search for maximum valid mid endpoint
+        lo = i + 1; hi = n - 1; let maxJ = i;
+        while (lo <= hi) {
+            const mid = Math.floor((lo + hi) / 2);
+            const midSum = prefix[mid + 1] - prefix[i + 1];
+            const rightSum = total - prefix[mid + 1];
+            if (midSum <= rightSum) {
+                maxJ = mid;
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+
+        if (maxJ >= minJ) {
+            count = (count + maxJ - minJ + 1) % MOD;
+        }
+    }
+
+    return count;
+}
+```
+
+**Time Complexity**: O(n log n) - n iterations with binary search
+**Space Complexity**: O(n) - prefix sum array
+
+---
+
+### Problem 20: Maximum Absolute Sum of Any Subarray
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/maximum-absolute-sum-of-any-subarray/](https://leetcode.com/problems/maximum-absolute-sum-of-any-subarray/)
+
+**Description**: Find the maximum absolute value of sum of any subarray.
+
+#### Python Solution
+```python
+def maxAbsoluteSum(nums: List[int]) -> int:
+    # Step 1: Key insight - max absolute sum is either max sum or min sum (absolute)
+    # We need to find both maximum subarray sum and minimum subarray sum
+
+    # Step 2: Find maximum subarray sum (Kadane's algorithm)
+    max_sum = float('-inf')
+    current_max = 0
+
+    for num in nums:
+        current_max = max(num, current_max + num)
+        max_sum = max(max_sum, current_max)
+
+    # Step 3: Find minimum subarray sum (reverse Kadane's)
+    min_sum = float('inf')
+    current_min = 0
+
+    for num in nums:
+        current_min = min(num, current_min + num)
+        min_sum = min(min_sum, current_min)
+
+    # Step 4: Return maximum absolute value
+    return max(abs(max_sum), abs(min_sum))
+
+# Alternative: Using prefix sum approach
+def maxAbsoluteSum_prefix(nums: List[int]) -> int:
+    prefix_sum = 0
+    max_prefix = 0
+    min_prefix = 0
+    result = 0
+
+    for num in nums:
+        prefix_sum += num
+
+        # Maximum absolute sum ending here
+        result = max(result, abs(prefix_sum - min_prefix))
+        result = max(result, abs(prefix_sum - max_prefix))
+
+        # Update max and min prefix sums
+        max_prefix = max(max_prefix, prefix_sum)
+        min_prefix = min(min_prefix, prefix_sum)
+
+    return result
+
+# Visualization for nums = [1, -3, 2, 3, -4]:
+# Max sum: subarray [2, 3] = 5
+# Min sum: subarray [-3] or [1,-3] or [-4] = -3 or -4
+# Max absolute: max(5, |-4|) = 5
+```
+
+#### TypeScript Solution
+```typescript
+function maxAbsoluteSum(nums: number[]): number {
+    // Kadane's algorithm for max and min
+    let maxSum = -Infinity;
+    let minSum = Infinity;
+    let currentMax = 0;
+    let currentMin = 0;
+
+    for (const num of nums) {
+        // Track maximum sum
+        currentMax = Math.max(num, currentMax + num);
+        maxSum = Math.max(maxSum, currentMax);
+
+        // Track minimum sum
+        currentMin = Math.min(num, currentMin + num);
+        minSum = Math.min(minSum, currentMin);
+    }
+
+    return Math.max(Math.abs(maxSum), Math.abs(minSum));
+}
+```
+
+**Time Complexity**: O(n) - single pass through array
+**Space Complexity**: O(1) - only using constant space
+
+---
+
+### Problem 21: Corporate Flight Bookings
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/corporate-flight-bookings/](https://leetcode.com/problems/corporate-flight-bookings/)
+
+**Description**: Given bookings where bookings[i] = [first, last, seats], add seats to flights first through last. Return array of total seats per flight.
+
+#### Python Solution
+```python
+def corpFlightBookings(bookings: List[List[int]], n: int) -> List[int]:
+    # Step 1: Use difference array technique (inverse of prefix sum)
+    # Instead of updating range [l, r], we mark boundaries
+
+    answer = [0] * n
+
+    # Step 2: Process each booking
+    for first, last, seats in bookings:
+        # Step 3: Add seats at start of range (1-indexed to 0-indexed)
+        answer[first - 1] += seats
+
+        # Step 4: Subtract seats after end of range
+        if last < n:
+            answer[last] -= seats
+
+    # Step 5: Calculate prefix sum to get actual values
+    for i in range(1, n):
+        answer[i] += answer[i - 1]
+
+    return answer
+
+# Visualization for bookings = [[1,2,10],[2,3,20],[2,5,25]], n = 5:
+#
+# After marking boundaries:
+# answer = [10, 0, -10, 0, 0] (first booking [1,2,10])
+# answer = [10, 20, -10, -20, 0] (second booking [2,3,20])
+# answer = [10, 45, -10, -20, -25] (third booking [2,5,25])
+#
+# After prefix sum:
+# answer[0] = 10
+# answer[1] = 10 + 45 = 55
+# answer[2] = 55 + (-10) = 45
+# answer[3] = 45 + (-20) = 25
+# answer[4] = 25 + (-25) = 0
+# Result: [10, 55, 45, 25, 25]
+```
+
+#### TypeScript Solution
+```typescript
+function corpFlightBookings(bookings: number[][], n: number): number[] {
+    // Step 1: Initialize difference array
+    const answer: number[] = new Array(n).fill(0);
+
+    // Step 2: Mark range boundaries
+    for (const [first, last, seats] of bookings) {
+        answer[first - 1] += seats;
+        if (last < n) {
+            answer[last] -= seats;
+        }
+    }
+
+    // Step 3: Calculate prefix sum
+    for (let i = 1; i < n; i++) {
+        answer[i] += answer[i - 1];
+    }
+
+    return answer;
+}
+```
+
+**Time Complexity**: O(bookings.length + n) - process bookings then build prefix
+**Space Complexity**: O(1) - answer array doesn't count as extra space
+
+---
+
+### Problem 22: Car Pooling
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/car-pooling/](https://leetcode.com/problems/car-pooling/)
+
+**Description**: Check if you can pick up and drop off all passengers given car capacity. trips[i] = [numPassengers, from, to].
+
+#### Python Solution
+```python
+def carPooling(trips: List[List[int]], capacity: int) -> bool:
+    # Step 1: Use difference array to track passenger changes
+    # Find max location
+    max_location = max(trip[2] for trip in trips)
+
+    # Step 2: Create difference array
+    passengers = [0] * (max_location + 1)
+
+    # Step 3: Process each trip
+    for num, start, end in trips:
+        # Step 4: Add passengers at pickup location
+        passengers[start] += num
+
+        # Step 5: Remove passengers at drop-off location
+        passengers[end] -= num
+
+    # Step 6: Calculate running total and check capacity
+    current_passengers = 0
+    for change in passengers:
+        current_passengers += change
+
+        # Step 7: Check if over capacity
+        if current_passengers > capacity:
+            return False
+
+    return True
+
+# Alternative: Using sorted events
+def carPooling_events(trips: List[List[int]], capacity: int) -> bool:
+    # Create events: (location, passenger_change)
+    events = []
+
+    for num, start, end in trips:
+        events.append((start, num))    # Pickup
+        events.append((end, -num))     # Drop-off
+
+    # Sort by location (drop-offs before pickups at same location)
+    events.sort()
+
+    current_passengers = 0
+    for location, change in events:
+        current_passengers += change
+        if current_passengers > capacity:
+            return False
+
+    return True
+
+# Visualization for trips = [[2,1,5],[3,3,7]], capacity = 4:
+#
+# Difference array:
+# Location: 0  1  2  3  4  5  6  7
+# Change:   0 +2  0 +3  0 -2  0 -3
+#
+# Running total:
+# Location: 0  1  2  3  4  5  6  7
+# Total:    0  2  2  5  5  3  3  0
+#                     ^
+#                     Over capacity (5 > 4)! Return False
+```
+
+#### TypeScript Solution
+```typescript
+function carPooling(trips: number[][], capacity: number): boolean {
+    // Step 1: Find max location
+    const maxLocation = Math.max(...trips.map(t => t[2]));
+
+    // Step 2: Create difference array
+    const passengers: number[] = new Array(maxLocation + 1).fill(0);
+
+    // Step 3: Mark passenger changes
+    for (const [num, start, end] of trips) {
+        passengers[start] += num;
+        passengers[end] -= num;
+    }
+
+    // Step 4: Check capacity
+    let currentPassengers = 0;
+    for (const change of passengers) {
+        currentPassengers += change;
+        if (currentPassengers > capacity) {
+            return false;
+        }
+    }
+
+    return true;
+}
+```
+
+**Time Complexity**: O(n + max_location) where n is number of trips
+**Space Complexity**: O(max_location) for difference array
+
+---
+
+### Problem 23: Number of Wonderful Substrings
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/number-of-wonderful-substrings/](https://leetcode.com/problems/number-of-wonderful-substrings/)
+
+**Description**: Count substrings where at most one letter appears an odd number of times. String contains only letters 'a' to 'j'.
+
+#### Python Solution
+```python
+def wonderfulSubstrings(word: str) -> int:
+    # Step 1: Use bitmask to track odd/even counts of each character
+    # Bit i is 1 if character i appears odd times, 0 if even
+
+    # Step 2: Initialize count map
+    # mask represents state of odd/even counts
+    count_map = {0: 1}  # Empty prefix has all even counts
+    mask = 0
+    result = 0
+
+    # Step 3: Iterate through string
+    for char in word:
+        # Step 4: Toggle bit for current character
+        bit = ord(char) - ord('a')
+        mask ^= (1 << bit)
+
+        # Step 5: Count substrings with all even character counts
+        # Same mask means substring between has all even counts
+        if mask in count_map:
+            result += count_map[mask]
+
+        # Step 6: Count substrings with exactly one odd character
+        # Try flipping each bit to find previous states
+        for i in range(10):  # Characters 'a' to 'j'
+            prev_mask = mask ^ (1 << i)
+            if prev_mask in count_map:
+                result += count_map[prev_mask]
+
+        # Step 7: Add current mask to map
+        count_map[mask] = count_map.get(mask, 0) + 1
+
+    return result
+
+# Visualization for word = "aba":
+#
+# i=0, char='a':
+#   bit=0, mask=0^1=1 (binary: 0001, 'a' appears odd)
+#   Check mask=1: not found
+#   Check prev_masks: 0,2,3,4,5,6,7,8,9,10 → found 0 with count 1, result+=1
+#   map = {0:1, 1:1}
+#
+# i=1, char='b':
+#   bit=1, mask=1^2=3 (binary: 0011, 'a' and 'b' appear odd)
+#   Check mask=3: not found
+#   Check prev_masks: 2,1,7,3,11,... → found 1 with count 1, result+=1
+#   map = {0:1, 1:1, 3:1}
+#
+# i=2, char='a':
+#   bit=0, mask=3^1=2 (binary: 0010, only 'b' appears odd)
+#   Check mask=2: not found
+#   Check prev_masks: 3,0,6,2,... → found 3 with count 1, result+=1, found 0 with count 1, result+=1
+#   map = {0:1, 1:1, 3:1, 2:1}
+#
+# Total: 4 ("a", "b", "a", "aba")
+```
+
+#### TypeScript Solution
+```typescript
+function wonderfulSubstrings(word: string): number {
+    // Step 1: Initialize mask count map
+    const countMap = new Map<number, number>();
+    countMap.set(0, 1);
+
+    let mask = 0;
+    let result = 0;
+
+    // Step 2: Process each character
+    for (const char of word) {
+        // Step 3: Toggle bit for current character
+        const bit = char.charCodeAt(0) - 'a'.charCodeAt(0);
+        mask ^= (1 << bit);
+
+        // Step 4: Count substrings with all even counts
+        result += countMap.get(mask) || 0;
+
+        // Step 5: Count substrings with one odd count
+        for (let i = 0; i < 10; i++) {
+            const prevMask = mask ^ (1 << i);
+            result += countMap.get(prevMask) || 0;
+        }
+
+        // Step 6: Update count map
+        countMap.set(mask, (countMap.get(mask) || 0) + 1);
+    }
+
+    return result;
+}
+```
+
+**Time Complexity**: O(n × 10) = O(n) - 10 is constant for 'a' to 'j'
+**Space Complexity**: O(2^10) = O(1024) = O(1) - at most 1024 different masks
+
+---
+
+### Problem 24: Subarray Product Less Than K
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/subarray-product-less-than-k/](https://leetcode.com/problems/subarray-product-less-than-k/)
+
+**Description**: Count number of contiguous subarrays where product of all elements is less than k.
+
+#### Python Solution
+```python
+def numSubarrayProductLessThanK(nums: List[int], k: int) -> int:
+    # Note: This is better solved with sliding window
+    # But showing prefix product concept
+
+    # Step 1: Edge case
+    if k <= 1:
+        return 0
+
+    # Step 2: Use sliding window approach
+    count = 0
+    product = 1
+    left = 0
+
+    # Step 3: Expand window with right pointer
+    for right in range(len(nums)):
+        # Step 4: Update product
+        product *= nums[right]
+
+        # Step 5: Shrink window while product >= k
+        while product >= k and left <= right:
+            product //= nums[left]
+            left += 1
+
+        # Step 6: Add count of subarrays ending at right
+        # All subarrays from [left, right], [left+1, right], ..., [right, right]
+        count += right - left + 1
+
+    return count
+
+# Visualization for nums = [10, 5, 2, 6], k = 100:
+#
+# right=0: product=10, left=0, count+=1 (subarrays: [10])
+# right=1: product=50, left=0, count+=2 (subarrays: [5], [10,5])
+# right=2: product=100, shrink: product=10, left=1, count+=2 (subarrays: [2], [5,2])
+# right=3: product=60, left=1, count+=3 (subarrays: [6], [2,6], [5,2,6])
+# Total: 8 subarrays
+```
+
+#### TypeScript Solution
+```typescript
+function numSubarrayProductLessThanK(nums: number[], k: number): number {
+    // Edge case
+    if (k <= 1) return 0;
+
+    let count = 0;
+    let product = 1;
+    let left = 0;
+
+    // Sliding window
+    for (let right = 0; right < nums.length; right++) {
+        product *= nums[right];
+
+        // Shrink window
+        while (product >= k && left <= right) {
+            product /= nums[left];
+            left++;
+        }
+
+        // Count subarrays ending at right
+        count += right - left + 1;
+    }
+
+    return count;
+}
+```
+
+**Time Complexity**: O(n) - each element visited at most twice
+**Space Complexity**: O(1) - only using constant space
+
+---
+
+### Problem 25: K Radius Subarray Averages
+**Difficulty**: Medium
+**LeetCode Link**: [https://leetcode.com/problems/k-radius-subarray-averages/](https://leetcode.com/problems/k-radius-subarray-averages/)
+
+**Description**: Calculate k-radius average for each element (average of elements from index-k to index+k).
+
+#### Python Solution
+```python
+def getAverages(nums: List[int], k: int) -> List[int]:
+    n = len(nums)
+    result = [-1] * n
+
+    # Step 1: Edge case - if window is larger than array
+    window_size = 2 * k + 1
+    if window_size > n:
+        return result
+
+    # Step 2: Build prefix sum array
+    prefix = [0] * (n + 1)
+    for i in range(n):
+        prefix[i + 1] = prefix[i] + nums[i]
+
+    # Step 3: Calculate average for each valid position
+    for i in range(k, n - k):
+        # Step 4: Get sum of window [i-k, i+k]
+        left_idx = i - k
+        right_idx = i + k
+
+        window_sum = prefix[right_idx + 1] - prefix[left_idx]
+
+        # Step 5: Calculate average
+        result[i] = window_sum // window_size
+
+    return result
+
+# Alternative: Sliding window approach (more space efficient)
+def getAverages_sliding_window(nums: List[int], k: int) -> List[int]:
+    n = len(nums)
+    result = [-1] * n
+    window_size = 2 * k + 1
+
+    if window_size > n:
+        return result
+
+    # Step 1: Calculate sum of first window
+    window_sum = sum(nums[:window_size])
+    result[k] = window_sum // window_size
+
+    # Step 2: Slide window
+    for i in range(k + 1, n - k):
+        # Remove leftmost element, add new rightmost element
+        window_sum = window_sum - nums[i - k - 1] + nums[i + k]
+        result[i] = window_sum // window_size
+
+    return result
+
+# Visualization for nums = [7,4,3,9,1,8,5,2,6], k = 2:
+# Window size = 5
+#
+# i=2: window=[7,4,3,9,1], sum=24, avg=24/5=4
+# i=3: window=[4,3,9,1,8], sum=25, avg=5
+# i=4: window=[3,9,1,8,5], sum=26, avg=5
+# i=5: window=[9,1,8,5,2], sum=25, avg=5
+# i=6: window=[1,8,5,2,6], sum=22, avg=4
+#
+# Result: [-1,-1,4,5,5,5,4,-1,-1]
+```
+
+#### TypeScript Solution
+```typescript
+function getAverages(nums: number[], k: number): number[] {
+    const n = nums.length;
+    const result: number[] = new Array(n).fill(-1);
+    const windowSize = 2 * k + 1;
+
+    // Edge case
+    if (windowSize > n) return result;
+
+    // Build prefix sum
+    const prefix: number[] = new Array(n + 1).fill(0);
+    for (let i = 0; i < n; i++) {
+        prefix[i + 1] = prefix[i] + nums[i];
+    }
+
+    // Calculate averages
+    for (let i = k; i < n - k; i++) {
+        const windowSum = prefix[i + k + 1] - prefix[i - k];
+        result[i] = Math.floor(windowSum / windowSize);
+    }
+
+    return result;
+}
+
+// Sliding window approach
+function getAveragesOptimized(nums: number[], k: number): number[] {
+    const n = nums.length;
+    const result: number[] = new Array(n).fill(-1);
+    const windowSize = 2 * k + 1;
+
+    if (windowSize > n) return result;
+
+    // Initial window sum
+    let windowSum = 0;
+    for (let i = 0; i < windowSize; i++) {
+        windowSum += nums[i];
+    }
+    result[k] = Math.floor(windowSum / windowSize);
+
+    // Slide window
+    for (let i = k + 1; i < n - k; i++) {
+        windowSum = windowSum - nums[i - k - 1] + nums[i + k];
+        result[i] = Math.floor(windowSum / windowSize);
+    }
+
+    return result;
+}
+```
+
+**Time Complexity**: O(n) - single pass to build prefix, single pass to calculate averages
+**Space Complexity**: O(n) for prefix sum, O(1) for sliding window (excluding result array)
 
 ---
 
