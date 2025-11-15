@@ -1,16 +1,55 @@
-# Language Teaching Guide - Interview Cheatsheet
+# Technical Stack Reference - Interview Cheatsheets
 
-Quick reference guides for languages and concepts commonly used in technical interviews.
+Comprehensive technical reference guides covering programming languages, databases, infrastructure, and DevOps tools.
 
 ---
 
 ## Table of Contents
 
-1. [Python Quick Reference](#python-quick-reference)
-2. [TypeScript/JavaScript Quick Reference](#typescriptjavascript-quick-reference)
-3. [Time & Space Complexity Cheat Sheet](#time--space-complexity-cheat-sheet)
-4. [Data Structure Quick Reference](#data-structure-quick-reference)
-5. [Common Algorithms Cheat Sheet](#common-algorithms-cheat-sheet)
+### Programming Languages
+- [Python](Python.md) - Syntax, data structures, libraries, and best practices
+- [TypeScript/JavaScript](TypeScript-JavaScript.md) - Modern JS/TS with types, async/await, and patterns
+- [Golang](Golang.md) - Go syntax, goroutines, channels, and concurrency
+- [Rust](Rust.md) - Ownership, borrowing, lifetimes, and systems programming
+
+### Databases
+- [SQL](SQL.md) - Queries, joins, indexing, clustering, and optimization
+- [NoSQL](NoSQL.md) - MongoDB, Redis, Cassandra, DynamoDB, sharding, and replication
+
+### Infrastructure & DevOps
+- [Docker](Docker.md) - Containers, images, Dockerfile, volumes, and networking
+- [Kubernetes](Kubernetes.md) - Container orchestration, deployments, services, and scaling
+- [Terraform](Terraform.md) - Infrastructure as Code for AWS, GCP, Azure
+
+### Caching & Performance
+- [Caching](Caching.md) - Strategies, Redis, Memcached, and distributed caching
+
+### Observability & Monitoring
+- [Elasticsearch](Elasticsearch.md) - Search and analytics engine
+- [Grafana](Grafana.md) - Monitoring dashboards and visualization
+
+### Networking
+- [Networking](Networking.md) - OSI model, TCP/IP, HTTP, and protocols
+
+---
+
+## Quick Links
+
+| Topic | Key Concepts |
+|-------|--------------|
+| [Python](Python.md) | Lists, dicts, comprehensions, decorators |
+| [TypeScript/JavaScript](TypeScript-JavaScript.md) | Promises, async/await, types, closures |
+| [Golang](Golang.md) | Goroutines, channels, interfaces |
+| [Rust](Rust.md) | Ownership, borrowing, lifetimes |
+| [SQL](SQL.md) | Joins, indexes, transactions, optimization |
+| [NoSQL](NoSQL.md) | MongoDB, Redis, Cassandra, sharding |
+| [Docker](Docker.md) | Images, containers, Dockerfile, compose |
+| [Kubernetes](Kubernetes.md) | Pods, deployments, services, scaling |
+| [Terraform](Terraform.md) | Resources, modules, state management |
+| [Caching](Caching.md) | Strategies, Redis, invalidation |
+| [Elasticsearch](Elasticsearch.md) | Indexing, queries, aggregations |
+| [Grafana](Grafana.md) | Dashboards, alerts, visualization |
+| [Networking](Networking.md) | OSI, TCP/IP, HTTP, protocols |
 
 ---
 
