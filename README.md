@@ -51,8 +51,8 @@ STAR method frameworks, common questions, and strategies for showcasing your imp
 
 ---
 
-### [4. Language Teaching](./4-Language-Teaching/README.md)
-Quick reference guides for Python, TypeScript/JavaScript, and other languages commonly used in interviews.
+### [5. Technical Stack Reference](./5-Technical-Stack/README.md)
+Comprehensive cheatsheets for programming languages (Python, TypeScript, Golang, Rust), databases (SQL, NoSQL), infrastructure (Docker, Kubernetes, Terraform), caching strategies, and monitoring tools (Elasticsearch, Grafana).
 
 ---
 
