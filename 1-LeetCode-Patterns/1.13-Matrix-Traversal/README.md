@@ -20,24 +20,210 @@ Matrix traversal is a pattern for navigating and processing 2D grids/matrices. I
 ### Visual Diagram
 
 ```
-4-Directional Movement:
+═══════════════════════════════════════════════════════════════════════════════
+                        DIRECTION ARRAYS & MOVEMENT
+═══════════════════════════════════════════════════════════════════════════════
+
+4-Directional Movement (Most Common):
         UP (-1, 0)
            ↑
-LEFT ←  [cell]  → RIGHT
-(0,-1)     ↓     (0, +1)
+           |
+LEFT ←─────•─────→ RIGHT
+(0,-1)     |     (0, +1)
+           ↓
        DOWN (+1, 0)
 
-8-Directional (with diagonals):
-  ↖  ↑  ↗
-  ←  •  →
-  ↙  ↓  ↘
+directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+             [RIGHT,  DOWN,   LEFT,    UP]
 
-Spiral Traversal:
-→ → → ↓
-      ↓
-↑ ← ← ↓
-↑     ↓
-→ → → ↓
+8-Directional Movement (with diagonals):
+  (-1,-1) (-1,0) (-1,+1)
+     ↖      ↑      ↗
+      \     |     /
+(0,-1) ← • → (0,+1)
+      /     |     \
+     ↙      ↓      ↘
+  (+1,-1) (+1,0) (+1,+1)
+
+directions = [(-1,-1), (-1,0), (-1,+1),
+              (0,-1),          (0,+1),
+              (+1,-1), (+1,0), (+1,+1)]
+
+═══════════════════════════════════════════════════════════════════════════════
+                         TRAVERSAL PATTERNS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. SPIRAL TRAVERSAL (Clockwise):
+   ┌─────────────────────────────────┐
+   │  1→  2→  3→  4→  5              │
+   │                 ↓               │
+   │ 14→ 15→ 16→ 17  6               │
+   │  ↑           ↓  ↓               │
+   │ 13  20→ 19  18  7               │
+   │  ↑      ↑   ↓   ↓               │
+   │ 12← 11← 10← 9   8               │
+   └─────────────────────────────────┘
+
+   Direction Order: RIGHT → DOWN → LEFT → UP → repeat
+   Use 4 boundaries that shrink: top, bottom, left, right
+
+2. DIAGONAL TRAVERSAL (Bottom-Left to Top-Right):
+   Grid:                 Output Order:
+   ┌──────────────┐      [1]
+   │ 1   2   3  4 │      [2, 5]
+   │ 5   6   7  8 │      [3, 6, 9]
+   │ 9  10  11 12 │      [4, 7, 10, 13]
+   │13  14  15 16 │      [8, 11, 14]
+   └──────────────┘      [12, 15]
+                         [16]
+   Pattern: Process diagonals where sum of indices (i+j) is constant
+
+3. ZIGZAG / WAVE TRAVERSAL:
+   Row 0:  A → B → C → D     (Left to Right)
+   Row 1:  H ← G ← F ← E     (Right to Left)
+   Row 2:  I → J → K → L     (Left to Right)
+   Row 3:  P ← O ← N ← M     (Right to Left)
+
+   Output: [A,B,C,D, E,F,G,H, I,J,K,L, M,N,O,P]
+   Toggle direction on each row
+
+4. LAYER-BY-LAYER (Onion Pattern):
+   ┌───────────────────┐
+   │ 1   1   1   1   1 │  Layer 1 (outer)
+   │ 1   2   2   2   1 │  Layer 2
+   │ 1   2   3   2   1 │  Layer 3 (center)
+   │ 1   2   2   2   1 │  Layer 2
+   │ 1   1   1   1   1 │  Layer 1 (outer)
+   └───────────────────┘
+   Process from outside to inside (or vice versa)
+
+═══════════════════════════════════════════════════════════════════════════════
+                      DFS VISUALIZATION IN GRID
+═══════════════════════════════════════════════════════════════════════════════
+
+Finding Connected Components (Islands):
+
+Initial Grid:          Step-by-Step DFS:           Final Result:
+┌─────────────┐        ┌─────────────┐             ┌─────────────┐
+│ 1  1  0  0 │        │ ①→ ②  0  0 │             │ V  V  0  0 │
+│ 1  0  0  1 │        │ ↓   0  0  ⑤ │             │ V  0  0  V │
+│ 0  0  1  1 │   →    │ 0   0  ⑥→ ↓ │      →      │ 0  0  V  V │
+│ 0  1  1  0 │        │ 0   ③→ ④  ⑦ │             │ 0  V  V  0 │
+└─────────────┘        └─────────────┘             └─────────────┘
+                       (Numbers = visit order)      (V = visited)
+
+Island Count: 2
+- Island 1: cells {(0,0), (0,1), (1,0)} - visited at steps ①②③
+- Island 2: cells {(1,3), (2,2), (2,3), (3,1), (3,2)} - visited at steps ⑤⑥⑦
+
+DFS Recursion Stack Visualization:
+Start at (0,0):
+│ dfs(0,0) → mark visited
+│   ├─→ dfs(0,1) → mark visited
+│   │     ├─→ dfs(0,2) → return (water)
+│   │     ├─→ dfs(1,1) → return (water)
+│   │     └─→ returns
+│   ├─→ dfs(1,0) → mark visited
+│   │     └─→ all neighbors visited/water
+│   └─→ returns
+
+═══════════════════════════════════════════════════════════════════════════════
+                      BFS VISUALIZATION IN GRID
+═══════════════════════════════════════════════════════════════════════════════
+
+Multi-Source BFS (Rotting Oranges):
+
+Initial State:          Minute 1:              Minute 2:              Minute 3:
+┌──────────┐           ┌──────────┐           ┌──────────┐           ┌──────────┐
+│ 2  1  1 │           │ 2  2  1 │           │ 2  2  2 │           │ 2  2  2 │
+│ 1  1  0 │    →      │ 2  1  0 │    →      │ 2  2  0 │    →      │ 2  2  0 │
+│ 0  1  1 │           │ 0  1  1 │           │ 0  2  1 │           │ 0  2  2 │
+└──────────┘           └──────────┘           └──────────┘           └──────────┘
+Legend: 2=rotten, 1=fresh, 0=empty
+
+BFS Queue Evolution:
+Initial:  Queue = [(0,0)]                    (all rotten oranges)
+Minute 1: Queue = [(0,1), (1,0)]            (newly rotten)
+Minute 2: Queue = [(0,2), (1,1), (2,1)]     (spread continues)
+Minute 3: Queue = [(2,2)]                    (final orange rots)
+
+Level-by-Level Processing:
+Level 0 (start): ■ ■ ■ ■ □ □ □ □ □
+                 └─┬─┘
+Level 1:           ■ ■ ■ ■ ■ □ □ □ □
+                       └─┬─┘
+Level 2:                 ■ ■ ■ ■ □ □ □
+                             └┬┘
+Level 3:                      ■ ■ □ □
+
+═══════════════════════════════════════════════════════════════════════════════
+                    SHORTEST PATH BFS EXAMPLE
+═══════════════════════════════════════════════════════════════════════════════
+
+Find shortest path from S to E (0=empty, 1=wall):
+
+Grid:                  Distance Map:           Path Reconstruction:
+┌──────────────┐      ┌──────────────┐        ┌──────────────┐
+│ S  0  0  1 │      │ 0  1  2  ∞ │        │ ●→ ●→ ●  █ │
+│ 0  1  0  1 │      │ 1  ∞  3  ∞ │        │ ●  █  ●  █ │
+│ 0  0  0  0 │  →   │ 2  3  4  5 │   →    │ □  □  ●→ ●│
+│ 1  1  0  E │      │ ∞  ∞  5  6 │        │ █  █  □  ●│
+└──────────────┘      └──────────────┘        └──────────────┘
+                      (Numbers = distance     (● = path)
+                       from S)                (█ = wall)
+
+BFS guarantees shortest path of length 7!
+
+═══════════════════════════════════════════════════════════════════════════════
+                    BOUNDARY HANDLING PATTERNS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Explicit Boundary Check:
+   if (0 <= row < rows and 0 <= col < cols):
+       # Valid cell, process it
+
+2. Border-Connected Regions (Surrounded Regions Problem):
+   ┌──────────────┐
+   │ X  X  X  X │  ← Top border: Mark all 'O' as SAFE
+   │ X  O  O  X │
+   │ X  X  O  X │
+   │ X  O  X  X │  ← Bottom border: Mark all 'O' as SAFE
+   └──────────────┘
+   ↑           ↑
+   Left        Right borders
+
+3. Four Corners Access:
+   Top-Left:     (0, 0)
+   Top-Right:    (0, cols-1)
+   Bottom-Left:  (rows-1, 0)
+   Bottom-Right: (rows-1, cols-1)
+
+═══════════════════════════════════════════════════════════════════════════════
+                    STATE ENCODING TRICKS
+═══════════════════════════════════════════════════════════════════════════════
+
+When you need to track both old and new states in-place:
+
+Game of Life Example:
+  Original → New     Encoded Value
+  ────────────────────────────────
+    0    →   0            0        (stay dead)
+    1    →   0            2        (die)
+    0    →   1            3        (become alive)
+    1    →   1            1        (stay alive)
+
+Decode: newState = encodedValue % 2
+Check original: originalState = (encodedValue == 1 or encodedValue == 2)
+
+Visual Example:
+Before:           Encoded:          After Decode:
+┌─────────┐      ┌─────────┐       ┌─────────┐
+│ 0  1  0 │      │ 0  2  0 │       │ 0  0  0 │
+│ 1  1  1 │  →   │ 3  1  2 │   →   │ 1  1  0 │
+│ 0  1  0 │      │ 0  3  0 │       │ 0  1  0 │
+└─────────┘      └─────────┘       └─────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
 ```
 
 ---
@@ -1628,6 +1814,1271 @@ function hasPath(maze: number[][], start: number[], destination: number[]): bool
 
 **Complexity**:
 - Time: O(m × n × max(m, n))
+- Space: O(m × n)
+
+---
+
+### 16. Max Area of Island (Medium)
+**LeetCode**: https://leetcode.com/problems/max-area-of-island/
+
+**Description**: Given a binary matrix where 1 represents land and 0 represents water, find the maximum area of an island. An island is a group of connected 1's (4-directionally).
+
+**Python Solution**:
+```python
+def maxAreaOfIsland(grid: list[list[int]]) -> int:
+    """
+    DFS to calculate area of each island and track maximum.
+
+    Visualization:
+    ┌──────────────────┐
+    │ 0  0  1  0  0  0 │
+    │ 0  1  1  1  0  0 │  Island area = 6
+    │ 0  1  0  1  0  0 │  (marked with *)
+    │ 1  1  0  0  0  0 │
+    │ 0  0  0  0  1  1 │  Island area = 2
+    └──────────────────┘
+
+    DFS Spread:
+    Start at (0,2):
+         *
+       * * *
+       *   *
+
+    Area count: 6 cells
+    """
+    if not grid or not grid[0]:
+        return 0
+
+    rows, cols = len(grid), len(grid[0])
+    max_area = 0
+
+    def dfs(r, c):
+        # Step 1: Boundary and validity check
+        if (r < 0 or r >= rows or c < 0 or c >= cols or
+            grid[r][c] != 1):
+            return 0
+
+        # Step 2: Mark current cell as visited
+        grid[r][c] = 0
+
+        # Step 3: Count current cell + all connected cells
+        area = 1
+
+        # Step 4: Explore all 4 directions and sum areas
+        area += dfs(r + 1, c)  # down
+        area += dfs(r - 1, c)  # up
+        area += dfs(r, c + 1)  # right
+        area += dfs(r, c - 1)  # left
+
+        return area
+
+    # Step 5: Try each cell as potential island start
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == 1:
+                # Step 6: Calculate area and update maximum
+                current_area = dfs(r, c)
+                max_area = max(max_area, current_area)
+
+    return max_area
+```
+
+**TypeScript Solution**:
+```typescript
+function maxAreaOfIsland(grid: number[][]): number {
+    if (!grid || grid.length === 0) return 0;
+
+    const rows = grid.length;
+    const cols = grid[0].length;
+    let maxArea = 0;
+
+    function dfs(r: number, c: number): number {
+        // Step 1: Validate boundaries and cell value
+        if (r < 0 || r >= rows || c < 0 || c >= cols ||
+            grid[r][c] !== 1) {
+            return 0;
+        }
+
+        // Step 2: Mark as visited
+        grid[r][c] = 0;
+
+        // Step 3: Count this cell
+        let area = 1;
+
+        // Step 4: Add areas from all 4 directions
+        area += dfs(r + 1, c);
+        area += dfs(r - 1, c);
+        area += dfs(r, c + 1);
+        area += dfs(r, c - 1);
+
+        return area;
+    }
+
+    // Step 5: Scan entire grid
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (grid[r][c] === 1) {
+                // Step 6: Track maximum area
+                const currentArea = dfs(r, c);
+                maxArea = Math.max(maxArea, currentArea);
+            }
+        }
+    }
+
+    return maxArea;
+}
+```
+
+**Complexity**:
+- Time: O(m × n) - visit each cell once
+- Space: O(m × n) - recursion stack depth
+
+---
+
+### 17. Island Perimeter (Easy)
+**LeetCode**: https://leetcode.com/problems/island-perimeter/
+
+**Description**: Given a grid where 1 is land and 0 is water, calculate the perimeter of the island. There is exactly one island, and it doesn't have lakes (water inside that isn't connected to water around the island).
+
+**Python Solution**:
+```python
+def islandPerimeter(grid: list[list[int]]) -> int:
+    """
+    Count perimeter by checking each land cell's neighbors.
+    Each land cell contributes 4, minus 1 for each adjacent land cell.
+
+    Visualization:
+    ┌─────────────┐
+    │ 0  1  0  0 │   Perimeter breakdown:
+    │ 1  1  1  0 │
+    │ 0  1  0  0 │   Top cell (0,1):    3 edges exposed
+    └─────────────┘   Left cell (1,0):  2 edges exposed
+                      Center cell (1,1): 0 edges exposed
+    Edge count:       Right cell (1,2): 2 edges exposed
+       1              Bottom cell (2,1): 3 edges exposed
+      ┌─┐
+    1 │ │ 1          Total perimeter = 3+2+0+2+3 = 10
+    ┌─┴─┴─┬─┐        Or: 5 cells × 4 - 4 internal edges × 2 = 20 - 8 = 12
+    │     │ │ 2
+    └──┬──┘ │        Alternative: Each cell adds 4, subtract 2 for
+       │ 2  │        each neighbor pair
+       └────┘
+         3
+    """
+    if not grid or not grid[0]:
+        return 0
+
+    rows, cols = len(grid), len(grid[0])
+    perimeter = 0
+
+    # Step 1: Iterate through each cell
+    for r in range(rows):
+        for c in range(cols):
+            # Step 2: Only process land cells
+            if grid[r][c] == 1:
+                # Step 3: Start with 4 sides
+                perimeter += 4
+
+                # Step 4: Subtract 1 for each adjacent land cell (shared edge)
+                # Check up
+                if r > 0 and grid[r-1][c] == 1:
+                    perimeter -= 1
+
+                # Check down
+                if r < rows - 1 and grid[r+1][c] == 1:
+                    perimeter -= 1
+
+                # Check left
+                if c > 0 and grid[r][c-1] == 1:
+                    perimeter -= 1
+
+                # Check right
+                if c < cols - 1 and grid[r][c+1] == 1:
+                    perimeter -= 1
+
+    return perimeter
+```
+
+**TypeScript Solution**:
+```typescript
+function islandPerimeter(grid: number[][]): number {
+    if (!grid || grid.length === 0) return 0;
+
+    const rows = grid.length;
+    const cols = grid[0].length;
+    let perimeter = 0;
+
+    // Step 1: Scan each cell
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            // Step 2: Process land cells only
+            if (grid[r][c] === 1) {
+                // Step 3: Each land cell starts with 4 edges
+                perimeter += 4;
+
+                // Step 4: Subtract shared edges with neighbors
+                // Up neighbor
+                if (r > 0 && grid[r-1][c] === 1) {
+                    perimeter -= 1;
+                }
+
+                // Down neighbor
+                if (r < rows - 1 && grid[r+1][c] === 1) {
+                    perimeter -= 1;
+                }
+
+                // Left neighbor
+                if (c > 0 && grid[r][c-1] === 1) {
+                    perimeter -= 1;
+                }
+
+                // Right neighbor
+                if (c < cols - 1 && grid[r][c+1] === 1) {
+                    perimeter -= 1;
+                }
+            }
+        }
+    }
+
+    return perimeter;
+}
+```
+
+**Complexity**:
+- Time: O(m × n)
+- Space: O(1)
+
+---
+
+### 18. Walls and Gates (Medium)
+**LeetCode**: https://leetcode.com/problems/walls-and-gates/ (Premium)
+
+**Description**: Fill each empty room with the distance to its nearest gate. -1 is a wall, 0 is a gate, and INF (2147483647) is an empty room.
+
+**Python Solution**:
+```python
+from collections import deque
+
+def wallsAndGates(rooms: list[list[int]]) -> None:
+    """
+    Multi-source BFS from all gates simultaneously.
+    BFS guarantees shortest distance.
+
+    Visualization:
+    Initial:              After BFS:
+    ┌──────────────┐     ┌──────────────┐
+    │ ∞  -1  0  ∞ │     │ 3  -1  0  1 │
+    │ ∞   ∞  ∞ -1 │  →  │ 2   2  1 -1 │
+    │ ∞  -1  ∞ -1 │     │ 1  -1  2 -1 │
+    │ 0  -1  ∞  ∞ │     │ 0  -1  3  4 │
+    └──────────────┘     └──────────────┘
+
+    BFS Wave from gates:
+    Level 0: [gates at (0,2) and (3,0)]
+    Level 1: Cells at distance 1 from any gate
+    Level 2: Cells at distance 2 from any gate
+    ...
+
+    Queue evolution:
+    Start:    [(0,2,0), (3,0,0)]
+    Round 1:  [(0,3,1), (1,2,1), (3,1,1)]
+    Round 2:  [(1,1,2), (1,3,2), ...]
+    """
+    if not rooms or not rooms[0]:
+        return
+
+    rows, cols = len(rooms), len(rooms[0])
+    INF = 2147483647
+    queue = deque()
+
+    # Step 1: Add all gates to queue (multi-source BFS)
+    for r in range(rows):
+        for c in range(cols):
+            if rooms[r][c] == 0:
+                queue.append((r, c))
+
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+
+    # Step 2: BFS from all gates
+    while queue:
+        r, c = queue.popleft()
+
+        # Step 3: Try all 4 directions
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+
+            # Step 4: Check if valid empty room
+            if (0 <= nr < rows and 0 <= nc < cols and
+                rooms[nr][nc] == INF):
+                # Step 5: Update distance (current distance + 1)
+                rooms[nr][nc] = rooms[r][c] + 1
+                # Step 6: Add to queue for further exploration
+                queue.append((nr, nc))
+```
+
+**TypeScript Solution**:
+```typescript
+function wallsAndGates(rooms: number[][]): void {
+    if (!rooms || rooms.length === 0) return;
+
+    const rows = rooms.length;
+    const cols = rooms[0].length;
+    const INF = 2147483647;
+    const queue: [number, number][] = [];
+
+    // Step 1: Find all gates and initialize queue
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (rooms[r][c] === 0) {
+                queue.push([r, c]);
+            }
+        }
+    }
+
+    const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+
+    // Step 2: Multi-source BFS
+    while (queue.length > 0) {
+        const [r, c] = queue.shift()!;
+
+        // Step 3: Explore neighbors
+        for (const [dr, dc] of directions) {
+            const nr = r + dr;
+            const nc = c + dc;
+
+            // Step 4: Validate and check if empty room
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols &&
+                rooms[nr][nc] === INF) {
+                // Step 5: Set distance
+                rooms[nr][nc] = rooms[r][c] + 1;
+                // Step 6: Continue BFS
+                queue.push([nr, nc]);
+            }
+        }
+    }
+}
+```
+
+**Complexity**:
+- Time: O(m × n)
+- Space: O(m × n) - queue size
+
+---
+
+### 19. Diagonal Traverse (Medium)
+**LeetCode**: https://leetcode.com/problems/diagonal-traverse/
+
+**Description**: Given an m × n matrix, return all elements in diagonal order (zigzag pattern).
+
+**Python Solution**:
+```python
+def findDiagonalOrder(mat: list[list[int]]) -> list[int]:
+    """
+    Traverse diagonals in zigzag pattern.
+
+    Visualization (3×4 matrix):
+    ┌─────────────────────┐
+    │  1→  2   5   9    │  Diagonal 0: [1]
+    │     ↗ ↓ ↗ ↓        │  Diagonal 1: [2,4] (going up)
+    │  4   3   6  10    │  Diagonal 2: [3,5,7] (going down)
+    │    ↗   ↗ ↓         │  Diagonal 3: [6,8] (going up)
+    │  7   8  11         │  Diagonal 4: [9,11] (going down)
+    │       ↗            │  Diagonal 5: [10]
+    │     12             │
+    └─────────────────────┘
+
+    Pattern:
+    - Even diagonals (0,2,4...): go DOWN-LEFT (↙)
+    - Odd diagonals (1,3,5...):  go UP-RIGHT (↗)
+
+    Algorithm: Use diagonal sum (r+c) to group elements
+    """
+    if not mat or not mat[0]:
+        return []
+
+    rows, cols = len(mat), len(mat[0])
+    result = []
+
+    # Step 1: Iterate through all diagonals (0 to rows+cols-2)
+    for diagonal in range(rows + cols - 1):
+        intermediate = []
+
+        # Step 2: Find starting row for this diagonal
+        # For diagonals 0 to rows-1: start from row=diagonal, col=0
+        # For diagonals >= rows: start from row=rows-1, col increases
+        row = 0 if diagonal < cols else diagonal - cols + 1
+        col = diagonal if diagonal < cols else cols - 1
+
+        # Step 3: Collect all elements in this diagonal
+        while row < rows and col >= 0:
+            intermediate.append(mat[row][col])
+            row += 1
+            col -= 1
+
+        # Step 4: Reverse for odd diagonals (going up)
+        if diagonal % 2 == 0:
+            result.extend(intermediate[::-1])
+        else:
+            result.extend(intermediate)
+
+    return result
+```
+
+**TypeScript Solution**:
+```typescript
+function findDiagonalOrder(mat: number[][]): number[] {
+    if (!mat || mat.length === 0) return [];
+
+    const rows = mat.length;
+    const cols = mat[0].length;
+    const result: number[] = [];
+
+    // Step 1: Process each diagonal
+    for (let diagonal = 0; diagonal < rows + cols - 1; diagonal++) {
+        const intermediate: number[] = [];
+
+        // Step 2: Determine starting position
+        let row = diagonal < cols ? 0 : diagonal - cols + 1;
+        let col = diagonal < cols ? diagonal : cols - 1;
+
+        // Step 3: Traverse diagonal
+        while (row < rows && col >= 0) {
+            intermediate.push(mat[row][col]);
+            row++;
+            col--;
+        }
+
+        // Step 4: Reverse for even diagonals
+        if (diagonal % 2 === 0) {
+            result.push(...intermediate.reverse());
+        } else {
+            result.push(...intermediate);
+        }
+    }
+
+    return result;
+}
+```
+
+**Complexity**:
+- Time: O(m × n)
+- Space: O(1) excluding output
+
+---
+
+### 20. Number of Distinct Islands (Medium)
+**LeetCode**: https://leetcode.com/problems/number-of-distinct-islands/ (Premium)
+
+**Description**: Count the number of distinct islands. Two islands are considered the same if one can be translated (not rotated or reflected) to equal the other.
+
+**Python Solution**:
+```python
+def numDistinctIslands(grid: list[list[int]]) -> int:
+    """
+    Use path signature to identify unique island shapes.
+    Record the path taken during DFS as island's "signature".
+
+    Visualization:
+    ┌─────────────────┐
+    │ 1  1  0  1  1 │  Island 1: "DRU" (Down,Right,Up)
+    │ 0  1  0  0  1 │  Island 2: "DR" (Down,Right)
+    │ 0  0  0  1  1 │  Island 3: "DRU" (same as Island 1)
+    └─────────────────┘
+
+    Path encoding during DFS:
+    Start → D (down) → R (right) → U (up) → back
+
+    Signature: "DRUB" where B = backtrack
+    Using relative positions: [(0,0), (1,0), (1,1), (0,1)]
+    """
+    if not grid or not grid[0]:
+        return 0
+
+    rows, cols = len(grid), len(grid[0])
+    distinct_islands = set()
+
+    def dfs(r, c, start_r, start_c, path):
+        # Step 1: Boundary check
+        if (r < 0 or r >= rows or c < 0 or c >= cols or
+            grid[r][c] != 1):
+            return
+
+        # Step 2: Mark visited
+        grid[r][c] = 0
+
+        # Step 3: Record relative position from island start
+        path.append((r - start_r, c - start_c))
+
+        # Step 4: Explore all 4 directions
+        dfs(r + 1, c, start_r, start_c, path)  # Down
+        dfs(r - 1, c, start_r, start_c, path)  # Up
+        dfs(r, c + 1, start_r, start_c, path)  # Right
+        dfs(r, c - 1, start_r, start_c, path)  # Left
+
+    # Step 5: Find all islands
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == 1:
+                # Step 6: Explore island and record path
+                path = []
+                dfs(r, c, r, c, path)
+
+                # Step 7: Add normalized path to set
+                distinct_islands.add(tuple(path))
+
+    return len(distinct_islands)
+```
+
+**TypeScript Solution**:
+```typescript
+function numDistinctIslands(grid: number[][]): number {
+    if (!grid || grid.length === 0) return 0;
+
+    const rows = grid.length;
+    const cols = grid[0].length;
+    const distinctIslands = new Set<string>();
+
+    function dfs(r: number, c: number, startR: number, startC: number,
+                 path: number[][]): void {
+        // Step 1: Validate cell
+        if (r < 0 || r >= rows || c < 0 || c >= cols ||
+            grid[r][c] !== 1) {
+            return;
+        }
+
+        // Step 2: Mark as visited
+        grid[r][c] = 0;
+
+        // Step 3: Store relative coordinates
+        path.push([r - startR, c - startC]);
+
+        // Step 4: DFS in all directions
+        dfs(r + 1, c, startR, startC, path);
+        dfs(r - 1, c, startR, startC, path);
+        dfs(r, c + 1, startR, startC, path);
+        dfs(r, c - 1, startR, startC, path);
+    }
+
+    // Step 5: Process each island
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (grid[r][c] === 1) {
+                // Step 6: Get island signature
+                const path: number[][] = [];
+                dfs(r, c, r, c, path);
+
+                // Step 7: Convert to string and store
+                const signature = JSON.stringify(path);
+                distinctIslands.add(signature);
+            }
+        }
+    }
+
+    return distinctIslands.size;
+}
+```
+
+**Complexity**:
+- Time: O(m × n)
+- Space: O(m × n)
+
+---
+
+### 21. Shortest Bridge (Medium)
+**LeetCode**: https://leetcode.com/problems/shortest-bridge/
+
+**Description**: Given a binary matrix with exactly two islands, find the smallest number of flips required to connect the two islands (change 0's to 1's).
+
+**Python Solution**:
+```python
+from collections import deque
+
+def shortestBridge(grid: list[list[int]]) -> int:
+    """
+    Two-phase approach:
+    1. DFS to find first island and add all cells to queue
+    2. BFS from first island to find shortest path to second island
+
+    Visualization:
+    ┌───────────────┐
+    │ 0  1  0  0  0 │  Phase 1: Find island 1 (marked with A)
+    │ 0  1  0  0  0 │  Phase 2: Expand from A until reaching B
+    │ 0  0  0  1  0 │
+    │ 0  0  0  1  1 │  Shortest bridge: 2 flips
+    └───────────────┘  (cells between the islands)
+
+    BFS Expansion:
+    Distance 0: ██ (island 1)
+    Distance 1: ░░ (1 flip)
+    Distance 2: ▒▒ (2 flips) - reaches island 2!
+    """
+    n = len(grid)
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+
+    # Step 1: Find first island using DFS
+    def dfs(r, c):
+        if (r < 0 or r >= n or c < 0 or c >= n or
+            grid[r][c] != 1):
+            return
+
+        # Mark as visited and add to queue
+        grid[r][c] = 2
+        queue.append((r, c, 0))  # (row, col, distance)
+
+        # Explore all cells in this island
+        for dr, dc in directions:
+            dfs(r + dr, c + dc)
+
+    # Step 2: Find first 1 and mark entire first island
+    queue = deque()
+    found = False
+    for r in range(n):
+        if found:
+            break
+        for c in range(n):
+            if grid[r][c] == 1:
+                dfs(r, c)
+                found = True
+                break
+
+    # Step 3: BFS from first island to second island
+    while queue:
+        r, c, dist = queue.popleft()
+
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+
+            # Check bounds
+            if nr < 0 or nr >= n or nc < 0 or nc >= n:
+                continue
+
+            # Step 4: Found second island!
+            if grid[nr][nc] == 1:
+                return dist
+
+            # Step 5: Expand through water
+            if grid[nr][nc] == 0:
+                grid[nr][nc] = 2  # Mark as visited
+                queue.append((nr, nc, dist + 1))
+
+    return -1
+```
+
+**TypeScript Solution**:
+```typescript
+function shortestBridge(grid: number[][]): number {
+    const n = grid.length;
+    const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+    const queue: [number, number, number][] = [];
+
+    // Step 1: DFS to mark first island
+    function dfs(r: number, c: number): void {
+        if (r < 0 || r >= n || c < 0 || c >= n ||
+            grid[r][c] !== 1) {
+            return;
+        }
+
+        // Mark cell and add to BFS queue
+        grid[r][c] = 2;
+        queue.push([r, c, 0]);
+
+        // Continue DFS
+        for (const [dr, dc] of directions) {
+            dfs(r + dr, c + dc);
+        }
+    }
+
+    // Step 2: Find and mark first island
+    let found = false;
+    for (let r = 0; r < n && !found; r++) {
+        for (let c = 0; c < n && !found; c++) {
+            if (grid[r][c] === 1) {
+                dfs(r, c);
+                found = true;
+            }
+        }
+    }
+
+    // Step 3: BFS to find shortest bridge
+    while (queue.length > 0) {
+        const [r, c, dist] = queue.shift()!;
+
+        for (const [dr, dc] of directions) {
+            const nr = r + dr;
+            const nc = c + dc;
+
+            // Boundary check
+            if (nr < 0 || nr >= n || nc < 0 || nc >= n) {
+                continue;
+            }
+
+            // Step 4: Reached second island
+            if (grid[nr][nc] === 1) {
+                return dist;
+            }
+
+            // Step 5: Continue through water
+            if (grid[nr][nc] === 0) {
+                grid[nr][nc] = 2;
+                queue.push([nr, nc, dist + 1]);
+            }
+        }
+    }
+
+    return -1;
+}
+```
+
+**Complexity**:
+- Time: O(n²)
+- Space: O(n²)
+
+---
+
+### 22. As Far from Land as Possible (Medium)
+**LeetCode**: https://leetcode.com/problems/as-far-from-land-as-possible/
+
+**Description**: Given an n×n grid containing only 0's (water) and 1's (land), find a water cell such that its distance to the nearest land cell is maximized. Return the distance. If no land or no water exists, return -1.
+
+**Python Solution**:
+```python
+from collections import deque
+
+def maxDistance(grid: list[list[int]]) -> int:
+    """
+    Multi-source BFS from all land cells.
+    Track maximum distance reached.
+
+    Visualization:
+    Initial:           Distance map:
+    ┌──────────┐      ┌──────────┐
+    │ 1  0  0 │      │ 0  1  2 │
+    │ 0  0  0 │  →   │ 1  2  3 │
+    │ 0  0  1 │      │ 2  1  0 │
+    └──────────┘      └──────────┘
+
+    Max distance = 3 (center-right cell)
+
+    BFS waves:
+    Wave 0: ■ □ □    (land cells)
+            □ □ □
+            □ □ ■
+
+    Wave 1: ■ ● □    (distance 1)
+            ● □ □
+            □ ● ■
+
+    Wave 2: ■ ● ◆    (distance 2)
+            ● ◆ ●
+            ◆ ● ■
+    """
+    n = len(grid)
+    queue = deque()
+
+    # Step 1: Add all land cells to queue
+    for r in range(n):
+        for c in range(n):
+            if grid[r][c] == 1:
+                queue.append((r, c))
+
+    # Step 2: Edge cases - all land or all water
+    if len(queue) == 0 or len(queue) == n * n:
+        return -1
+
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    max_distance = -1
+
+    # Step 3: BFS from all land cells
+    while queue:
+        r, c = queue.popleft()
+
+        # Step 4: Try all 4 directions
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+
+            # Step 5: Check if valid water cell
+            if (0 <= nr < n and 0 <= nc < n and
+                grid[nr][nc] == 0):
+                # Step 6: Calculate distance (current + 1)
+                grid[nr][nc] = grid[r][c] + 1
+                max_distance = max(max_distance, grid[nr][nc] - 1)
+                queue.append((nr, nc))
+
+    return max_distance
+```
+
+**TypeScript Solution**:
+```typescript
+function maxDistance(grid: number[][]): number {
+    const n = grid.length;
+    const queue: [number, number][] = [];
+
+    // Step 1: Initialize queue with all land cells
+    for (let r = 0; r < n; r++) {
+        for (let c = 0; c < n; c++) {
+            if (grid[r][c] === 1) {
+                queue.push([r, c]);
+            }
+        }
+    }
+
+    // Step 2: Handle edge cases
+    if (queue.length === 0 || queue.length === n * n) {
+        return -1;
+    }
+
+    const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+    let maxDistance = -1;
+
+    // Step 3: Multi-source BFS
+    while (queue.length > 0) {
+        const [r, c] = queue.shift()!;
+
+        // Step 4: Explore neighbors
+        for (const [dr, dc] of directions) {
+            const nr = r + dr;
+            const nc = c + dc;
+
+            // Step 5: Process water cells
+            if (nr >= 0 && nr < n && nc >= 0 && nc < n &&
+                grid[nr][nc] === 0) {
+                // Step 6: Update distance
+                grid[nr][nc] = grid[r][c] + 1;
+                maxDistance = Math.max(maxDistance, grid[nr][nc] - 1);
+                queue.push([nr, nc]);
+            }
+        }
+    }
+
+    return maxDistance;
+}
+```
+
+**Complexity**:
+- Time: O(n²)
+- Space: O(n²)
+
+---
+
+### 23. Count Sub Islands (Medium)
+**LeetCode**: https://leetcode.com/problems/count-sub-islands/
+
+**Description**: Given two binary matrices grid1 and grid2, count the number of islands in grid2 that are also islands in grid1 (sub-islands). An island in grid2 is a sub-island if there exists an island in grid1 that contains all cells of this island.
+
+**Python Solution**:
+```python
+def countSubIslands(grid1: list[list[int]], grid2: list[list[int]]) -> int:
+    """
+    DFS on grid2 islands, checking if all cells exist in grid1.
+
+    Visualization:
+    grid1:             grid2:             Analysis:
+    ┌──────────┐      ┌──────────┐
+    │ 1  1  1 │      │ 1  1  0 │      Island A: SUB-ISLAND ✓
+    │ 0  0  1 │      │ 0  0  0 │      (all cells in grid1)
+    │ 1  1  1 │      │ 1  1  1 │      Island B: NOT sub-island ✗
+    │ 1  0  1 │      │ 0  1  1 │      (some cells not in grid1)
+    └──────────┘      └──────────┘
+
+    Check process for each island in grid2:
+    1. DFS to find all cells in island
+    2. Verify every cell is also land in grid1
+    3. Count if verification passes
+    """
+    if not grid1 or not grid2:
+        return 0
+
+    rows, cols = len(grid2), len(grid2[0])
+
+    def dfs(r, c):
+        # Step 1: Boundary check
+        if r < 0 or r >= rows or c < 0 or c >= cols:
+            return True
+
+        # Step 2: Water or already visited
+        if grid2[r][c] == 0:
+            return True
+
+        # Step 3: Mark as visited in grid2
+        grid2[r][c] = 0
+
+        # Step 4: Check if this cell exists in grid1
+        is_sub_island = grid1[r][c] == 1
+
+        # Step 5: Check all 4 directions (use AND to propagate failure)
+        is_sub_island &= dfs(r + 1, c)
+        is_sub_island &= dfs(r - 1, c)
+        is_sub_island &= dfs(r, c + 1)
+        is_sub_island &= dfs(r, c - 1)
+
+        return is_sub_island
+
+    # Step 6: Count sub-islands
+    sub_island_count = 0
+    for r in range(rows):
+        for c in range(cols):
+            if grid2[r][c] == 1:
+                # Step 7: Check if entire island is a sub-island
+                if dfs(r, c):
+                    sub_island_count += 1
+
+    return sub_island_count
+```
+
+**TypeScript Solution**:
+```typescript
+function countSubIslands(grid1: number[][], grid2: number[][]): number {
+    if (!grid1 || !grid2) return 0;
+
+    const rows = grid2.length;
+    const cols = grid2[0].length;
+
+    function dfs(r: number, c: number): boolean {
+        // Step 1: Bounds check
+        if (r < 0 || r >= rows || c < 0 || c >= cols) {
+            return true;
+        }
+
+        // Step 2: Skip water and visited cells
+        if (grid2[r][c] === 0) {
+            return true;
+        }
+
+        // Step 3: Mark visited
+        grid2[r][c] = 0;
+
+        // Step 4: Verify cell exists in grid1
+        let isSubIsland = grid1[r][c] === 1;
+
+        // Step 5: Check all neighbors
+        isSubIsland = dfs(r + 1, c) && isSubIsland;
+        isSubIsland = dfs(r - 1, c) && isSubIsland;
+        isSubIsland = dfs(r, c + 1) && isSubIsland;
+        isSubIsland = dfs(r, c - 1) && isSubIsland;
+
+        return isSubIsland;
+    }
+
+    // Step 6: Iterate and count
+    let subIslandCount = 0;
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (grid2[r][c] === 1) {
+                // Step 7: Validate entire island
+                if (dfs(r, c)) {
+                    subIslandCount++;
+                }
+            }
+        }
+    }
+
+    return subIslandCount;
+}
+```
+
+**Complexity**:
+- Time: O(m × n)
+- Space: O(m × n) - recursion stack
+
+---
+
+### 24. Shortest Distance from All Buildings (Hard)
+**LeetCode**: https://leetcode.com/problems/shortest-distance-from-all-buildings/ (Premium)
+
+**Description**: You want to build a house on an empty land which reaches all buildings in the shortest distance. 0 is empty land, 1 is a building, and 2 is an obstacle. Return the shortest distance, or -1 if impossible.
+
+**Python Solution**:
+```python
+from collections import deque
+
+def shortestDistance(grid: list[list[int]]) -> int:
+    """
+    BFS from each building to calculate cumulative distances.
+    Find empty land with minimum total distance to all buildings.
+
+    Visualization:
+    Grid:              Distance sums:
+    ┌──────────┐      ┌──────────┐
+    │ 1  0  2 │      │ 1  3  2 │
+    │ 0  0  0 │  →   │ 3  4  ∞ │  (∞ = can't reach all buildings)
+    │ 0  0  1 │      │ 4  3  1 │
+    └──────────┘      └──────────┘
+
+    Minimum total distance = 3
+
+    For each building:
+    - BFS to all reachable empty lands
+    - Accumulate distances
+    - Track which lands can reach all buildings
+    """
+    if not grid or not grid[0]:
+        return -1
+
+    rows, cols = len(grid), len(grid[0])
+    total_buildings = sum(row.count(1) for row in grid)
+
+    # Distance sum and reachable building count for each cell
+    distance_sum = [[0] * cols for _ in range(rows)]
+    reach_count = [[0] * cols for _ in range(rows)]
+
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+
+    def bfs(start_r, start_c):
+        # Step 1: BFS from one building
+        visited = [[False] * cols for _ in range(rows)]
+        queue = deque([(start_r, start_c, 0)])
+        visited[start_r][start_c] = True
+
+        while queue:
+            r, c, dist = queue.popleft()
+
+            # Step 2: Explore neighbors
+            for dr, dc in directions:
+                nr, nc = r + dr, c + dc
+
+                # Step 3: Check if valid empty land
+                if (0 <= nr < rows and 0 <= nc < cols and
+                    not visited[nr][nc] and grid[nr][nc] == 0):
+
+                    visited[nr][nc] = True
+                    # Step 4: Update distance and reach count
+                    distance_sum[nr][nc] += dist + 1
+                    reach_count[nr][nc] += 1
+                    queue.append((nr, nc, dist + 1))
+
+    # Step 5: Run BFS from each building
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == 1:
+                bfs(r, c)
+
+    # Step 6: Find minimum distance among cells that reach all buildings
+    min_distance = float('inf')
+    for r in range(rows):
+        for c in range(cols):
+            # Step 7: Check if this empty land reaches all buildings
+            if (grid[r][c] == 0 and
+                reach_count[r][c] == total_buildings):
+                min_distance = min(min_distance, distance_sum[r][c])
+
+    return min_distance if min_distance != float('inf') else -1
+```
+
+**TypeScript Solution**:
+```typescript
+function shortestDistance(grid: number[][]): number {
+    if (!grid || grid.length === 0) return -1;
+
+    const rows = grid.length;
+    const cols = grid[0].length;
+
+    // Count total buildings
+    let totalBuildings = 0;
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (grid[r][c] === 1) totalBuildings++;
+        }
+    }
+
+    // Track distance sums and building reach count
+    const distanceSum: number[][] = Array(rows).fill(0)
+        .map(() => Array(cols).fill(0));
+    const reachCount: number[][] = Array(rows).fill(0)
+        .map(() => Array(cols).fill(0));
+
+    const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+
+    function bfs(startR: number, startC: number): void {
+        // Step 1: Initialize BFS
+        const visited: boolean[][] = Array(rows).fill(false)
+            .map(() => Array(cols).fill(false));
+        const queue: [number, number, number][] = [[startR, startC, 0]];
+        visited[startR][startC] = true;
+
+        while (queue.length > 0) {
+            const [r, c, dist] = queue.shift()!;
+
+            // Step 2: Check all directions
+            for (const [dr, dc] of directions) {
+                const nr = r + dr;
+                const nc = c + dc;
+
+                // Step 3: Process empty land
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols &&
+                    !visited[nr][nc] && grid[nr][nc] === 0) {
+
+                    visited[nr][nc] = true;
+                    // Step 4: Accumulate distance
+                    distanceSum[nr][nc] += dist + 1;
+                    reachCount[nr][nc]++;
+                    queue.push([nr, nc, dist + 1]);
+                }
+            }
+        }
+    }
+
+    // Step 5: BFS from each building
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (grid[r][c] === 1) {
+                bfs(r, c);
+            }
+        }
+    }
+
+    // Step 6: Find optimal location
+    let minDistance = Infinity;
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (grid[r][c] === 0 && reachCount[r][c] === totalBuildings) {
+                minDistance = Math.min(minDistance, distanceSum[r][c]);
+            }
+        }
+    }
+
+    return minDistance === Infinity ? -1 : minDistance;
+}
+```
+
+**Complexity**:
+- Time: O(m² × n² × B) where B is number of buildings
+- Space: O(m × n)
+
+---
+
+### 25. Detect Cycles in 2D Grid (Medium)
+**LeetCode**: https://leetcode.com/problems/detect-cycles-in-2d-grid/
+
+**Description**: Given a 2D grid of characters, return true if there is a cycle in the grid. A cycle is a path of same characters where you can return to the starting cell after at least 4 moves (in 4 directions).
+
+**Python Solution**:
+```python
+def containsCycle(grid: list[list[str]]) -> bool:
+    """
+    Use DFS with parent tracking to detect cycles.
+    A cycle exists if we visit a cell that's already visited,
+    and it's not the parent cell we came from.
+
+    Visualization of a cycle:
+    ┌───────────────┐
+    │ a  a  a  a  │
+    │ a  b  b  a  │  'a' forms a cycle
+    │ a  b  b  a  │  (outer ring)
+    │ a  a  a  a  │
+    └───────────────┘
+
+    DFS path: (0,0)→(0,1)→(0,2)→(0,3)→(1,3)→(2,3)→(3,3)→...→(0,0) [CYCLE!]
+
+    Parent tracking prevents false positives:
+    Current at (1,1), came from (0,1)
+    - (0,1) is parent → skip
+    - (1,0) is visited but not parent → CYCLE FOUND
+    """
+    if not grid or not grid[0]:
+        return False
+
+    rows, cols = len(grid), len(grid[0])
+    visited = [[False] * cols for _ in range(rows)]
+
+    def dfs(r, c, parent_r, parent_c, char):
+        # Step 1: Mark current cell as visited
+        visited[r][c] = True
+
+        # Step 2: Check all 4 directions
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+
+            # Step 3: Check boundaries and same character
+            if (0 <= nr < rows and 0 <= nc < cols and
+                grid[nr][nc] == char):
+
+                # Step 4: Skip parent cell
+                if nr == parent_r and nc == parent_c:
+                    continue
+
+                # Step 5: Found visited cell that's not parent → cycle!
+                if visited[nr][nc]:
+                    return True
+
+                # Step 6: Continue DFS
+                if dfs(nr, nc, r, c, char):
+                    return True
+
+        return False
+
+    # Step 7: Try DFS from each unvisited cell
+    for r in range(rows):
+        for c in range(cols):
+            if not visited[r][c]:
+                if dfs(r, c, -1, -1, grid[r][c]):
+                    return True
+
+    return False
+```
+
+**TypeScript Solution**:
+```typescript
+function containsCycle(grid: string[][]): boolean {
+    if (!grid || grid.length === 0) return false;
+
+    const rows = grid.length;
+    const cols = grid[0].length;
+    const visited: boolean[][] = Array(rows).fill(false)
+        .map(() => Array(cols).fill(false));
+
+    function dfs(r: number, c: number, parentR: number,
+                 parentC: number, char: string): boolean {
+        // Step 1: Mark visited
+        visited[r][c] = true;
+
+        // Step 2: Explore neighbors
+        const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+        for (const [dr, dc] of directions) {
+            const nr = r + dr;
+            const nc = c + dc;
+
+            // Step 3: Check validity and same character
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols &&
+                grid[nr][nc] === char) {
+
+                // Step 4: Don't go back to parent
+                if (nr === parentR && nc === parentC) {
+                    continue;
+                }
+
+                // Step 5: Cycle detected
+                if (visited[nr][nc]) {
+                    return true;
+                }
+
+                // Step 6: Recursive DFS
+                if (dfs(nr, nc, r, c, char)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    // Step 7: Check all cells
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (!visited[r][c]) {
+                if (dfs(r, c, -1, -1, grid[r][c])) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+```
+
+**Complexity**:
+- Time: O(m × n)
 - Space: O(m × n)
 
 ---

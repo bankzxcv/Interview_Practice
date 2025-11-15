@@ -24,7 +24,7 @@ Binary Tree Traversal is the process of visiting all nodes in a binary tree in a
 ### Visual Diagram
 
 ```
-Binary Tree:
+Binary Tree Example:
         1
        / \
       2   3
@@ -43,6 +43,358 @@ Memory Aid:
 PRE-order:  Process ROOT first (before children)
 IN-order:   Process root IN the middle
 POST-order: Process root AFTER children (POSTpone root)
+```
+
+### Detailed Visualizations
+
+#### 1. PREORDER Traversal (Root → Left → Right)
+
+```
+Step-by-Step Execution:
+        [1]  ← START: Process root first
+       /   \
+      2     3
+     / \
+    4   5
+
+Order of Processing:
+  Step 1: Visit 1 (root)         → Output: [1]
+          Go left ↓
+
+        1
+       /↓\
+     [2]  3    Step 2: Visit 2   → Output: [1, 2]
+     / \       Go left ↓
+    4   5
+
+        1
+       / \
+      2   3
+     /↓\       Step 3: Visit 4   → Output: [1, 2, 4]
+   [4]  5      No children, backtrack ↑
+
+        1
+       / \
+      2   3    Step 4: Visit 5   → Output: [1, 2, 4, 5]
+     / \↓      No children, backtrack ↑↑
+    4  [5]
+
+        1
+       / \↓    Step 5: Visit 3   → Output: [1, 2, 4, 5, 3]
+      2  [3]   No children, DONE!
+     / \
+    4   5
+
+Visual Path (arrows show visiting order):
+        1①
+       ↙ ↘
+      2②  3⑤
+     ↙ ↘
+    4③  5④
+
+Final Output: [1, 2, 4, 5, 3]
+```
+
+#### 2. INORDER Traversal (Left → Root → Right)
+
+```
+Step-by-Step Execution:
+        1
+       / \
+      2   3     Key: Go LEFT as far as possible first!
+     / \
+    4   5
+
+Order of Processing:
+  Step 1: Start at 1, go left to 2, go left to 4
+
+        1
+       / \
+      2   3
+     /↓\       Leftmost node = 4
+   [4]  5      Visit 4 FIRST!  → Output: [4]
+
+        1
+       / \
+     [2]  3    Step 2: Backtrack to 2, visit it
+     /↑\       (left subtree done) → Output: [4, 2]
+    4   5      Now go right ↓
+
+        1
+       / \
+      2   3    Step 3: Visit 5   → Output: [4, 2, 5]
+     / \↓      No children, backtrack ↑↑
+    4  [5]
+
+       [1]     Step 4: Visit 1   → Output: [4, 2, 5, 1]
+       /↑\     (left subtree done)
+      2   3    Now go right ↓
+     / \
+    4   5
+
+        1
+       / \↓    Step 5: Visit 3   → Output: [4, 2, 5, 1, 3]
+      2  [3]   DONE!
+     / \
+    4   5
+
+Visual Path (numbers show visiting order):
+        1④
+       / \
+      2②  3⑤
+     / \
+    4①  5③
+
+For BST, this gives SORTED ORDER!
+Example BST:      Inorder Result:
+      4           [1, 2, 3, 4, 5, 6, 7]
+     / \          ← Sorted ascending!
+    2   6
+   / \ / \
+  1  3 5  7
+
+Final Output: [4, 2, 5, 1, 3]
+```
+
+#### 3. POSTORDER Traversal (Left → Right → Root)
+
+```
+Step-by-Step Execution:
+        1
+       / \
+      2   3     Key: Process ROOT LAST (children first)
+     / \
+    4   5
+
+Order of Processing:
+  Step 1: Go left to 2, then left to 4
+
+        1
+       / \
+      2   3
+     /↓\       Step 2: Visit 4   → Output: [4]
+   [4]  5      (no children, so visit immediately)
+
+        1
+       / \
+      2   3    Step 3: Visit 5   → Output: [4, 5]
+     / \↓      (no children)
+    4  [5]
+
+        1      Step 4: NOW visit 2 → Output: [4, 5, 2]
+       / \     (both children processed)
+     [2]  3
+     /↑\↑
+    4   5
+
+        1
+       / \↓    Step 5: Visit 3   → Output: [4, 5, 2, 3]
+      2  [3]
+     / \
+    4   5
+
+       [1]     Step 6: Finally visit 1 → Output: [4, 5, 2, 3, 1]
+       /↑\↑    (all children done, visit root LAST)
+      2   3
+     / \
+    4   5
+
+Visual Path (numbers show visiting order):
+        1⑤
+       / \
+      2④  3④
+     / \
+    4①  5②
+
+Use Case: Deleting tree (delete children before parent)
+         Calculating directory sizes (sum children first)
+
+Final Output: [4, 5, 2, 3, 1]
+```
+
+#### 4. LEVEL-ORDER Traversal (BFS - Breadth-First)
+
+```
+Step-by-Step Execution with Queue:
+
+        1          Level 0
+       / \
+      2   3        Level 1
+     / \
+    4   5          Level 2
+
+Queue Operations:
+┌─────────────────────────────────────────────────────┐
+│ Initial: queue = [1]                                │
+├─────────────────────────────────────────────────────┤
+│ Step 1: Dequeue 1, process it    → Output: [1]     │
+│         Enqueue children: [2, 3]                    │
+│         Queue: [2, 3]                               │
+├─────────────────────────────────────────────────────┤
+│ Step 2: Dequeue 2, process it    → Output: [1, 2]  │
+│         Enqueue children: [4, 5]                    │
+│         Queue: [3, 4, 5]                            │
+├─────────────────────────────────────────────────────┤
+│ Step 3: Dequeue 3, process it    → Output: [1,2,3] │
+│         No children                                 │
+│         Queue: [4, 5]                               │
+├─────────────────────────────────────────────────────┤
+│ Step 4: Dequeue 4, process it  → Output: [1,2,3,4] │
+│         No children                                 │
+│         Queue: [5]                                  │
+├─────────────────────────────────────────────────────┤
+│ Step 5: Dequeue 5, process it  → Output: [1,2,3,4,5]
+│         No children                                 │
+│         Queue: []  ← Empty, DONE!                   │
+└─────────────────────────────────────────────────────┘
+
+Level-by-Level Visualization:
+════════════════════════════════════════════════
+Level 0:  [1]          ← Root level
+          ╱ ╲
+Level 1: [2] [3]       ← Process left to right
+         ╱ ╲
+Level 2:[4] [5]        ← Process left to right
+════════════════════════════════════════════════
+
+More Complex Example:
+              8                    Level 0: [8]
+           ╱     ╲
+          3       10               Level 1: [3, 10]
+        ╱  ╲       ╲
+       1    6       14             Level 2: [1, 6, 14]
+           ╱ ╲     ╱
+          4   7   13               Level 3: [4, 7, 13]
+
+Result: [[8], [3, 10], [1, 6, 14], [4, 7, 13]]
+
+Final Output: [1, 2, 3, 4, 5]
+```
+
+#### 5. Recursive Call Stack Visualization
+
+```
+PREORDER Call Stack Example:
+        1
+       / \
+      2   3
+     /
+    4
+
+Call Stack Evolution (→ indicates active call):
+
+┌────────────────────────────────────────────────┐
+│ [START] preorder(1)                            │
+│   ├─ Process 1          Output: [1]            │
+│   ├─→ Call preorder(2)                         │
+│      ├─ Process 2       Output: [1, 2]         │
+│      ├─→ Call preorder(4)                      │
+│      │   ├─ Process 4   Output: [1, 2, 4]      │
+│      │   ├─ Call preorder(null) → return       │
+│      │   └─ Call preorder(null) → return       │
+│      ├─← Return from preorder(4)               │
+│      └─ Call preorder(null) → return           │
+│   ├─← Return from preorder(2)                  │
+│   └─→ Call preorder(3)                         │
+│      ├─ Process 3       Output: [1, 2, 4, 3]   │
+│      ├─ Call preorder(null) → return           │
+│      └─ Call preorder(null) → return           │
+│   └─← Return from preorder(3)                  │
+└─ [END] All calls complete                      │
+└────────────────────────────────────────────────┘
+
+Stack Depth Visualization:
+Depth  Call Stack              Output
+  0    preorder(1)             [1]
+  1    └─ preorder(2)          [1, 2]
+  2       └─ preorder(4)       [1, 2, 4]
+  3          └─ preorder(null) [1, 2, 4]  ← Max depth!
+  2       └─ preorder(null)    [1, 2, 4]
+  1    └─ preorder(3)          [1, 2, 4, 3]
+  2       └─ preorder(null)    [1, 2, 4, 3]
+  2       └─ preorder(null)    [1, 2, 4, 3]
+  0    (complete)              [1, 2, 4, 3]
+
+Space Complexity = O(h) where h = height
+```
+
+#### 6. Traversal Comparison on Same Tree
+
+```
+Sample Tree:
+              A
+           ╱     ╲
+          B       C
+        ╱  ╲       ╲
+       D    E       F
+           ╱
+          G
+
+┌──────────────────────────────────────────────────────┐
+│                 TRAVERSAL SUMMARY                    │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│ PREORDER (Root-Left-Right):                         │
+│ Visit path: A → B → D → E → G → C → F              │
+│ Result: [A, B, D, E, G, C, F]                       │
+│                                                      │
+│   Use: Copying tree, creating prefix notation       │
+│   Think: "Process current, then dive into children" │
+│                                                      │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│ INORDER (Left-Root-Right):                          │
+│ Visit path: D → B → G → E → A → C → F              │
+│ Result: [D, B, G, E, A, C, F]                       │
+│                                                      │
+│   Use: BST sorted order, expression evaluation      │
+│   Think: "Go deep left, process, then go right"     │
+│                                                      │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│ POSTORDER (Left-Right-Root):                        │
+│ Visit path: D → G → E → B → F → C → A              │
+│ Result: [D, G, E, B, F, C, A]                       │
+│                                                      │
+│   Use: Deleting tree, computing sizes               │
+│   Think: "Process children completely before root"  │
+│                                                      │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│ LEVEL-ORDER (BFS):                                  │
+│ Level 0: A                                          │
+│ Level 1: B, C                                       │
+│ Level 2: D, E, F                                    │
+│ Level 3: G                                          │
+│ Result: [A, B, C, D, E, F, G]                       │
+│                                                      │
+│   Use: Shortest path, level-wise operations         │
+│   Think: "Process all nodes at same depth first"    │
+│                                                      │
+└──────────────────────────────────────────────────────┘
+
+Visual Animation of All Traversals:
+      A          Preorder:  ① A (visit immediately)
+     ╱ ╲         Inorder:   ④ A (visit after left subtree)
+    B   C        Postorder: ⑦ A (visit last)
+   ╱╲   ╲        Level:     ① A (level 0)
+  D  E   F
+    ╱
+   G
+
+Complete visiting order visualization:
+      A①④⑦
+     ╱   ╲
+   B②③⑥   C⑥⑥⑥
+  ╱ ╲     ╲
+ D③①④ E④②⑤ F⑦⑤⑤
+     ╱
+    G⑤①①
+
+Numbers indicate visit order for:
+First digit: Preorder
+Second digit: Inorder
+Third digit: Postorder
 ```
 
 ## Recognition Guidelines
@@ -1529,6 +1881,1146 @@ function verticalTraversal(root: TreeNode | null): number[][] {
 **Complexity Analysis**:
 - Time: O(n log n) - n nodes, sorting by position
 - Space: O(n) - store all nodes
+
+---
+
+### Problem 14: Binary Tree Level Order Traversal II (Medium)
+**LeetCode Link**: [107. Binary Tree Level Order Traversal II](https://leetcode.com/problems/binary-tree-level-order-traversal-ii/)
+
+**Description**: Given the root of a binary tree, return the bottom-up level order traversal of its nodes' values (i.e., from left to right, level by level from leaf to root).
+
+#### Python Solution
+```python
+from collections import deque
+
+def levelOrderBottom(root: TreeNode) -> list[list[int]]:
+    # Step 1: Handle empty tree
+    if not root:
+        return []
+
+    # Step 2: Initialize result and queue for BFS
+    result = []
+    queue = deque([root])
+
+    # Step 3: Standard level-order traversal
+    while queue:
+        # Step 4: Get current level size
+        level_size = len(queue)
+        current_level = []
+
+        # Step 5: Process all nodes at current level
+        for _ in range(level_size):
+            node = queue.popleft()
+            current_level.append(node.val)
+
+            # Step 6: Enqueue children for next level
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+
+        # Step 7: Add level to result
+        result.append(current_level)
+
+    # Step 8: Reverse to get bottom-up order
+    return result[::-1]
+
+# Visualization:
+#       3
+#      / \
+#     9  20
+#       /  \
+#      15   7
+#
+# Normal Level Order:     Bottom-Up Level Order:
+# Level 0: [3]            Level 2: [15, 7]
+# Level 1: [9, 20]        Level 1: [9, 20]
+# Level 2: [15, 7]        Level 0: [3]
+#
+# Result: [[15, 7], [9, 20], [3]]
+```
+
+#### TypeScript Solution
+```typescript
+function levelOrderBottom(root: TreeNode | null): number[][] {
+    // Step 1: Handle empty tree
+    if (!root) return [];
+
+    // Step 2: Initialize result and queue
+    const result: number[][] = [];
+    const queue: TreeNode[] = [root];
+
+    // Step 3: Standard BFS
+    while (queue.length > 0) {
+        const levelSize = queue.length;
+        const currentLevel: number[] = [];
+
+        // Step 4: Process current level
+        for (let i = 0; i < levelSize; i++) {
+            const node = queue.shift()!;
+            currentLevel.push(node.val);
+
+            // Step 5: Enqueue children
+            if (node.left) queue.push(node.left);
+            if (node.right) queue.push(node.right);
+        }
+
+        result.push(currentLevel);
+    }
+
+    // Step 6: Reverse for bottom-up order
+    return result.reverse();
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n) - visit each node once
+- Space: O(w) - maximum width of tree for queue
+
+---
+
+### Problem 15: Average of Levels in Binary Tree (Easy)
+**LeetCode Link**: [637. Average of Levels in Binary Tree](https://leetcode.com/problems/average-of-levels-in-binary-tree/)
+
+**Description**: Given the root of a binary tree, return the average value of the nodes on each level in the form of an array.
+
+#### Python Solution
+```python
+from collections import deque
+
+def averageOfLevels(root: TreeNode) -> list[float]:
+    # Step 1: Handle empty tree
+    if not root:
+        return []
+
+    # Step 2: Initialize result and queue
+    result = []
+    queue = deque([root])
+
+    # Step 3: Level-order traversal
+    while queue:
+        # Step 4: Get current level size and sum
+        level_size = len(queue)
+        level_sum = 0
+
+        # Step 5: Process all nodes at current level
+        for _ in range(level_size):
+            node = queue.popleft()
+            level_sum += node.val
+
+            # Step 6: Enqueue children
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+
+        # Step 7: Calculate and store average for this level
+        average = level_sum / level_size
+        result.append(average)
+
+    return result
+
+# Visualization:
+#       3
+#      / \
+#     9  20
+#       /  \
+#      15   7
+#
+# Level 0: [3]       → avg = 3/1 = 3.0
+# Level 1: [9, 20]   → avg = 29/2 = 14.5
+# Level 2: [15, 7]   → avg = 22/2 = 11.0
+#
+# Result: [3.0, 14.5, 11.0]
+```
+
+#### TypeScript Solution
+```typescript
+function averageOfLevels(root: TreeNode | null): number[] {
+    // Step 1: Handle empty tree
+    if (!root) return [];
+
+    // Step 2: Initialize result and queue
+    const result: number[] = [];
+    const queue: TreeNode[] = [root];
+
+    // Step 3: BFS traversal
+    while (queue.length > 0) {
+        const levelSize = queue.length;
+        let levelSum = 0;
+
+        // Step 4: Process current level
+        for (let i = 0; i < levelSize; i++) {
+            const node = queue.shift()!;
+            levelSum += node.val;
+
+            // Step 5: Enqueue children
+            if (node.left) queue.push(node.left);
+            if (node.right) queue.push(node.right);
+        }
+
+        // Step 6: Calculate average
+        result.push(levelSum / levelSize);
+    }
+
+    return result;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n) - visit each node once
+- Space: O(w) - maximum width for queue
+
+---
+
+### Problem 16: N-ary Tree Level Order Traversal (Medium)
+**LeetCode Link**: [429. N-ary Tree Level Order Traversal](https://leetcode.com/problems/n-ary-tree-level-order-traversal/)
+
+**Description**: Given an n-ary tree (each node can have multiple children), return the level order traversal of its nodes' values.
+
+#### Python Solution
+```python
+from collections import deque
+
+# Definition for a Node.
+class Node:
+    def __init__(self, val=None, children=None):
+        self.val = val
+        self.children = children if children is not None else []
+
+def levelOrder(root: Node) -> list[list[int]]:
+    # Step 1: Handle empty tree
+    if not root:
+        return []
+
+    # Step 2: Initialize result and queue
+    result = []
+    queue = deque([root])
+
+    # Step 3: BFS traversal
+    while queue:
+        # Step 4: Get current level size
+        level_size = len(queue)
+        current_level = []
+
+        # Step 5: Process all nodes at current level
+        for _ in range(level_size):
+            node = queue.popleft()
+            current_level.append(node.val)
+
+            # Step 6: Enqueue ALL children (not just left/right)
+            for child in node.children:
+                queue.append(child)
+
+        # Step 7: Add level to result
+        result.append(current_level)
+
+    return result
+
+# Visualization:
+#         1
+#      /  |  \
+#     3   2   4
+#    / \
+#   5   6
+#
+# Level 0: [1]
+# Level 1: [3, 2, 4]       ← Three children of root
+# Level 2: [5, 6]          ← Two children of node 3
+#
+# Result: [[1], [3, 2, 4], [5, 6]]
+```
+
+#### TypeScript Solution
+```typescript
+// Definition for a Node.
+class Node {
+    val: number;
+    children: Node[];
+    constructor(val?: number, children?: Node[]) {
+        this.val = val === undefined ? 0 : val;
+        this.children = children === undefined ? [] : children;
+    }
+}
+
+function levelOrder(root: Node | null): number[][] {
+    // Step 1: Handle empty tree
+    if (!root) return [];
+
+    // Step 2: Initialize result and queue
+    const result: number[][] = [];
+    const queue: Node[] = [root];
+
+    // Step 3: BFS traversal
+    while (queue.length > 0) {
+        const levelSize = queue.length;
+        const currentLevel: number[] = [];
+
+        // Step 4: Process current level
+        for (let i = 0; i < levelSize; i++) {
+            const node = queue.shift()!;
+            currentLevel.push(node.val);
+
+            // Step 5: Enqueue all children
+            queue.push(...node.children);
+        }
+
+        result.push(currentLevel);
+    }
+
+    return result;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n) - visit each node once
+- Space: O(w) - maximum width of tree
+
+---
+
+### Problem 17: All Nodes Distance K in Binary Tree (Medium)
+**LeetCode Link**: [863. All Nodes Distance K in Binary Tree](https://leetcode.com/problems/all-nodes-distance-k-in-binary-tree/)
+
+**Description**: Given the root of a binary tree, a target node, and an integer k, return an array of the values of all nodes that have a distance k from the target node.
+
+#### Python Solution
+```python
+from collections import deque, defaultdict
+
+def distanceK(root: TreeNode, target: TreeNode, k: int) -> list[int]:
+    # Step 1: Build parent pointers using traversal
+    # Map: node → parent
+    parent_map = {}
+
+    def build_parent_map(node, parent=None):
+        if not node:
+            return
+        parent_map[node] = parent
+        build_parent_map(node.left, node)
+        build_parent_map(node.right, node)
+
+    # Step 2: Build the parent map
+    build_parent_map(root)
+
+    # Step 3: BFS from target node
+    # Treat tree as undirected graph
+    queue = deque([(target, 0)])  # (node, distance)
+    visited = {target}
+    result = []
+
+    # Step 4: BFS to find nodes at distance k
+    while queue:
+        node, distance = queue.popleft()
+
+        # Step 5: Found node at distance k
+        if distance == k:
+            result.append(node.val)
+            continue  # Don't go further
+
+        # Step 6: Explore neighbors (left, right, parent)
+        neighbors = [node.left, node.right, parent_map.get(node)]
+
+        for neighbor in neighbors:
+            if neighbor and neighbor not in visited:
+                visited.add(neighbor)
+                queue.append((neighbor, distance + 1))
+
+    return result
+
+# Visualization:
+#       3
+#      / \
+#     5   1
+#    / \  / \
+#   6  2 0  8
+#     / \
+#    7   4
+#
+# target = 5, k = 2
+#
+# From node 5:
+# Distance 0: [5]
+# Distance 1: [6, 2, 3]       ← left, right, parent
+# Distance 2: [7, 4, 1]       ← children of 2, right child of 3
+#
+# Result: [7, 4, 1]
+#
+# BFS exploration (treating as graph):
+#     5 (target)
+#    /|\
+#   6 2 3  (distance 1)
+#    /|  \
+#   7 4   1  (distance 2) ← Answer!
+```
+
+#### TypeScript Solution
+```typescript
+function distanceK(
+    root: TreeNode | null,
+    target: TreeNode | null,
+    k: number
+): number[] {
+    // Step 1: Build parent map
+    const parentMap = new Map<TreeNode, TreeNode | null>();
+
+    function buildParentMap(node: TreeNode | null, parent: TreeNode | null = null): void {
+        if (!node) return;
+        parentMap.set(node, parent);
+        buildParentMap(node.left, node);
+        buildParentMap(node.right, node);
+    }
+
+    buildParentMap(root);
+
+    // Step 2: BFS from target
+    const queue: Array<[TreeNode, number]> = [[target!, 0]];
+    const visited = new Set<TreeNode>([target!]);
+    const result: number[] = [];
+
+    while (queue.length > 0) {
+        const [node, distance] = queue.shift()!;
+
+        // Step 3: Found nodes at distance k
+        if (distance === k) {
+            result.push(node.val);
+            continue;
+        }
+
+        // Step 4: Explore neighbors
+        const neighbors = [
+            node.left,
+            node.right,
+            parentMap.get(node) || null
+        ];
+
+        for (const neighbor of neighbors) {
+            if (neighbor && !visited.has(neighbor)) {
+                visited.add(neighbor);
+                queue.push([neighbor, distance + 1]);
+            }
+        }
+    }
+
+    return result;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n) - visit each node once in parent map building and BFS
+- Space: O(n) - parent map and visited set
+
+---
+
+### Problem 18: Find Duplicate Subtrees (Medium)
+**LeetCode Link**: [652. Find Duplicate Subtrees](https://leetcode.com/problems/find-duplicate-subtrees/)
+
+**Description**: Given the root of a binary tree, return all duplicate subtrees. For each kind of duplicate subtrees, you only need to return the root node of any one of them.
+
+#### Python Solution
+```python
+from collections import defaultdict
+
+def findDuplicateSubtrees(root: TreeNode) -> list[TreeNode]:
+    # Step 1: Track subtree serializations and their frequencies
+    subtree_map = defaultdict(int)
+    result = []
+
+    def serialize(node):
+        # Step 2: Serialize subtree using postorder traversal
+        if not node:
+            return "#"  # Null marker
+
+        # Step 3: Build serialization string
+        # Format: "left,right,value"
+        left_serial = serialize(node.left)
+        right_serial = serialize(node.right)
+
+        # Step 4: Create unique serialization for this subtree
+        serial = f"{left_serial},{right_serial},{node.val}"
+
+        # Step 5: Track this serialization
+        subtree_map[serial] += 1
+
+        # Step 6: If seen exactly twice, add to result
+        # (only add once even if appears multiple times)
+        if subtree_map[serial] == 2:
+            result.append(node)
+
+        return serial
+
+    # Step 7: Start serialization from root
+    serialize(root)
+
+    return result
+
+# Visualization:
+#       1
+#      / \
+#     2   3
+#    /   / \
+#   4   2   4
+#      /
+#     4
+#
+# Serializations (postorder):
+# Node 4 (leftmost):  "#,#,4"
+# Node 2 (left):      "#,#,4,#,2"
+# Node 4 (right leaf):"#,#,4"        ← Duplicate!
+# Node 4 (under 2):   "#,#,4"        ← Duplicate!
+# Node 2 (right):     "#,#,4,#,2"    ← Duplicate!
+#
+# Duplicate subtrees:
+#   2        and      4
+#  /
+# 4
+#
+# Result: [node_2, node_4]
+```
+
+#### TypeScript Solution
+```typescript
+function findDuplicateSubtrees(root: TreeNode | null): Array<TreeNode | null> {
+    // Step 1: Track subtree serializations
+    const subtreeMap = new Map<string, number>();
+    const result: Array<TreeNode | null> = [];
+
+    function serialize(node: TreeNode | null): string {
+        // Step 2: Base case
+        if (!node) return "#";
+
+        // Step 3: Serialize subtrees (postorder)
+        const leftSerial = serialize(node.left);
+        const rightSerial = serialize(node.right);
+
+        // Step 4: Create serialization
+        const serial = `${leftSerial},${rightSerial},${node.val}`;
+
+        // Step 5: Track frequency
+        const count = subtreeMap.get(serial) || 0;
+        subtreeMap.set(serial, count + 1);
+
+        // Step 6: Add to result if seen exactly twice
+        if (count === 1) {
+            result.push(node);
+        }
+
+        return serial;
+    }
+
+    serialize(root);
+    return result;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n) - visit each node once, string operations are O(1) amortized
+- Space: O(n) - store serializations for all subtrees
+
+---
+
+### Problem 19: Populating Next Right Pointers in Each Node (Medium)
+**LeetCode Link**: [116. Populating Next Right Pointers in Each Node](https://leetcode.com/problems/populating-next-right-pointers-in-each-node/)
+
+**Description**: Populate each next pointer to point to its next right node. If there is no next right node, the next pointer should be set to NULL. Initially, all next pointers are set to NULL.
+
+#### Python Solution
+```python
+# Definition for a Node.
+class Node:
+    def __init__(self, val: int = 0, left: 'Node' = None,
+                 right: 'Node' = None, next: 'Node' = None):
+        self.val = val
+        self.left = left
+        self.right = right
+        self.next = next
+
+def connect(root: Node) -> Node:
+    # Step 1: Handle empty tree
+    if not root:
+        return None
+
+    # Step 2: Use level-order traversal
+    # Start with root level
+    leftmost = root
+
+    # Step 3: Process each level
+    while leftmost.left:  # While not at leaf level
+        # Step 4: Traverse current level using 'next' pointers
+        current = leftmost
+
+        while current:
+            # Step 5: Connect left child to right child
+            current.left.next = current.right
+
+            # Step 6: Connect right child to next node's left child
+            if current.next:
+                current.right.next = current.next.left
+
+            # Step 7: Move to next node in current level
+            current = current.next
+
+        # Step 8: Move to next level
+        leftmost = leftmost.left
+
+    return root
+
+# Visualization:
+# Before:                After:
+#       1                  1 → NULL
+#      / \                / \
+#     2   3              2 → 3 → NULL
+#    / \ / \            / \ / \
+#   4  5 6  7          4→5→6→7→ NULL
+#
+# Process:
+# Level 0: 1 → NULL
+# Level 1: 2 → 3 → NULL  (1.left.next = 1.right)
+# Level 2: 4→5→6→7→NULL
+#   - 2.left.next = 2.right (4→5)
+#   - 2.right.next = 2.next.left (5→6)
+#   - 3.left.next = 3.right (6→7)
+
+# Alternative: BFS approach
+from collections import deque
+
+def connect_bfs(root: Node) -> Node:
+    if not root:
+        return None
+
+    queue = deque([root])
+
+    while queue:
+        level_size = len(queue)
+
+        for i in range(level_size):
+            node = queue.popleft()
+
+            # Connect to next node in level
+            if i < level_size - 1:
+                node.next = queue[0]
+
+            # Add children to queue
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+
+    return root
+```
+
+#### TypeScript Solution
+```typescript
+class Node {
+    val: number;
+    left: Node | null;
+    right: Node | null;
+    next: Node | null;
+
+    constructor(val?: number, left?: Node, right?: Node, next?: Node) {
+        this.val = val === undefined ? 0 : val;
+        this.left = left === undefined ? null : left;
+        this.right = right === undefined ? null : right;
+        this.next = next === undefined ? null : next;
+    }
+}
+
+function connect(root: Node | null): Node | null {
+    // Step 1: Handle empty tree
+    if (!root) return null;
+
+    // Step 2: Start with leftmost node of each level
+    let leftmost = root;
+
+    // Step 3: Process each level
+    while (leftmost.left) {
+        // Step 4: Traverse current level
+        let current = leftmost;
+
+        while (current) {
+            // Step 5: Connect children
+            current.left!.next = current.right;
+
+            // Step 6: Connect to next subtree
+            if (current.next) {
+                current.right!.next = current.next.left;
+            }
+
+            current = current.next;
+        }
+
+        // Step 7: Move to next level
+        leftmost = leftmost.left;
+    }
+
+    return root;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n) - visit each node once
+- Space: O(1) - constant extra space (not counting recursion)
+
+---
+
+### Problem 20: Recover Binary Search Tree (Medium)
+**LeetCode Link**: [99. Recover Binary Search Tree](https://leetcode.com/problems/recover-binary-search-tree/)
+
+**Description**: Two nodes of a BST are swapped by mistake. Recover the tree without changing its structure. Use O(1) space if possible.
+
+#### Python Solution
+```python
+def recoverTree(root: TreeNode) -> None:
+    # Step 1: Track first and second swapped nodes
+    # In inorder traversal of BST, values should be sorted
+    # If two nodes swapped, we'll find inversions
+    first = None
+    second = None
+    prev = None
+
+    def inorder(node):
+        nonlocal first, second, prev
+
+        # Step 2: Base case
+        if not node:
+            return
+
+        # Step 3: Traverse left subtree
+        inorder(node.left)
+
+        # Step 4: Check if current node violates BST property
+        # prev.val should be < node.val in valid BST
+        if prev and prev.val > node.val:
+            # Step 5: First inversion found
+            if not first:
+                first = prev  # The larger value in first inversion
+                second = node # Might be the second swapped node
+            else:
+                # Step 6: Second inversion found
+                second = node
+
+        # Step 7: Update previous node
+        prev = node
+
+        # Step 8: Traverse right subtree
+        inorder(node.right)
+
+    # Step 9: Find the swapped nodes
+    inorder(root)
+
+    # Step 10: Swap their values back
+    if first and second:
+        first.val, second.val = second.val, first.val
+
+# Visualization:
+# Incorrect BST (3 and 5 swapped):
+#       5
+#      / \
+#     3   2
+#    / \
+#   1   4
+#
+# Inorder: [1, 3, 5, 4, 2]
+#                ↑  ↑  ↑
+# Expected:     [1, 2, 3, 4, 5]
+#
+# Inversions found:
+# - 3 > 5: NO (wait, 5 is root)
+# - Actually: [1, 5, 4, 2, 3] is the inorder
+#   Inversions: 5>4 (first=5, second=4)
+#              4>2 (update second=2)...
+#
+# Let me recalculate:
+# Tree:     5           Inorder visits: left(3) → 3 → right(3) → 5 → left(2) → 2
+#          / \
+#         3   2         Actual inorder: 1, 3, 4, 5, 2
+#        / \                Inversions: 5 > 2
+#       1   4                  first = 5, second = 2
+#
+# After swap: Tree becomes valid BST
+#       3
+#      / \
+#     2   5
+#    / \
+#   1   4
+```
+
+#### TypeScript Solution
+```typescript
+function recoverTree(root: TreeNode | null): void {
+    // Step 1: Track swapped nodes
+    let first: TreeNode | null = null;
+    let second: TreeNode | null = null;
+    let prev: TreeNode | null = null;
+
+    function inorder(node: TreeNode | null): void {
+        // Step 2: Base case
+        if (!node) return;
+
+        // Step 3: Traverse left
+        inorder(node.left);
+
+        // Step 4: Check for inversion
+        if (prev && prev.val > node.val) {
+            if (!first) {
+                first = prev;
+                second = node;
+            } else {
+                second = node;
+            }
+        }
+
+        prev = node;
+
+        // Step 5: Traverse right
+        inorder(node.right);
+    }
+
+    // Step 6: Find swapped nodes
+    inorder(root);
+
+    // Step 7: Swap values
+    if (first && second) {
+        [first.val, second.val] = [second.val, first.val];
+    }
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n) - single inorder traversal
+- Space: O(h) - recursion stack, O(1) if using Morris traversal
+
+---
+
+### Problem 21: Binary Tree Cameras (Hard)
+**LeetCode Link**: [968. Binary Tree Cameras](https://leetcode.com/problems/binary-tree-cameras/)
+
+**Description**: Install cameras on nodes of a binary tree. Each camera can monitor its parent, itself, and its immediate children. Return the minimum number of cameras needed to monitor all nodes.
+
+#### Python Solution
+```python
+def minCameraCover(root: TreeNode) -> int:
+    # Step 1: Define states
+    # 0 = Not covered, needs coverage
+    # 1 = Has camera
+    # 2 = Covered by camera (but no camera here)
+
+    camera_count = [0]
+
+    def dfs(node):
+        # Step 2: Base case - null nodes are considered covered
+        if not node:
+            return 2  # Covered (leaf's children)
+
+        # Step 3: Postorder traversal (process children first)
+        left_state = dfs(node.left)
+        right_state = dfs(node.right)
+
+        # Step 4: If any child is not covered, place camera here
+        if left_state == 0 or right_state == 0:
+            camera_count[0] += 1
+            return 1  # This node has camera
+
+        # Step 5: If any child has camera, this node is covered
+        if left_state == 1 or right_state == 1:
+            return 2  # Covered by child
+
+        # Step 6: Both children covered but no camera nearby
+        # This node needs coverage from parent
+        return 0  # Not covered yet
+
+    # Step 7: Process tree
+    root_state = dfs(root)
+
+    # Step 8: If root not covered, add camera at root
+    if root_state == 0:
+        camera_count[0] += 1
+
+    return camera_count[0]
+
+# Visualization:
+#       0              Cameras needed: 2
+#      / \
+#     0   C            C = camera
+#    / \
+#   C   0
+#
+# Bottom-up processing (postorder):
+# 1. Leaves return 0 (not covered)
+# 2. Parent of leaves places camera (returns 1)
+# 3. Grandparent is covered by camera below (returns 2)
+# 4. If parent of grandparent not covered, place camera
+#
+# Example:      0
+#              / \
+#             0   0     ← leaves (state 0)
+#
+# After DFS:    C       ← needs camera (children uncovered)
+#              / \
+#             0   0
+#
+# Better:       0
+#              / \
+#             C   C     ← cameras at children
+#
+# Actually optimal:
+#               0
+#              / \
+#             C   0     ← One camera covers 3 nodes
+#            / \           (itself, parent, sibling)
+#           0   0
+```
+
+#### TypeScript Solution
+```typescript
+function minCameraCover(root: TreeNode | null): number {
+    let cameraCount = 0;
+
+    // States: 0 = not covered, 1 = has camera, 2 = covered
+    function dfs(node: TreeNode | null): number {
+        // Step 1: Null nodes are covered
+        if (!node) return 2;
+
+        // Step 2: Process children (postorder)
+        const leftState = dfs(node.left);
+        const rightState = dfs(node.right);
+
+        // Step 3: Place camera if child not covered
+        if (leftState === 0 || rightState === 0) {
+            cameraCount++;
+            return 1;
+        }
+
+        // Step 4: Covered by child's camera
+        if (leftState === 1 || rightState === 1) {
+            return 2;
+        }
+
+        // Step 5: Not covered
+        return 0;
+    }
+
+    // Step 6: Check root state
+    if (dfs(root) === 0) {
+        cameraCount++;
+    }
+
+    return cameraCount;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n) - visit each node once
+- Space: O(h) - recursion stack
+
+---
+
+### Problem 22: Sum Root to Leaf Numbers (Medium)
+**LeetCode Link**: [129. Sum Root to Leaf Numbers](https://leetcode.com/problems/sum-root-to-leaf-numbers/)
+
+**Description**: Given a binary tree containing digits 0-9 only, each root-to-leaf path represents a number. Return the total sum of all root-to-leaf numbers.
+
+#### Python Solution
+```python
+def sumNumbers(root: TreeNode) -> int:
+    # Step 1: Track total sum
+    total_sum = [0]
+
+    def dfs(node, current_number):
+        # Step 2: Base case - empty node
+        if not node:
+            return
+
+        # Step 3: Build current number (shift left and add digit)
+        current_number = current_number * 10 + node.val
+
+        # Step 4: Check if leaf node
+        if not node.left and not node.right:
+            # Step 5: Add path number to total
+            total_sum[0] += current_number
+            return
+
+        # Step 6: Recurse on children with updated number
+        dfs(node.left, current_number)
+        dfs(node.right, current_number)
+
+    # Step 7: Start DFS from root
+    dfs(root, 0)
+
+    return total_sum[0]
+
+# Alternative: return value approach
+def sumNumbers_v2(root: TreeNode) -> int:
+    def dfs(node, current_number):
+        if not node:
+            return 0
+
+        # Build number along path
+        current_number = current_number * 10 + node.val
+
+        # Leaf node - return the complete number
+        if not node.left and not node.right:
+            return current_number
+
+        # Sum of all paths in left and right subtrees
+        return dfs(node.left, current_number) + dfs(node.right, current_number)
+
+    return dfs(root, 0)
+
+# Visualization:
+#       1
+#      / \
+#     2   3
+#    / \
+#   4   5
+#
+# Root-to-leaf paths:
+# 1 → 2 → 4 = 124
+# 1 → 2 → 5 = 125
+# 1 → 3     = 13
+#
+# Sum = 124 + 125 + 13 = 262
+#
+# Building numbers:
+# Path 1→2→4:
+#   current = 0
+#   → 0*10 + 1 = 1
+#   → 1*10 + 2 = 12
+#   → 12*10 + 4 = 124 ✓
+```
+
+#### TypeScript Solution
+```typescript
+function sumNumbers(root: TreeNode | null): number {
+    function dfs(node: TreeNode | null, currentNumber: number): number {
+        // Step 1: Base case
+        if (!node) return 0;
+
+        // Step 2: Build current number
+        currentNumber = currentNumber * 10 + node.val;
+
+        // Step 3: Leaf node
+        if (!node.left && !node.right) {
+            return currentNumber;
+        }
+
+        // Step 4: Sum paths from both subtrees
+        return dfs(node.left, currentNumber) + dfs(node.right, currentNumber);
+    }
+
+    return dfs(root, 0);
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n) - visit each node once
+- Space: O(h) - recursion stack depth
+
+---
+
+### Problem 23: Path Sum II (Medium)
+**LeetCode Link**: [113. Path Sum II](https://leetcode.com/problems/path-sum-ii/)
+
+**Description**: Given the root of a binary tree and an integer targetSum, return all root-to-leaf paths where the sum of node values equals targetSum.
+
+#### Python Solution
+```python
+def pathSum(root: TreeNode, targetSum: int) -> list[list[int]]:
+    # Step 1: Initialize result list
+    result = []
+
+    def dfs(node, current_path, current_sum):
+        # Step 2: Base case - empty node
+        if not node:
+            return
+
+        # Step 3: Add current node to path
+        current_path.append(node.val)
+        current_sum += node.val
+
+        # Step 4: Check if leaf node with target sum
+        if not node.left and not node.right:
+            if current_sum == targetSum:
+                # Step 5: Found valid path - save copy
+                result.append(current_path[:])
+        else:
+            # Step 6: Explore children
+            dfs(node.left, current_path, current_sum)
+            dfs(node.right, current_path, current_sum)
+
+        # Step 7: Backtrack - remove current node
+        current_path.pop()
+
+    # Step 8: Start DFS
+    dfs(root, [], 0)
+
+    return result
+
+# Visualization:
+#       5
+#      / \
+#     4   8
+#    /   / \
+#   11  13  4
+#  /  \    / \
+# 7    2  5   1
+#
+# targetSum = 22
+#
+# Path exploration (DFS):
+# [5] → [5,4] → [5,4,11] → [5,4,11,7]
+#   sum = 27 ✗
+# Backtrack → [5,4,11] → [5,4,11,2]
+#   sum = 22 ✓ (found!)
+# Backtrack → [5,4] → [5]
+# [5] → [5,8] → [5,8,13]
+#   sum = 26 ✗
+# Backtrack → [5,8] → [5,8,4] → [5,8,4,5]
+#   sum = 22 ✓ (found!)
+# [5,8,4] → [5,8,4,1]
+#   sum = 18 ✗
+#
+# Result: [[5,4,11,2], [5,8,4,5]]
+```
+
+#### TypeScript Solution
+```typescript
+function pathSum(root: TreeNode | null, targetSum: number): number[][] {
+    // Step 1: Initialize result
+    const result: number[][] = [];
+
+    function dfs(
+        node: TreeNode | null,
+        currentPath: number[],
+        currentSum: number
+    ): void {
+        // Step 2: Base case
+        if (!node) return;
+
+        // Step 3: Add current node
+        currentPath.push(node.val);
+        currentSum += node.val;
+
+        // Step 4: Check if valid path at leaf
+        if (!node.left && !node.right && currentSum === targetSum) {
+            result.push([...currentPath]); // Save copy
+        }
+
+        // Step 5: Explore children
+        dfs(node.left, currentPath, currentSum);
+        dfs(node.right, currentPath, currentSum);
+
+        // Step 6: Backtrack
+        currentPath.pop();
+    }
+
+    dfs(root, [], 0);
+    return result;
+}
+```
+
+**Complexity Analysis**:
+- Time: O(n) - visit each node once, O(n^2) worst case for copying paths
+- Space: O(h) - recursion stack and path storage
 
 ---
 

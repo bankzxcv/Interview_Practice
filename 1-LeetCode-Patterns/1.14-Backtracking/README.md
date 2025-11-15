@@ -18,27 +18,253 @@ Backtracking is a systematic way to explore all possible solutions by building c
 
 ### Visual Diagram
 
+#### 1. Complete Backtracking Decision Tree (Permutations)
+
 ```
-Backtracking Decision Tree:
+Input: [1,2,3] → Generate all permutations
 
-                     []
-            /        |        \
-          [1]       [2]       [3]
-         /   \      /  \      /  \
-      [1,2] [1,3] [2,1] [2,3] [3,1] [3,2]
-       |     |     |     |     |     |
-    [1,2,3][1,3,2][2,1,3][2,3,1][3,1,2][3,2,1]
+                                    []  <-- Start: Empty path
+                     ┌───────────────┼───────────────┐
+                     │               │               │
+                    [1]             [2]             [3]  <-- Level 1: First choice
+              ┌──────┴──────┐  ┌─────┴─────┐  ┌─────┴─────┐
+              │             │  │           │  │           │
+           [1,2]         [1,3][2,1]      [2,3][3,1]      [3,2]  <-- Level 2: Second choice
+              │             │  │           │  │           │
+          [1,2,3]       [1,3,2][2,1,3]  [2,3,1][3,1,2]  [3,2,1]  <-- Level 3: Complete! ✓
 
-At each node: Make choice → Recurse → Undo choice
+Total paths explored: 15 nodes
+Total solutions found: 6 permutations
+```
 
-Pruning example (no duplicates):
-                     []
-            /        |        \
-          [1]       [2]       [3]
-         /   \         \         (pruned)
-      [1,2] [1,3]     [2,3]
-       |     |          |
-    [1,2,3][1,3,2]   [2,3,1]
+**Backtracking Flow at Each Node:**
+```
+┌─────────────────────────────────────┐
+│  1. CHOOSE: Pick element            │
+│  2. EXPLORE: Recurse deeper         │ ← Repeat for each branch
+│  3. UNCHOOSE: Pop & try next option │
+└─────────────────────────────────────┘
+```
+
+#### 2. Backtracking with Pruning (Combination Sum)
+
+```
+Input: candidates=[2,3,5], target=8
+
+                                    [] sum=0
+                    ┌───────────────┼──────────────┐
+                    │               │              │
+                  [2] sum=2       [3] sum=3      [5] sum=5
+           ┌────────┼────────┐      │              │
+           │        │        │      │              │
+       [2,2]     [2,3]    [2,5]  [3,3]          [5,3] ✗ PRUNED!
+       sum=4     sum=5    sum=7  sum=6          sum=8 (order matters)
+     ┌───┼───┐    │        │      │
+     │   │   │    │        │      │
+   [222][223][225][235]  [237]  [333]
+   sum=6 sum=7 sum=9✗ sum=10✗ sum=9✗ sum=9✗
+     │    │
+     │    │
+  [2222][2223]
+  sum=8✓sum=9✗
+
+Valid Solutions: [2,2,2,2], [2,3,3], [3,5]
+Pruned branches: ✗ (exceeded target or invalid order)
+```
+
+**Pruning Strategy:**
+```
+Before exploring a branch:
+┌─────────────────────────────────┐
+│ if total > target:              │
+│     return  ← PRUNE! Stop early │
+│                                 │
+│ if total == target:             │
+│     add to result ✓             │
+└─────────────────────────────────┘
+```
+
+#### 3. Step-by-Step Execution (Subsets)
+
+```
+Input: [1,2,3] → Generate all subsets
+
+Step 1: Start with empty set
+┌──────────────────────┐
+│ path = []            │  ← Add to result: [[]]
+│ result = [[]]        │
+└──────────────────────┘
+
+Step 2: Include 1
+┌──────────────────────┐
+│ path = [1]           │  ← Add to result: [[],[1]]
+│ Try adding 2...      │
+└──────────────────────┘
+        │
+        ▼
+Step 3: Include 1,2
+┌──────────────────────┐
+│ path = [1,2]         │  ← Add to result: [[],[1],[1,2]]
+│ Try adding 3...      │
+└──────────────────────┘
+        │
+        ▼
+Step 4: Include 1,2,3
+┌──────────────────────┐
+│ path = [1,2,3]       │  ← Add: [[],[1],[1,2],[1,2,3]]
+│ No more choices ✓    │
+└──────────────────────┘
+        │
+        ▼ BACKTRACK (remove 3)
+Step 5: Back to [1,2]
+┌──────────────────────┐
+│ path = [1,2]         │
+│ Pop 2 ← BACKTRACK    │
+└──────────────────────┘
+        │
+        ▼
+Step 6: Try [1,3]
+┌──────────────────────┐
+│ path = [1,3]         │  ← Add: [[],[1],[1,2],[1,2,3],[1,3]]
+└──────────────────────┘
+
+... continues exploring all branches ...
+
+Final Result: [[],[1],[2],[3],[1,2],[1,3],[2,3],[1,2,3]]
+```
+
+#### 4. Visual Template Structure
+
+```
+                    backtrack(state)
+                          │
+        ┌─────────────────┼─────────────────┐
+        │                 │                 │
+        ▼                 ▼                 ▼
+  BASE CASE?        ITERATE           EXPLORE DEEPER
+        │           CHOICES                 │
+        │              │                    │
+        ▼              ▼                    ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│ if complete: │  │ for choice   │  │ 1. ADD choice│
+│   add result │  │   in choices:│  │ 2. RECURSE   │
+│   return     │  │              │  │ 3. POP choice│
+└──────────────┘  └──────────────┘  └──────────────┘
+                        │
+                        ▼
+                  ┌──────────────┐
+                  │ PRUNE?       │
+                  │ if invalid:  │
+                  │   continue   │
+                  └──────────────┘
+```
+
+#### 5. N-Queens Visualization (4x4 Board)
+
+```
+Row 0: Try each column
+┌───┬───┬───┬───┐       ┌───┬───┬───┬───┐
+│ Q │   │   │   │  ✗    │   │ Q │   │   │  ✗
+├───┼───┼───┼───┤       ├───┼───┼───┼───┤
+│   │   │ X │   │       │   │   │   │ X │
+├───┼───┼───┼───┤       ├───┼───┼───┼───┤
+│   │ X │   │   │       │ X │   │   │   │
+├───┼───┼───┼───┤       ├───┼───┼───┼───┤
+│ X │   │   │   │       │   │   │   │   │
+└───┴───┴───┴───┘       └───┴───┴───┴───┘
+Col 0 attacked          Col 1 attacked
+PRUNE!                  PRUNE!
+
+Row 0: Continue trying...
+┌───┬───┬───┬───┐
+│   │   │ Q │   │  ✓ Valid so far!
+├───┼───┼───┼───┤
+│   │   │   │   │  → Recurse to Row 1
+├───┼───┼───┼───┤
+│   │   │   │   │
+├───┼───┼───┼───┤
+│   │   │   │   │
+└───┴───┴───┴───┘
+
+Row 1: Try columns that aren't attacked
+┌───┬───┬───┬───┐       ┌───┬───┬───┬───┐
+│   │   │ Q │   │       │   │   │ Q │   │
+├───┼───┼───┼───┤       ├───┼───┼───┼───┤
+│ Q │   │ X │   │  ✗    │   │   │ X │ Q │  ✗
+├───┼───┼───┼───┤       ├───┼───┼───┼───┤
+│ X │   │ X │   │       │   │   │ X │ X │
+├───┼───┼───┼───┤       ├───┼───┼───┼───┤
+│   │   │ X │   │       │   │   │ X │   │
+└───┴───┴───┴───┴───┘   └───┴───┴───┴───┘
+PRUNE!                  PRUNE!
+
+Backtracking happens when no valid column exists in current row!
+```
+
+#### 6. Decision Tree with State Tracking
+
+```
+Generate Parentheses (n=2)
+
+                        "" (open=0, close=0)
+                             │
+                     ┌───────┴───────┐
+                     │               │ (close < open? No, skip ')')
+                    "("              ✗
+              (open=1, close=0)
+                     │
+          ┌──────────┴──────────┐
+          │                     │
+        "(("                  "()"
+   (open=2, close=0)    (open=1, close=1)
+          │                     │
+    ┌─────┴─────┐         ┌─────┴─────┐
+    │           │         │           │
+  "(()"       ✗(close<open) "()("     ✗(open<n fails)
+(open=2, close=1)  skip   (open=2, close=1)
+    │                           │
+    │                           │
+  "(())"                     "()()"
+(open=2, close=2) ✓         (open=2, close=2) ✓
+
+Valid solutions: ["(())", "()()"]
+
+Constraints enforced:
+  - Can add '(' if: open < n
+  - Can add ')' if: close < open
+```
+
+#### 7. Backtracking vs Brute Force Comparison
+
+```
+BRUTE FORCE (No pruning):
+Generate all 2^n possibilities, then filter valid ones
+
+              All Subsets
+                   │
+        ┌──────────┼──────────┐
+     Invalid    Valid     Invalid
+        │          │          │
+      (waste)  (keep)      (waste)
+
+Time: Generate ALL → Filter → O(2^n)
+
+
+BACKTRACKING (With pruning):
+Only explore valid paths
+
+              Start
+                │
+        ┌───────┼────────┐
+     Valid    Invalid   Valid
+        │      PRUNE!      │
+      (keep)              (keep)
+        │                   │
+    Continue            Continue
+
+Time: Only explore valid → O(k) where k < 2^n
+
+Savings: Skip entire subtrees early! 🚀
 ```
 
 ---
@@ -1564,6 +1790,1745 @@ function countArrangement(n: number): number {
 **Complexity**:
 - Time: O(k) where k is number of valid permutations
 - Space: O(n)
+
+---
+
+### 16. Word Search (Medium)
+**LeetCode**: https://leetcode.com/problems/word-search/
+
+**Description**: Given an m x n grid of characters and a string word, return true if word exists in the grid. The word can be constructed from letters sequentially adjacent (horizontally or vertically), and the same letter cell may not be used more than once.
+
+**Python Solution**:
+```python
+def exist(board: list[list[str]], word: str) -> bool:
+    """
+    DFS backtracking from each cell.
+    Mark visited cells temporarily to avoid reuse.
+
+    Decision tree visualization for board = [["A","B"],["C","D"]], word = "ABCD":
+
+           Start at 'A'(0,0)
+                 │
+          ┌──────┴──────┐
+          ▼              ▼
+       Right to 'B'   Down to 'C'
+       (0,1) ✓        (1,0) ✗
+          │
+       Down to 'D' ✗ (word[2]='C' but found 'D')
+
+       BACKTRACK and try Down from 'B'
+          │
+       (1,1) = 'D' ✗ (word[2]='C' but found 'D')
+
+    No valid path found!
+    """
+    rows, cols = len(board), len(board[0])
+
+    def backtrack(r, c, index):
+        # Step 1: Found complete word
+        if index == len(word):
+            return True
+
+        # Step 2: Check boundaries
+        if (r < 0 or r >= rows or c < 0 or c >= cols or
+            board[r][c] != word[index] or board[r][c] == '#'):
+            return False
+
+        # Step 3: Mark cell as visited
+        temp = board[r][c]
+        board[r][c] = '#'
+
+        # Step 4: Explore all 4 directions
+        found = (backtrack(r + 1, c, index + 1) or  # Down
+                 backtrack(r - 1, c, index + 1) or  # Up
+                 backtrack(r, c + 1, index + 1) or  # Right
+                 backtrack(r, c - 1, index + 1))    # Left
+
+        # Step 5: Restore cell (backtrack)
+        board[r][c] = temp
+
+        return found
+
+    # Step 6: Try starting from each cell
+    for r in range(rows):
+        for c in range(cols):
+            if backtrack(r, c, 0):
+                return True
+
+    return False
+```
+
+**TypeScript Solution**:
+```typescript
+function exist(board: string[][], word: string): boolean {
+    const rows = board.length;
+    const cols = board[0].length;
+
+    function backtrack(r: number, c: number, index: number): boolean {
+        // Step 1: Matched entire word
+        if (index === word.length) return true;
+
+        // Step 2: Boundary and character check
+        if (r < 0 || r >= rows || c < 0 || c >= cols ||
+            board[r][c] !== word[index] || board[r][c] === '#') {
+            return false;
+        }
+
+        // Step 3: Mark visited
+        const temp = board[r][c];
+        board[r][c] = '#';
+
+        // Step 4: Try all 4 directions
+        const found = (
+            backtrack(r + 1, c, index + 1) ||
+            backtrack(r - 1, c, index + 1) ||
+            backtrack(r, c + 1, index + 1) ||
+            backtrack(r, c - 1, index + 1)
+        );
+
+        // Step 5: Unmark (backtrack)
+        board[r][c] = temp;
+
+        return found;
+    }
+
+    // Step 6: Try each starting position
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (backtrack(r, c, 0)) return true;
+        }
+    }
+
+    return false;
+}
+```
+
+**Complexity**:
+- Time: O(m × n × 4^L) where L is word length
+- Space: O(L) for recursion stack
+
+**Visualization**:
+```
+Board: [["A","B","C","E"],
+        ["S","F","C","S"],
+        ["A","D","E","E"]]
+Word: "ABCCED"
+
+Search path visualization:
+Step 1: Find 'A' at (0,0)
+┌───┬───┬───┬───┐
+│ A*│ B │ C │ E │  * = current
+├───┼───┼───┼───┤
+│ S │ F │ C │ S │
+├───┼───┼───┼───┤
+│ A │ D │ E │ E │
+└───┴───┴───┴───┘
+
+Step 2: Move right to 'B' at (0,1)
+┌───┬───┬───┬───┐
+│ # │ B*│ C │ E │  # = visited
+├───┼───┼───┼───┤
+│ S │ F │ C │ S │
+├───┼───┼───┼───┤
+│ A │ D │ E │ E │
+└───┴───┴───┴───┘
+
+Step 3-6: Continue path...
+┌───┬───┬───┬───┐
+│ # │ # │ # │ E*│
+├───┼───┼───┼───┤
+│ S │ F │ # │ S │
+├───┼───┼───┼───┤
+│ A │ D │ # │ E │
+└───┴───┴───┴───┘
+Path: A→B→C→C→E→D ✓
+```
+
+---
+
+### 17. Combination Sum III (Medium)
+**LeetCode**: https://leetcode.com/problems/combination-sum-iii/
+
+**Description**: Find all valid combinations of k numbers that sum to n where only numbers 1-9 are used and each number is used at most once.
+
+**Python Solution**:
+```python
+def combinationSum3(k: int, n: int) -> list[list[int]]:
+    """
+    Backtrack with constraints:
+    - Exactly k numbers
+    - Sum equals n
+    - Use digits 1-9 only once
+
+    Decision tree for k=3, n=9:
+
+                        []
+              ┌─────────┼─────────┐
+              │         │         │
+             [1]       [2]       [3]
+            / | \       |         |
+          [12][13][14] [23]     [34]
+           |    |       |         |
+         [123][124]   [234]     [345]
+          sum=6 sum=7  sum=9✓   sum=12✗
+           ✗     ✗              PRUNE!
+
+    Valid: [2,3,4]
+    """
+    result = []
+
+    def backtrack(start, path, total):
+        # Step 1: Found valid combination
+        if len(path) == k and total == n:
+            result.append(path[:])
+            return
+
+        # Step 2: Pruning conditions
+        if len(path) >= k or total >= n:
+            return
+
+        # Step 3: Try digits from start to 9
+        for num in range(start, 10):
+            # Step 4: Early pruning - if adding smallest remaining nums
+            # still can't reach n, stop
+            remaining_slots = k - len(path)
+            min_sum = sum(range(num, num + remaining_slots))
+            if total + min_sum > n:
+                break
+
+            # Step 5: Choose num
+            path.append(num)
+
+            # Step 6: Recurse
+            backtrack(num + 1, path, total + num)
+
+            # Step 7: Backtrack
+            path.pop()
+
+    backtrack(1, [], 0)
+    return result
+```
+
+**TypeScript Solution**:
+```typescript
+function combinationSum3(k: number, n: number): number[][] {
+    const result: number[][] = [];
+
+    function backtrack(start: number, path: number[], total: number): void {
+        // Step 1: Valid combination found
+        if (path.length === k && total === n) {
+            result.push([...path]);
+            return;
+        }
+
+        // Step 2: Pruning
+        if (path.length >= k || total >= n) return;
+
+        // Step 3: Try each digit
+        for (let num = start; num <= 9; num++) {
+            // Step 4: Optimized pruning
+            const remainingSlots = k - path.length;
+            let minSum = 0;
+            for (let i = 0; i < remainingSlots; i++) {
+                minSum += num + i;
+            }
+            if (total + minSum > n) break;
+
+            // Step 5: Add digit
+            path.push(num);
+
+            // Step 6: Explore
+            backtrack(num + 1, path, total + num);
+
+            // Step 7: Remove
+            path.pop();
+        }
+    }
+
+    backtrack(1, [], 0);
+    return result;
+}
+```
+
+**Complexity**:
+- Time: O(C(9,k)) = O(9!/(k!(9-k)!))
+- Space: O(k) for recursion
+
+**Visualization**:
+```
+k=3, n=7
+
+Level 0:                    []
+                    ┌───────┼───────┐
+Level 1:          [1]      [2]     [3]...
+              ┌────┼────┐   |
+Level 2:    [1,2] [1,3] [1,4]  [2,3]
+              |     |     |      |
+Level 3:   [1,2,4][1,2,5][1,3,4][2,3,4]
+           sum=7✓ sum=8✗ sum=8✗ sum=9✗
+
+Result: [[1,2,4]]
+
+Pruning visualization:
+At [1,2]: total=3, need 4 more
+  - Try 3: 3+4+5=12>7, but path not full yet
+  - Try 4: total=7, len=3 ✓
+  - Try 5: total=8 > n, PRUNE!
+```
+
+---
+
+### 18. Gray Code (Medium)
+**LeetCode**: https://leetcode.com/problems/gray-code/
+
+**Description**: An n-bit gray code sequence is a sequence of 2^n integers where every adjacent pair differs by exactly one bit and the first and last integers also differ by exactly one bit.
+
+**Python Solution**:
+```python
+def grayCode(n: int) -> list[int]:
+    """
+    Backtracking approach: Build sequence ensuring each step changes 1 bit.
+
+    For n=2, decision tree:
+
+         0 (00)
+           │
+      ┌────┴────┐
+      │         │
+     1(01)    2(10)
+      │         │
+    ┌─┴─┐     ┌─┴─┐
+   3(11)✓   3(11)✓
+    │         │
+   2(10)    0(00)
+   DONE!    CYCLE!
+
+    Sequences: [0,1,3,2] or [0,2,3,1]
+    """
+    result = [0]
+    visited = {0}
+
+    def backtrack():
+        # Step 1: Generated all 2^n codes
+        if len(result) == (1 << n):
+            return True
+
+        current = result[-1]
+
+        # Step 2: Try flipping each bit
+        for i in range(n):
+            # Step 3: Flip bit i
+            next_code = current ^ (1 << i)
+
+            # Step 4: Check if not visited
+            if next_code not in visited:
+                # Step 5: Add to sequence
+                result.append(next_code)
+                visited.add(next_code)
+
+                # Step 6: Recurse
+                if backtrack():
+                    return True
+
+                # Step 7: Backtrack
+                result.pop()
+                visited.remove(next_code)
+
+        return False
+
+    backtrack()
+    return result
+
+# Optimized iterative solution (more efficient):
+def grayCodeIterative(n: int) -> list[int]:
+    """
+    Pattern: G(n) = [0+G(n-1), 2^(n-1)+reverse(G(n-1))]
+
+    n=1: [0, 1]
+    n=2: [0, 1] + [3, 2] = [0, 1, 3, 2]
+         └─┘    └──┘
+         G(1)  2^1+reverse(G(1))
+    """
+    result = [0]
+    for i in range(n):
+        # Add reversed sequence with high bit set
+        size = len(result)
+        for j in range(size - 1, -1, -1):
+            result.append(result[j] | (1 << i))
+    return result
+```
+
+**TypeScript Solution**:
+```typescript
+function grayCode(n: number): number[] {
+    const result: number[] = [0];
+
+    // Iterative approach (most efficient)
+    for (let i = 0; i < n; i++) {
+        const size = result.length;
+        // Add reversed sequence with bit i set
+        for (let j = size - 1; j >= 0; j--) {
+            result.push(result[j] | (1 << i));
+        }
+    }
+
+    return result;
+}
+
+// Backtracking approach:
+function grayCodeBacktrack(n: number): number[] {
+    const result: number[] = [0];
+    const visited = new Set<number>([0]);
+
+    function backtrack(): boolean {
+        // Step 1: Complete sequence
+        if (result.length === (1 << n)) return true;
+
+        const current = result[result.length - 1];
+
+        // Step 2: Try flipping each bit
+        for (let i = 0; i < n; i++) {
+            // Step 3: Generate next code
+            const nextCode = current ^ (1 << i);
+
+            // Step 4: If unvisited
+            if (!visited.has(nextCode)) {
+                // Step 5: Choose
+                result.push(nextCode);
+                visited.add(nextCode);
+
+                // Step 6: Recurse
+                if (backtrack()) return true;
+
+                // Step 7: Unchoose
+                result.pop();
+                visited.delete(nextCode);
+            }
+        }
+
+        return false;
+    }
+
+    backtrack();
+    return result;
+}
+```
+
+**Complexity**:
+- Time: O(2^n) - must generate all codes
+- Space: O(2^n) for result
+
+**Visualization**:
+```
+n=3 Gray Code generation (iterative method):
+
+Step 0: [0]
+        Binary: [000]
+
+Step 1: Mirror and add bit 0
+        [0] → [0, 1]
+        Binary: [000, 001]
+              Original ↑ ↑ Mirrored with bit 0
+
+Step 2: Mirror and add bit 1
+        [0, 1] → [0, 1, 3, 2]
+        Binary: [000, 001, 011, 010]
+                Original ↑ ↑ Reversed with bit 1
+
+Step 3: Mirror and add bit 2
+        [0,1,3,2] → [0,1,3,2,6,7,5,4]
+        Binary: [000,001,011,010,110,111,101,100]
+                Original         ↑ Reversed with bit 2
+
+Bit differences (each adjacent pair differs by 1 bit):
+0→1: 000→001 (bit 0 changes)
+1→3: 001→011 (bit 1 changes)
+3→2: 011→010 (bit 0 changes)
+2→6: 010→110 (bit 2 changes)
+6→7: 110→111 (bit 0 changes)
+7→5: 111→101 (bit 1 changes)
+5→4: 101→100 (bit 0 changes)
+```
+
+---
+
+### 19. Additive Number (Medium)
+**LeetCode**: https://leetcode.com/problems/additive-number/
+
+**Description**: An additive number is a string whose digits can form additive sequence. Valid additive sequence should contain at least three numbers where num[i+2] = num[i] + num[i+1].
+
+**Python Solution**:
+```python
+def isAdditiveNumber(num: str) -> bool:
+    """
+    Try all possible first two numbers, then check if rest forms sequence.
+
+    Decision tree for "112358":
+
+              "112358"
+         ┌───────┼───────┐
+    First="1" "11" "112"
+       │
+    Second="1" "12" "123"...
+       │
+    "1"+"1"="2" ✓
+       │
+    Check: "2358" starts with "2" ✓
+       │
+    "1"+"2"="3" ✓
+       │
+    Check: "358" starts with "3" ✓
+       │
+    "2"+"3"="5" ✓
+       │
+    Check: "58" starts with "5" ✓
+       │
+    "3"+"5"="8" ✓
+       │
+    Check: "8" starts with "8" ✓, reached end!
+    VALID! ✓
+    """
+    n = len(num)
+
+    def is_valid(num1, num2, remaining):
+        # Step 1: No more digits to check
+        if not remaining:
+            return True
+
+        # Step 2: Calculate next number
+        next_num = num1 + num2
+        next_str = str(next_num)
+
+        # Step 3: Check if remaining starts with next_num
+        if not remaining.startswith(next_str):
+            return False
+
+        # Step 4: Recurse with updated numbers
+        return is_valid(num2, next_num, remaining[len(next_str):])
+
+    # Step 5: Try all possible first two numbers
+    for i in range(1, n):
+        # Skip leading zeros
+        if num[0] == '0' and i > 1:
+            break
+
+        for j in range(i + 1, n):
+            # Skip leading zeros
+            if num[i] == '0' and j > i + 1:
+                break
+
+            num1 = int(num[:i])
+            num2 = int(num[i:j])
+
+            # Step 6: Check if valid sequence
+            if is_valid(num1, num2, num[j:]):
+                return True
+
+    return False
+```
+
+**TypeScript Solution**:
+```typescript
+function isAdditiveNumber(num: string): boolean {
+    const n = num.length;
+
+    function isValid(num1: number, num2: number, remaining: string): boolean {
+        // Step 1: Reached end successfully
+        if (remaining.length === 0) return true;
+
+        // Step 2: Next number should be sum
+        const nextNum = num1 + num2;
+        const nextStr = nextNum.toString();
+
+        // Step 3: Check if remaining starts with it
+        if (!remaining.startsWith(nextStr)) return false;
+
+        // Step 4: Continue checking
+        return isValid(num2, nextNum, remaining.slice(nextStr.length));
+    }
+
+    // Step 5: Try all pairs for first two numbers
+    for (let i = 1; i < n; i++) {
+        // No leading zeros
+        if (num[0] === '0' && i > 1) break;
+
+        for (let j = i + 1; j < n; j++) {
+            // No leading zeros
+            if (num[i] === '0' && j > i + 1) break;
+
+            const num1 = parseInt(num.slice(0, i));
+            const num2 = parseInt(num.slice(i, j));
+
+            // Step 6: Validate sequence
+            if (isValid(num1, num2, num.slice(j))) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+```
+
+**Complexity**:
+- Time: O(n^3) - two nested loops and string validation
+- Space: O(n) for recursion
+
+**Visualization**:
+```
+Input: "199100199"
+
+Try first="1", second="99":
+┌──────────────────────────────┐
+│ 1 + 99 = 100                 │
+│ Check: "100199" starts "100"✓│
+└──────────────────────────────┘
+         │
+         ▼
+┌──────────────────────────────┐
+│ 99 + 100 = 199               │
+│ Check: "199" starts "199" ✓  │
+└──────────────────────────────┘
+         │
+         ▼
+    Remaining=""
+    SUCCESS! ✓
+
+Sequence: 1 → 99 → 100 → 199
+
+Invalid example "123":
+Try first="1", second="2":
+┌──────────────────────────────┐
+│ 1 + 2 = 3                    │
+│ Check: "3" starts "3" ✓      │
+└──────────────────────────────┘
+    Remaining=""
+    Only 3 numbers total
+    But we need at least 3! ✓
+
+Actually valid! Sequence: 1 → 2 → 3
+```
+
+---
+
+### 20. Reconstruct Itinerary (Hard)
+**LeetCode**: https://leetcode.com/problems/reconstruct-itinerary/
+
+**Description**: Given a list of airline tickets, reconstruct the itinerary in order starting from "JFK". If there are multiple valid itineraries, return the lexicographically smallest one.
+
+**Python Solution**:
+```python
+def findItinerary(tickets: list[list[str]]) -> list[str]:
+    """
+    Backtracking with DFS. Try paths in lexicographical order.
+
+    Decision tree for [["JFK","SFO"],["JFK","ATL"],["SFO","ATL"],
+                       ["ATL","JFK"],["ATL","SFO"]]:
+
+                        JFK
+                    ┌────┴────┐
+                  ATL        SFO
+                 /   \         |
+               JFK   SFO      ATL
+                |     |        |
+               SFO   ATL      JFK
+                |     |        |
+               ATL   JFK      SFO
+                |     |
+    (cycle)    JFK
+
+    Lexicographically smallest: JFK→ATL→JFK→SFO→ATL→SFO
+    """
+    from collections import defaultdict
+    import heapq
+
+    # Step 1: Build graph with priority queue for lexicographical order
+    graph = defaultdict(list)
+    for src, dst in tickets:
+        heapq.heappush(graph[src], dst)
+
+    result = []
+
+    def backtrack(airport):
+        # Step 2: Visit all outgoing flights
+        while graph[airport]:
+            # Step 3: Take lexicographically smallest destination
+            next_airport = heapq.heappop(graph[airport])
+            backtrack(next_airport)
+
+        # Step 4: Add to result (in reverse order)
+        result.append(airport)
+
+    # Step 5: Start from JFK
+    backtrack("JFK")
+
+    # Step 6: Reverse to get correct order
+    return result[::-1]
+```
+
+**TypeScript Solution**:
+```typescript
+function findItinerary(tickets: string[][]): string[] {
+    // Step 1: Build adjacency list (sorted)
+    const graph = new Map<string, string[]>();
+
+    for (const [src, dst] of tickets) {
+        if (!graph.has(src)) graph.set(src, []);
+        graph.get(src)!.push(dst);
+    }
+
+    // Step 2: Sort destinations lexicographically
+    for (const destinations of graph.values()) {
+        destinations.sort();
+    }
+
+    const result: string[] = [];
+
+    function backtrack(airport: string): void {
+        const destinations = graph.get(airport) || [];
+
+        // Step 3: Visit destinations in sorted order
+        while (destinations.length > 0) {
+            const next = destinations.shift()!;
+            backtrack(next);
+        }
+
+        // Step 4: Add to result (reverse order)
+        result.push(airport);
+    }
+
+    // Step 5: Start from JFK
+    backtrack("JFK");
+
+    // Step 6: Reverse for correct order
+    return result.reverse();
+}
+```
+
+**Complexity**:
+- Time: O(E log E) where E is number of tickets
+- Space: O(E)
+
+**Visualization**:
+```
+Tickets: [["MUC","LHR"],["JFK","MUC"],["SFO","SJC"],["LHR","SFO"]]
+
+Graph:
+JFK → [MUC]
+MUC → [LHR]
+LHR → [SFO]
+SFO → [SJC]
+
+Execution trace (Hierholzer's algorithm):
+
+Call Stack         Result (building reverse)
+─────────────────  ──────────────────────
+backtrack(JFK)
+  backtrack(MUC)
+    backtrack(LHR)
+      backtrack(SFO)
+        backtrack(SJC)  → [SJC]
+      ← return          → [SJC, SFO]
+    ← return            → [SJC, SFO, LHR]
+  ← return              → [SJC, SFO, LHR, MUC]
+← return                → [SJC, SFO, LHR, MUC, JFK]
+
+Reverse: [JFK, MUC, LHR, SFO, SJC] ✓
+
+Path visualization:
+JFK ──→ MUC ──→ LHR ──→ SFO ──→ SJC
+```
+
+---
+
+### 21. Android Unlock Patterns (Medium)
+**LeetCode**: https://leetcode.com/problems/android-unlock-patterns/ (Premium)
+
+**Description**: Given an Android lock screen pattern (3x3 grid), count how many valid unlock patterns of length m to n exist. A pattern must connect at least m and at most n dots. When connecting two dots, any dot in between must have been visited.
+
+**Python Solution**:
+```python
+def numberOfPatterns(m: int, n: int) -> int:
+    """
+    Backtrack trying each starting position and path.
+    Track visited dots and ensure valid jumps.
+
+    Grid layout:
+    1 2 3
+    4 5 6
+    7 8 9
+
+    Decision tree for m=1, n=2:
+
+         Start
+      /    |    \
+    1     2...   9
+   /|\   /|\    /|\
+  234.. 134.. 124..
+
+  Valid paths of length 1: 9 (each dot)
+  Valid paths of length 2: 9×8 = 72 (but some invalid due to jump rules)
+
+  Jump rules:
+  - 1→3 requires 2 visited
+  - 1→7 requires 4 visited
+  - 1→9 requires 5 visited
+  etc.
+    """
+    # Step 1: Define skip rules (jumps that require intermediate dot)
+    skip = {}
+    skip[(1, 3)] = skip[(3, 1)] = 2
+    skip[(1, 7)] = skip[(7, 1)] = 4
+    skip[(3, 9)] = skip[(9, 3)] = 6
+    skip[(7, 9)] = skip[(9, 7)] = 8
+    skip[(1, 9)] = skip[(9, 1)] = 5
+    skip[(2, 8)] = skip[(8, 2)] = 5
+    skip[(3, 7)] = skip[(7, 3)] = 5
+    skip[(4, 6)] = skip[(6, 4)] = 5
+
+    visited = [False] * 10  # dots 1-9
+
+    def backtrack(current, length):
+        # Step 2: Valid pattern length reached
+        if length >= m:
+            count = 1
+        else:
+            count = 0
+
+        # Step 3: Exceeded max length
+        if length >= n:
+            return count
+
+        # Step 4: Try moving to each unvisited dot
+        for next_dot in range(1, 10):
+            # Skip if already visited
+            if visited[next_dot]:
+                continue
+
+            # Step 5: Check if jump is valid
+            jump_key = (current, next_dot)
+            if jump_key in skip:
+                # Must have visited the intermediate dot
+                if not visited[skip[jump_key]]:
+                    continue
+
+            # Step 6: Visit dot
+            visited[next_dot] = True
+
+            # Step 7: Recurse
+            count += backtrack(next_dot, length + 1)
+
+            # Step 8: Backtrack
+            visited[next_dot] = False
+
+        return count
+
+    total = 0
+
+    # Step 9: Try each starting position
+    # Use symmetry: corners (1,3,7,9) are symmetric
+    # edges (2,4,6,8) are symmetric, center (5) is unique
+    visited[1] = True
+    total += backtrack(1, 1) * 4  # 4 corners
+    visited[1] = False
+
+    visited[2] = True
+    total += backtrack(2, 1) * 4  # 4 edges
+    visited[2] = False
+
+    visited[5] = True
+    total += backtrack(5, 1)  # 1 center
+    visited[5] = False
+
+    return total
+```
+
+**TypeScript Solution**:
+```typescript
+function numberOfPatterns(m: number, n: number): number {
+    // Step 1: Jump rules
+    const skip = new Map<string, number>();
+    const setSkip = (a: number, b: number, mid: number) => {
+        skip.set(`${a},${b}`, mid);
+        skip.set(`${b},${a}`, mid);
+    };
+
+    setSkip(1, 3, 2); setSkip(1, 7, 4); setSkip(3, 9, 6);
+    setSkip(7, 9, 8); setSkip(1, 9, 5); setSkip(2, 8, 5);
+    setSkip(3, 7, 5); setSkip(4, 6, 5);
+
+    const visited = Array(10).fill(false);
+
+    function backtrack(current: number, length: number): number {
+        // Step 2: Count if valid length
+        let count = length >= m ? 1 : 0;
+
+        // Step 3: Stop if at max
+        if (length >= n) return count;
+
+        // Step 4: Try each next dot
+        for (let next = 1; next <= 9; next++) {
+            if (visited[next]) continue;
+
+            // Step 5: Check jump validity
+            const key = `${current},${next}`;
+            if (skip.has(key)) {
+                const mid = skip.get(key)!;
+                if (!visited[mid]) continue;
+            }
+
+            // Step 6: Choose
+            visited[next] = true;
+
+            // Step 7: Recurse
+            count += backtrack(next, length + 1);
+
+            // Step 8: Unchoose
+            visited[next] = false;
+        }
+
+        return count;
+    }
+
+    // Step 9: Use symmetry
+    let total = 0;
+
+    visited[1] = true;
+    total += backtrack(1, 1) * 4;
+    visited[1] = false;
+
+    visited[2] = true;
+    total += backtrack(2, 1) * 4;
+    visited[2] = false;
+
+    visited[5] = true;
+    total += backtrack(5, 1);
+    visited[5] = false;
+
+    return total;
+}
+```
+
+**Complexity**:
+- Time: O(n!)
+- Space: O(n)
+
+**Visualization**:
+```
+3x3 Grid:
+┌───┬───┬───┐
+│ 1 │ 2 │ 3 │
+├───┼───┼───┤
+│ 4 │ 5 │ 6 │
+├───┼───┼───┤
+│ 7 │ 8 │ 9 │
+└───┴───┴───┘
+
+Example pattern: 1→5→9→6
+
+Step 1: Start at 1
+┌───┬───┬───┐
+│ ● │   │   │
+├───┼───┼───┤
+│   │   │   │
+├───┼───┼───┤
+│   │   │   │
+└───┴───┴───┘
+
+Step 2: Move to 5 (valid, no skip)
+┌───┬───┬───┐
+│ × │   │   │
+├───┼───┼───┤
+│   │ ● │   │
+├───┼───┼───┤
+│   │   │   │
+└───┴───┴───┘
+
+Step 3: Move to 9 (valid, 5 is visited)
+┌───┬───┬───┐
+│ × │   │   │
+├───┼───┼───┤
+│   │ × │   │
+├───┼───┼───┤
+│   │   │ ● │
+└───┴───┴───┘
+
+Step 4: Move to 6 (valid)
+┌───┬───┬───┐
+│ × │   │   │
+├───┼───┼───┤
+│   │ × │ ● │
+├───┼───┼───┤
+│   │   │ × │
+└───┴───┴───┘
+
+Invalid example: 1→3 (2 not visited)
+┌───┬───┬───┐
+│ ● │ ? │ ● │  ← 2 must be visited first!
+└───┴───┴───┘
+   INVALID! ✗
+```
+
+---
+
+### 22. Matchsticks to Square (Medium)
+**LeetCode**: https://leetcode.com/problems/matchsticks-to-square/
+
+**Description**: Given an integer array matchsticks where matchsticks[i] is the length of the ith matchstick, return true if you can make a square using all matchsticks without breaking any.
+
+**Python Solution**:
+```python
+def makesquare(matchsticks: list[int]) -> bool:
+    """
+    Backtrack to partition sticks into 4 equal-length sides.
+
+    For matchsticks=[1,1,2,2,2]:
+    Total=8, side=2
+
+    Decision tree (trying to fill 4 sides):
+
+                    [0,0,0,0] (4 sides)
+                         │
+            ┌────────────┼────────────┐
+            │            │            │
+       Try stick 1   Try stick 2  Try stick 2
+       on side 0     on side 0    on side 0
+           │              │            │
+       [1,0,0,0]      [2,0,0,0]✓   [2,0,0,0]✓
+           │
+    Continue filling...
+
+    Goal: [2,2,2,2]
+    """
+    if len(matchsticks) < 4:
+        return False
+
+    total = sum(matchsticks)
+    if total % 4 != 0:
+        return False
+
+    side_length = total // 4
+
+    # Sort in descending order for faster pruning
+    matchsticks.sort(reverse=True)
+
+    # Prune if any stick is too long
+    if matchsticks[0] > side_length:
+        return False
+
+    sides = [0] * 4
+
+    def backtrack(index):
+        # Step 1: Used all matchsticks
+        if index == len(matchsticks):
+            # Check if all sides are equal
+            return all(side == side_length for side in sides)
+
+        # Step 2: Try placing current stick on each side
+        for i in range(4):
+            # Step 3: Pruning - skip if adding would exceed side length
+            if sides[i] + matchsticks[index] > side_length:
+                continue
+
+            # Step 4: Optimization - skip duplicate sides
+            # If current side same as previous, we already tried this
+            if i > 0 and sides[i] == sides[i-1]:
+                continue
+
+            # Step 5: Place matchstick
+            sides[i] += matchsticks[index]
+
+            # Step 6: Recurse
+            if backtrack(index + 1):
+                return True
+
+            # Step 7: Remove matchstick (backtrack)
+            sides[i] -= matchsticks[index]
+
+        return False
+
+    return backtrack(0)
+```
+
+**TypeScript Solution**:
+```typescript
+function makesquare(matchsticks: number[]): boolean {
+    if (matchsticks.length < 4) return false;
+
+    const total = matchsticks.reduce((a, b) => a + b, 0);
+    if (total % 4 !== 0) return false;
+
+    const sideLength = total / 4;
+
+    // Step 1: Sort descending for pruning
+    matchsticks.sort((a, b) => b - a);
+
+    if (matchsticks[0] > sideLength) return false;
+
+    const sides = [0, 0, 0, 0];
+
+    function backtrack(index: number): boolean {
+        // Step 2: All sticks placed
+        if (index === matchsticks.length) {
+            return sides.every(side => side === sideLength);
+        }
+
+        // Step 3: Try each side
+        for (let i = 0; i < 4; i++) {
+            // Step 4: Pruning
+            if (sides[i] + matchsticks[index] > sideLength) {
+                continue;
+            }
+
+            // Step 5: Skip duplicate sides
+            if (i > 0 && sides[i] === sides[i-1]) {
+                continue;
+            }
+
+            // Step 6: Place stick
+            sides[i] += matchsticks[index];
+
+            // Step 7: Recurse
+            if (backtrack(index + 1)) return true;
+
+            // Step 8: Remove stick
+            sides[i] -= matchsticks[index];
+        }
+
+        return false;
+    }
+
+    return backtrack(0);
+}
+```
+
+**Complexity**:
+- Time: O(4^n) where n is number of matchsticks
+- Space: O(n) for recursion
+
+**Visualization**:
+```
+matchsticks = [1,1,2,2,2]
+total = 8, side = 2
+
+Goal: Create 4 sides of length 2
+
+   Top
+    ─ ─
+  │     │  Left & Right
+  │     │
+    ─ ─
+  Bottom
+
+Decision tree (building sides):
+
+                  [0,0,0,0]
+                      │
+         ┌────────────┼────────────┐
+    stick=2      stick=2       stick=2
+    side 0       side 1        side 2
+         │            │             │
+    [2,0,0,0]   [0,2,0,0]    [0,0,2,0]
+         │
+    stick=2
+    ┌────┼────┐
+   s0   s1   s2   (s0 would exceed, skip)
+        │
+   [2,2,0,0]
+        │
+   stick=2
+   ┌────┼────┐
+  s2   s3      (s0,s1 full, skip)
+       │
+  [2,2,0,2]
+       │
+  stick=1
+  ┌────┼
+  s2   s3     (try either)
+  │
+[2,2,1,2]
+  │
+stick=1
+  │
+ s2
+  │
+[2,2,2,2] ✓ SUCCESS!
+
+Visual result:
+┌───┬───┐
+│ 2 │ 2 │  Top=2, Bottom=2
+├───┼───┤
+│ 2 │ 2 │  Left=2, Right=2
+└───┴───┘
+```
+
+---
+
+### 23. Split Array into Fibonacci Sequence (Medium)
+**LeetCode**: https://leetcode.com/problems/split-array-into-fibonacci-sequence/
+
+**Description**: Given a string of digits, split it into a Fibonacci-like sequence where each number is the sum of the previous two. Return any valid sequence, or an empty array if impossible.
+
+**Python Solution**:
+```python
+def splitIntoFibonacci(num: str) -> list[int]:
+    """
+    Backtrack trying different splits for first two numbers.
+    Then verify rest follows Fibonacci pattern.
+
+    For "1101111":
+
+         Split positions
+              │
+      ┌───────┼───────┐
+    "1|1|..."  "1|10|..." "11|01|..."
+       │          │           │
+    Try 1+1   Try 1+10    Try 11+01
+       │          │           │
+      =2        =11          =12
+       │          │           │
+    "01111"    "1111"      "1111"
+    starts 0✗  starts 11✓   starts 12✗
+               │
+           "1|10|11|111"
+           Next: 10+11=21
+           "11" doesn't start with 21 ✗
+
+    No valid sequence.
+    """
+    n = len(num)
+    result = []
+
+    def backtrack(index, seq):
+        # Step 1: Reached end with valid sequence
+        if index == n and len(seq) >= 3:
+            return True
+
+        # Step 2: Try different lengths for next number
+        for i in range(index, n):
+            # Step 3: No leading zeros except "0" itself
+            if num[index] == '0' and i > index:
+                break
+
+            # Step 4: Parse number
+            num_str = num[index:i+1]
+            num_val = int(num_str)
+
+            # Step 5: Check 32-bit integer constraint
+            if num_val > 2**31 - 1:
+                break
+
+            # Step 6: If we have fewer than 2 numbers, just add
+            if len(seq) < 2:
+                seq.append(num_val)
+                if backtrack(i + 1, seq):
+                    return True
+                seq.pop()
+            else:
+                # Step 7: Check Fibonacci property
+                if seq[-1] + seq[-2] == num_val:
+                    seq.append(num_val)
+                    if backtrack(i + 1, seq):
+                        return True
+                    seq.pop()
+                # Step 8: If sum is less than current, try longer number
+                elif seq[-1] + seq[-2] < num_val:
+                    break
+
+        return False
+
+    # Step 9: Start backtracking
+    if backtrack(0, result):
+        return result
+    return []
+```
+
+**TypeScript Solution**:
+```typescript
+function splitIntoFibonacci(num: string): number[] {
+    const n = num.length;
+    const result: number[] = [];
+    const MAX_INT = 2**31 - 1;
+
+    function backtrack(index: number, seq: number[]): boolean {
+        // Step 1: Successfully split entire string
+        if (index === n && seq.length >= 3) {
+            return true;
+        }
+
+        // Step 2: Try different number lengths
+        for (let i = index; i < n; i++) {
+            // Step 3: No leading zeros
+            if (num[index] === '0' && i > index) break;
+
+            // Step 4: Extract number
+            const numStr = num.slice(index, i + 1);
+            const numVal = parseInt(numStr);
+
+            // Step 5: Check constraints
+            if (numVal > MAX_INT) break;
+
+            // Step 6: First two numbers
+            if (seq.length < 2) {
+                seq.push(numVal);
+                if (backtrack(i + 1, seq)) return true;
+                seq.pop();
+            } else {
+                // Step 7: Must follow Fibonacci
+                const expected = seq[seq.length - 1] + seq[seq.length - 2];
+                if (expected === numVal) {
+                    seq.push(numVal);
+                    if (backtrack(i + 1, seq)) return true;
+                    seq.pop();
+                } else if (expected < numVal) {
+                    // Step 8: Can't match with longer numbers
+                    break;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    backtrack(0, result);
+    return result;
+}
+```
+
+**Complexity**:
+- Time: O(n^2) for trying splits
+- Space: O(n) for recursion
+
+**Visualization**:
+```
+Input: "112358"
+
+Try first="1":
+  Try second="1":
+    Expected: 1+1=2
+    ┌──────────────────────┐
+    │ Check "2358"         │
+    │ Starts with "2"? ✓   │
+    └──────────────────────┘
+    Next: 1+2=3
+    ┌──────────────────────┐
+    │ Check "358"          │
+    │ Starts with "3"? ✓   │
+    └──────────────────────┘
+    Next: 2+3=5
+    ┌──────────────────────┐
+    │ Check "58"           │
+    │ Starts with "5"? ✓   │
+    └──────────────────────┘
+    Next: 3+5=8
+    ┌──────────────────────┐
+    │ Check "8"            │
+    │ Starts with "8"? ✓   │
+    └──────────────────────┘
+    Remaining=""
+    SUCCESS! ✓
+
+Result: [1, 1, 2, 3, 5, 8]
+
+Visualization of sequence:
+   1  +  1  =  2
+         ↓     ↓
+      1  +  2  =  3
+            ↓     ↓
+         2  +  3  =  5
+               ↓     ↓
+            3  +  5  =  8
+
+Full path: 1 → 1 → 2 → 3 → 5 → 8
+```
+
+---
+
+### 24. Maximum Length of a Concatenated String with Unique Characters (Medium)
+**LeetCode**: https://leetcode.com/problems/maximum-length-of-a-concatenated-string-with-unique-characters/
+
+**Description**: Given an array of strings, find the maximum length of a concatenated string that has all unique characters.
+
+**Python Solution**:
+```python
+def maxLength(arr: list[str]) -> int:
+    """
+    Backtrack trying to include/exclude each string.
+    Track characters used so far.
+
+    For arr=["un","iq","ue"]:
+
+                    ""
+            ┌───────┼───────┐
+            │       │       │
+          "un"     skip    skip
+        ┌──┴──┐
+        │     │
+    "uniq"   skip  ("un"+"iq"="uniq" ✓ unique)
+    ┌──┴──┐
+    │     │
+  "unique" skip  ("uniq"+"ue"="unique" ✗ 'u' repeats!)
+
+  Max length: 4 ("uniq")
+    """
+
+    def has_unique_chars(s):
+        return len(set(s)) == len(s)
+
+    # Step 1: Filter out strings with duplicate chars
+    arr = [s for s in arr if has_unique_chars(s)]
+
+    max_len = 0
+
+    def backtrack(index, current):
+        nonlocal max_len
+
+        # Step 2: Update max length
+        max_len = max(max_len, len(current))
+
+        # Step 3: Try adding each remaining string
+        for i in range(index, len(arr)):
+            # Step 4: Check if can add without duplicates
+            if not any(c in current for c in arr[i]):
+                # Step 5: Add string
+                backtrack(i + 1, current + arr[i])
+
+    backtrack(0, "")
+    return max_len
+
+# Alternative using set for tracking:
+def maxLengthSet(arr: list[str]) -> int:
+    def backtrack(index, char_set):
+        # Base case: tried all strings
+        if index == len(arr):
+            return len(char_set)
+
+        # Option 1: Skip current string
+        skip = backtrack(index + 1, char_set)
+
+        # Option 2: Include current string (if no overlap)
+        current_chars = set(arr[index])
+        include = 0
+
+        # Check: unique chars AND no overlap with existing
+        if len(current_chars) == len(arr[index]) and \
+           not (current_chars & char_set):
+            include = backtrack(index + 1, char_set | current_chars)
+
+        return max(skip, include)
+
+    return backtrack(0, set())
+```
+
+**TypeScript Solution**:
+```typescript
+function maxLength(arr: string[]): number {
+    function hasUniqueChars(s: string): boolean {
+        return new Set(s).size === s.length;
+    }
+
+    // Step 1: Filter invalid strings
+    arr = arr.filter(hasUniqueChars);
+
+    let maxLen = 0;
+
+    function backtrack(index: number, charSet: Set<string>): void {
+        // Step 2: Update max
+        maxLen = Math.max(maxLen, charSet.size);
+
+        // Step 3: Try each remaining string
+        for (let i = index; i < arr.length; i++) {
+            const str = arr[i];
+
+            // Step 4: Check for overlap
+            let hasOverlap = false;
+            for (const char of str) {
+                if (charSet.has(char)) {
+                    hasOverlap = true;
+                    break;
+                }
+            }
+
+            if (!hasOverlap) {
+                // Step 5: Add characters
+                const newSet = new Set(charSet);
+                for (const char of str) {
+                    newSet.add(char);
+                }
+
+                // Step 6: Recurse
+                backtrack(i + 1, newSet);
+            }
+        }
+    }
+
+    backtrack(0, new Set());
+    return maxLen;
+}
+```
+
+**Complexity**:
+- Time: O(2^n × m) where n is array length, m is avg string length
+- Space: O(m) for character set
+
+**Visualization**:
+```
+arr = ["abc", "def", "ghi", "aef"]
+
+Decision tree:
+
+                        {} len=0
+          ┌──────────────┼──────────────┐
+          │              │              │
+     Include "abc"   Skip "abc"    ...
+     {a,b,c} len=3   {} len=0
+          │              │
+    ┌─────┴─────┐   ┌────┴────┐
+    │           │   │         │
+ Include    Skip  Include  Skip
+  "def"     "def"  "def"   "def"
+{abcdef}  {abc}  {def}    {}
+  len=6    len=3  len=3   len=0
+    │
+  ┌─┴─┐
+  │   │
+ Inc  Skip
+"ghi" "ghi"
+{abcdefghi} {abcdef}
+  len=9✓    len=6
+    │
+  ┌─┴─┐
+  │   │
+ Inc  Skip  (Try "aef")
+"aef" "aef"
+  ✗    len=9  ("aef" has 'a' and 'e', conflict!)
+
+Maximum: 9 ("abc" + "def" + "ghi")
+
+Invalid path example:
+["ab","ba"]
+    │
+Include "ab" → {a,b}
+    │
+Try Include "ba" → has 'b' and 'a' ✗ CONFLICT!
+    │
+Skip "ba" → len=2
+
+Result: 2
+```
+
+---
+
+### 25. Partition to K Equal Sum Subsets (Medium)
+**LeetCode**: https://leetcode.com/problems/partition-to-k-equal-sum-subsets/
+
+**Description**: Given an integer array nums and an integer k, return true if it is possible to divide this array into k non-empty subsets whose sums are all equal.
+
+**Python Solution**:
+```python
+def canPartitionKSubsets(nums: list[int], k: int) -> bool:
+    """
+    Similar to matchsticks problem but with k groups.
+    Backtrack assigning each number to a group.
+
+    For nums=[4,3,2,3,5,2,1], k=4:
+    Total=20, target=5 per subset
+
+    Decision tree:
+
+                [0,0,0,0] (4 subsets)
+                     │
+            Try assigning nums[0]=4
+            ┌────────┼────────┐
+        Group 0  Group 1  Group 2...
+        [4,0,0,0] [0,4,0,0] [0,0,4,0]
+            │
+      Try nums[1]=3
+        ┌───┴───┐
+    Group 0  Group 1  (Group 0 would be 7>5, skip)
+    [4,3,0,0]✗ [4,0,3,0]
+                  │
+            Continue filling...
+
+    Goal: [5,5,5,5]
+    """
+    total = sum(nums)
+
+    # Step 1: Check if partition possible
+    if total % k != 0:
+        return False
+
+    target = total // k
+
+    # Sort descending for faster pruning
+    nums.sort(reverse=True)
+
+    # Early exit if largest number exceeds target
+    if nums[0] > target:
+        return False
+
+    subsets = [0] * k
+
+    def backtrack(index):
+        # Step 2: Assigned all numbers
+        if index == len(nums):
+            # All subsets should equal target
+            return all(s == target for s in subsets)
+
+        # Step 3: Try adding current number to each subset
+        for i in range(k):
+            # Step 4: Pruning - would exceed target
+            if subsets[i] + nums[index] > target:
+                continue
+
+            # Step 5: Optimization - skip duplicate subset values
+            # If this subset has same sum as previous, we already tried
+            if i > 0 and subsets[i] == subsets[i-1]:
+                continue
+
+            # Step 6: Assign to subset
+            subsets[i] += nums[index]
+
+            # Step 7: Recurse
+            if backtrack(index + 1):
+                return True
+
+            # Step 8: Backtrack
+            subsets[i] -= nums[index]
+
+            # Step 9: Optimization - if empty subset failed, no point trying others
+            if subsets[i] == 0:
+                break
+
+        return False
+
+    return backtrack(0)
+```
+
+**TypeScript Solution**:
+```typescript
+function canPartitionKSubsets(nums: number[], k: number): boolean {
+    const total = nums.reduce((a, b) => a + b, 0);
+
+    // Step 1: Validate partition
+    if (total % k !== 0) return false;
+
+    const target = total / k;
+
+    // Step 2: Sort descending
+    nums.sort((a, b) => b - a);
+
+    if (nums[0] > target) return false;
+
+    const subsets = Array(k).fill(0);
+
+    function backtrack(index: number): boolean {
+        // Step 3: All numbers assigned
+        if (index === nums.length) {
+            return subsets.every(s => s === target);
+        }
+
+        // Step 4: Try each subset
+        for (let i = 0; i < k; i++) {
+            // Step 5: Pruning
+            if (subsets[i] + nums[index] > target) {
+                continue;
+            }
+
+            // Step 6: Skip duplicates
+            if (i > 0 && subsets[i] === subsets[i-1]) {
+                continue;
+            }
+
+            // Step 7: Assign
+            subsets[i] += nums[index];
+
+            // Step 8: Recurse
+            if (backtrack(index + 1)) return true;
+
+            // Step 9: Unassign
+            subsets[i] -= nums[index];
+
+            // Step 10: Empty subset optimization
+            if (subsets[i] === 0) break;
+        }
+
+        return false;
+    }
+
+    return backtrack(0);
+}
+```
+
+**Complexity**:
+- Time: O(k^n) where n is array length
+- Space: O(n) for recursion
+
+**Visualization**:
+```
+nums = [4,3,2,3,5,2,1], k = 4
+total = 20, target = 5
+
+Sorted descending: [5,4,3,3,2,2,1]
+
+Building subsets:
+
+Step 1: Assign 5
+┌───┬───┬───┬───┐
+│ 5 │ 0 │ 0 │ 0 │
+└───┴───┴───┴───┘
+
+Step 2: Assign 4
+┌───┬───┬───┬───┐
+│ 5 │ 4 │ 0 │ 0 │  (Can't add to subset 0: 5+4>5)
+└───┴───┴───┴───┘
+
+Step 3: Assign 3
+┌───┬───┬───┬───┐
+│ 5 │ 4 │ 3 │ 0 │  (Can't add to 0 or 1)
+└───┴───┴───┴───┘
+
+Step 4: Assign 3
+┌───┬───┬───┬───┐
+│ 5 │ 4 │ 3 │ 3 │  (Can't add to 0,1,2)
+└───┴───┴───┴───┘
+
+Step 5: Assign 2
+┌───┬───┬───┬───┐
+│ 5 │ 4 │ 3 │ 3 │  (Can't add to 0)
+└───┴───┴───┴───┘
+Try subset 1: 4+2=6 > 5 ✗
+Try subset 2: 3+2=5 ✓
+┌───┬───┬───┬───┐
+│ 5 │ 4 │ 5*│ 3 │
+└───┴───┴───┴───┘
+
+Step 6: Assign 2
+┌───┬───┬───┬───┐
+│ 5 │ 4 │ 5 │ 3 │
+└───┴───┴───┴───┘
+Try subset 3: 3+2=5 ✓
+┌───┬───┬───┬───┐
+│ 5 │ 4 │ 5 │ 5*│
+└───┴───┴───┴───┘
+
+Step 7: Assign 1
+┌───┬───┬───┬───┐
+│ 5 │ 4 │ 5 │ 5 │
+└───┴───┴───┴───┘
+Only subset 1 can take it: 4+1=5 ✓
+┌───┬───┬───┬───┐
+│ 5 │ 5*│ 5 │ 5 │
+└───┴───┴───┴───┘
+
+All subsets = 5! SUCCESS! ✓
+
+Final partition:
+Group 0: [5]
+Group 1: [4, 1]
+Group 2: [3, 2]
+Group 3: [3, 2]
+```
 
 ---
 
