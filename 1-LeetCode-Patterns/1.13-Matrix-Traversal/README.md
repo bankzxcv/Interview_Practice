@@ -947,9 +947,11 @@ def rotate(matrix: list[list[int]]) -> None:
     1. Transpose the matrix (swap rows and columns)
     2. Reverse each row
 
-    Example: [[1,2,3],    Transpose    [[1,4,7],    Reverse rows    [[7,4,1],
-              [4,5,6],  ------------>   [2,5,8],  ---------------->  [8,5,2],
-              [7,8,9]]                  [3,6,9]]                     [9,6,3]]
+    Example:
+    Original:        Transpose:       Reverse rows:
+    [[1, 2, 3],      [[1, 4, 7],      [[7, 4, 1],
+     [4, 5, 6],  →    [2, 5, 8],  →    [8, 5, 2],
+     [7, 8, 9]]       [3, 6, 9]]       [9, 6, 3]]
     """
     n = len(matrix)
 
@@ -2672,13 +2674,14 @@ def countSubIslands(grid1: list[list[int]], grid2: list[list[int]]) -> int:
     DFS on grid2 islands, checking if all cells exist in grid1.
 
     Visualization:
-    grid1:             grid2:             Analysis:
-    ┌──────────┐      ┌──────────┐
-    │ 1  1  1 │      │ 1  1  0 │      Island A: SUB-ISLAND ✓
-    │ 0  0  1 │      │ 0  0  0 │      (all cells in grid1)
-    │ 1  1  1 │      │ 1  1  1 │      Island B: NOT sub-island ✗
-    │ 1  0  1 │      │ 0  1  1 │      (some cells not in grid1)
-    └──────────┘      └──────────┘
+
+    grid1:          grid2:          Analysis:
+    ┌─────────┐    ┌─────────┐
+    │ 1  1  1 │    │ 1  1  0 │    Island A: SUB-ISLAND ✓
+    │ 0  0  1 │    │ 0  0  0 │    (all cells in grid1)
+    │ 1  1  1 │    │ 1  1  1 │    Island B: NOT sub-island ✗
+    │ 1  0  1 │    │ 0  1  1 │    (some cells not in grid1)
+    └─────────┘    └─────────┘
 
     Check process for each island in grid2:
     1. DFS to find all cells in island

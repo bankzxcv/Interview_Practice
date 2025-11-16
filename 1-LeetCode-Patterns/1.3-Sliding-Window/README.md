@@ -24,7 +24,7 @@ Imagine a curtain of fixed width sliding across a stage. As it moves right, it r
 
 ```
 Array: [1, 3, 2, 6, -1, 4, 1, 8, 2]
-Index:  0  1  2  3   4  5  6  7  8
+Index:  0  1  2  3  4  5  6  7  8
 
 Step 1: Initial Window (k=3)
         ┌─────────┐
@@ -51,6 +51,23 @@ Step 4: Continue sliding...
                   L      R
 
 Pattern: Each step removes LEFT element, adds RIGHT element
+```
+
+**Mermaid Flow Diagram - Fixed-Size Window**:
+```mermaid
+flowchart TD
+    Start([Start: Fixed Window Size k]) --> Init[left = 0<br/>right = k-1<br/>Calculate initial sum]
+    Init --> Slide{right < n-1?}
+    Slide -->|No| Return[Return maximum sum]
+    Slide -->|Yes| Update[Remove arr-left-<br/>Add arr-right+1-<br/>left++, right++]
+    Update --> CheckMax[Update max if current > max]
+    CheckMax --> Slide
+    Return --> End([End])
+
+    style Start fill:#87CEEB
+    style End fill:#87CEEB
+    style Update fill:#90EE90
+    style CheckMax fill:#FFE4B5
 ```
 
 #### Variable-Size Window: The Elastic Band
@@ -102,12 +119,35 @@ Step 7:  2  3 │ 1  2  4 │  sum = 7 >= 7 ✓ length = 3 (minimum!)
 Pattern: RIGHT expands, LEFT shrinks. Each element visited at most TWICE!
 ```
 
+**Mermaid Flow Diagram - Variable-Size Window**:
+```mermaid
+flowchart TD
+    Start([Start: Variable Window]) --> Init[left = 0<br/>right = 0<br/>sum = 0<br/>minLen = infinity]
+    Init --> ExpandLoop{right < n?}
+    ExpandLoop -->|No| ReturnMin[Return minLen]
+    ExpandLoop -->|Yes| AddRight[sum += arr-right-<br/>right++]
+    AddRight --> CheckValid{sum >= target?}
+    CheckValid -->|No| ExpandLoop
+    CheckValid -->|Yes| ShrinkLoop{sum >= target?}
+    ShrinkLoop -->|No| ExpandLoop
+    ShrinkLoop -->|Yes| UpdateMin[Update minLen<br/>if current < minLen]
+    UpdateMin --> RemoveLeft[sum -= arr-left-<br/>left++]
+    RemoveLeft --> ShrinkLoop
+    ReturnMin --> End([End])
+
+    style Start fill:#87CEEB
+    style End fill:#87CEEB
+    style AddRight fill:#90EE90
+    style RemoveLeft fill:#FFB6C6
+    style UpdateMin fill:#FFD700
+```
+
 #### Character Frequency Window: The Letter Counter
 Track character frequencies as the window slides - perfect for anagram/permutation problems.
 
 ```
 String s2: "e i d b a o o o"
-Index:      0 1 2 3 4 5 6 7
+Index:     0 1 2 3 4 5 6 7
 Pattern s1: "ab" → need {a:1, b:1}
 
 Step 1: Window size 2, check "ei"
@@ -1853,7 +1893,7 @@ def maxTurbulenceSize(arr: List[int]) -> int:
 
 # Visualization for arr = [9,4,2,10,7,8,8,1,9]:
 #
-# Index:  0  1  2  3   4  5  6  7  8
+# Index:  0  1  2  3  4  5  6  7  8
 # Array: [9, 4, 2, 10, 7, 8, 8, 1, 9]
 #         >  >  <   >  <  =  >  <     (comparisons)
 #

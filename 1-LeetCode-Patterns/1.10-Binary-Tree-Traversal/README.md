@@ -45,6 +45,51 @@ IN-order:   Process root IN the middle
 POST-order: Process root AFTER children (POSTpone root)
 ```
 
+**Mermaid Tree Diagram - Traversal Orders**:
+```mermaid
+graph TD
+    A[1] --> B[2]
+    A --> C[3]
+    B --> D[4]
+    B --> E[5]
+
+    classDef preorder fill:#FFE4B5
+    classDef inorder fill:#90EE90
+    classDef postorder fill:#87CEEB
+    classDef levelorder fill:#FFB6C6
+
+    style A fill:#FFD700
+    style B fill:#FFD700
+    style C fill:#FFD700
+    style D fill:#FFD700
+    style E fill:#FFD700
+```
+
+**Traversal Order Summary**:
+```mermaid
+flowchart LR
+    subgraph Preorder["Preorder: 1→2→4→5→3"]
+        P1[1] --> P2[2] --> P4[4]
+        P2 --> P5[5]
+        P1 --> P3[3]
+    end
+
+    subgraph Inorder["Inorder: 4→2→5→1→3"]
+        I4[4] --> I2[2] --> I5[5]
+        I2 --> I1[1] --> I3[3]
+    end
+
+    subgraph Postorder["Postorder: 4→5→2→3→1"]
+        PO4[4] --> PO5[5]
+        PO5 --> PO2[2] --> PO3[3]
+        PO3 --> PO1[1]
+    end
+
+    style Preorder fill:#FFE4B5
+    style Inorder fill:#90EE90
+    style Postorder fill:#87CEEB
+```
+
 ### Detailed Visualizations
 
 #### 1. PREORDER Traversal (Root → Left → Right)

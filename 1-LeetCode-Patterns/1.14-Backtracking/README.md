@@ -46,6 +46,64 @@ Total solutions found: 6 permutations
 └─────────────────────────────────────┘
 ```
 
+**Mermaid Decision Tree - Permutations**:
+```mermaid
+graph TD
+    Root["[ ]<br/>Start"] --> L1_1["[1]"]
+    Root --> L1_2["[2]"]
+    Root --> L1_3["[3]"]
+
+    L1_1 --> L2_1["[1,2]"]
+    L1_1 --> L2_2["[1,3]"]
+
+    L1_2 --> L2_3["[2,1]"]
+    L1_2 --> L2_4["[2,3]"]
+
+    L1_3 --> L2_5["[3,1]"]
+    L1_3 --> L2_6["[3,2]"]
+
+    L2_1 --> L3_1["[1,2,3] ✓"]
+    L2_2 --> L3_2["[1,3,2] ✓"]
+    L2_3 --> L3_3["[2,1,3] ✓"]
+    L2_4 --> L3_4["[2,3,1] ✓"]
+    L2_5 --> L3_5["[3,1,2] ✓"]
+    L2_6 --> L3_6["[3,2,1] ✓"]
+
+    style Root fill:#87CEEB
+    style L3_1 fill:#90EE90
+    style L3_2 fill:#90EE90
+    style L3_3 fill:#90EE90
+    style L3_4 fill:#90EE90
+    style L3_5 fill:#90EE90
+    style L3_6 fill:#90EE90
+```
+
+**Mermaid Flowchart - Backtracking Template**:
+```mermaid
+flowchart TD
+    Start([Start: backtrack path, choices]) --> BaseCheck{Base case<br/>reached?}
+    BaseCheck -->|Yes - Complete| AddResult[Add path to results]
+    BaseCheck -->|No - Continue| IterateChoices[For each choice in choices]
+
+    AddResult --> Return1([Return])
+
+    IterateChoices --> ValidCheck{Is choice<br/>valid?}
+    ValidCheck -->|No - Skip| IterateChoices
+    ValidCheck -->|Yes| Choose[1. ADD choice to path]
+
+    Choose --> Recurse[2. RECURSE: backtrack with updated state]
+    Recurse --> Unchoose[3. REMOVE choice from path<br/>BACKTRACK]
+    Unchoose --> IterateChoices
+
+    IterateChoices -->|All tried| Return2([Return])
+
+    style Start fill:#87CEEB
+    style AddResult fill:#90EE90
+    style Choose fill:#FFE4B5
+    style Unchoose fill:#FFB6C6
+    style Recurse fill:#FFD700
+```
+
 #### 2. Backtracking with Pruning (Combination Sum)
 
 ```
@@ -2980,10 +3038,10 @@ def splitIntoFibonacci(num: str) -> list[int]:
 
          Split positions
               │
-      ┌───────┼───────┐
-    "1|1|..."  "1|10|..." "11|01|..."
-       │          │           │
-    Try 1+1   Try 1+10    Try 11+01
+      ┌───────┼────────┐
+    "1|1|..."  "1|10|..."  "11|01|..."
+       │          │            │
+    Try 1+1    Try 1+10    Try 11+01
        │          │           │
       =2        =11          =12
        │          │           │

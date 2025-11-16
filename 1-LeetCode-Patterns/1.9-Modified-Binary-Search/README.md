@@ -106,6 +106,28 @@ Step 3: Calculate Middle = (5 + 6) / 2 = 5
          11 == 11? → FOUND! 🏆
 ```
 
+**Mermaid Flow Diagram - Standard Binary Search**:
+```mermaid
+flowchart TD
+    Start([Start: Binary Search]) --> Init[left = 0<br/>right = n-1]
+    Init --> Loop{left <= right?}
+    Loop -->|No| NotFound[Return -1<br/>Not Found]
+    Loop -->|Yes| CalcMid[mid = left + right / 2]
+    CalcMid --> Compare{arr-mid-<br/>vs target?}
+    Compare -->|arr-mid- == target| Found[✓ Return mid<br/>Found!]
+    Compare -->|arr-mid- < target| MoveLeft[left = mid + 1<br/>Search right half]
+    Compare -->|arr-mid- > target| MoveRight[right = mid - 1<br/>Search left half]
+    MoveLeft --> Loop
+    MoveRight --> Loop
+    Found --> End([End])
+    NotFound --> End
+
+    style Start fill:#87CEEB
+    style End fill:#87CEEB
+    style Found fill:#90EE90
+    style NotFound fill:#FFB6C6
+```
+
 #### 🌪️ Metaphor 3: Rotated Array Search (Broken Circle)
 
 Imagine a sorted circular track that's been "broken" and rotated:
@@ -155,6 +177,39 @@ Array:    [4] [5] [6] [7] [0] [1] [2]
 Found at index 4! ✅
 ```
 
+**Mermaid Flow Diagram - Rotated Array Search**:
+```mermaid
+flowchart TD
+    Start([Start: Rotated Array]) --> Init[left = 0<br/>right = n-1]
+    Init --> Loop{left <= right?}
+    Loop -->|No| NotFound[Return -1]
+    Loop -->|Yes| CalcMid[mid = left + right / 2]
+    CalcMid --> CheckFound{arr-mid- == target?}
+    CheckFound -->|Yes| Found[✓ Return mid]
+    CheckFound -->|No| CheckSorted{Which half<br/>is sorted?}
+
+    CheckSorted -->|Left Sorted<br/>arr-left- <= arr-mid-| CheckLeftRange{target in<br/>left range?}
+    CheckSorted -->|Right Sorted<br/>arr-mid- <= arr-right-| CheckRightRange{target in<br/>right range?}
+
+    CheckLeftRange -->|Yes<br/>arr-left- <= target < arr-mid-| SearchLeft[right = mid - 1]
+    CheckLeftRange -->|No| SearchRight[left = mid + 1]
+
+    CheckRightRange -->|Yes<br/>arr-mid- < target <= arr-right-| SearchRight2[left = mid + 1]
+    CheckRightRange -->|No| SearchLeft2[right = mid - 1]
+
+    SearchLeft --> Loop
+    SearchRight --> Loop
+    SearchLeft2 --> Loop
+    SearchRight2 --> Loop
+    Found --> End([End])
+    NotFound --> End
+
+    style Start fill:#87CEEB
+    style End fill:#87CEEB
+    style Found fill:#90EE90
+    style NotFound fill:#FFB6C6
+```
+
 #### 🎯 Metaphor 4: Peak Finding (Mountain Climbing)
 
 Finding a peak is like a hiker checking slopes to find mountain tops:
@@ -169,7 +224,7 @@ Mountain Range:
   ___╱      ╲__╱          ╲╱      ╲___
 
 Array: [1, 3, 5, 7, 9, 8, 6, 4, 7, 9, 8]
-Index:  0  1  2  3  4  5  6  7  8  9  10
+Index:  0  1  2  3  4  5  6  7  8  9 10
 
 Step 1: Check Middle
         L=0                         R=10
