@@ -29,33 +29,50 @@ This comprehensive guide contains detailed system design problems with in-depth 
 
 **→ [See Complete Problem List & Learning Path](./problems/README.md)**
 
-### Available Problems (Detailed)
+### Available Problems
 
-#### Social Media & Content
-- [Twitter](./problems/01-twitter.md) - Timeline, follows, fan-out strategies
-- [Instagram](./problems/02-instagram.md) - Photo sharing, feed ranking, async processing
+**Status: 29 comprehensive problems completed!** ✅
 
-#### Infrastructure & Cloud
-- [Multi-Tenant SaaS Platform](./problems/16-multi-tenant-saas.md) ⭐ NEW - Tenant isolation, data partitioning, tiered architecture
-
-#### Utilities
+#### Core System Design (Beginner-Intermediate)
 - [URL Shortener](./problems/03-url-shortener.md) - Key generation, redirects, analytics
+- [Twitter](./problems/01-twitter.md) - Timeline, follows, fan-out strategies
+- [Instagram](./problems/02-instagram.md) - Photo sharing, feed ranking
+- [News Feed](./problems/15-news-feed.md) - ML-based ranking, hybrid fan-out
+- [Rate Limiter](./problems/13-rate-limiter.md) - Token bucket, distributed coordination
+- [Notification System](./problems/14-notification-system.md) - Multi-channel delivery
+- [Yelp/Nearby Places](./problems/12-yelp.md) - Geospatial indexing
 
-### Coming Soon
+#### Real-Time & Streaming (Intermediate-Advanced)
+- [WhatsApp/Messenger](./problems/06-whatsapp.md) - Real-time messaging, E2E encryption
+- [Uber/Lyft](./problems/04-uber.md) - Geospatial, real-time matching
+- [Netflix](./problems/05-netflix.md) - Adaptive bitrate, CDN, recommendations
+- [YouTube](./problems/07-youtube.md) - Video transcoding, streaming
 
-Additional problems with full detail (check [problems directory](./problems/)):
-- Uber/Lyft - Geospatial, real-time matching
-- Netflix - Video streaming, CDN
-- WhatsApp - Real-time messaging, E2E encryption
-- YouTube - Video transcoding, storage
-- Google Drive - File sync, conflict resolution
-- Ticketmaster - Concurrency, inventory
-- Web Crawler - Distributed crawling, politeness
-- Distributed Cache - Consistency, eviction
-- Yelp - Geospatial search
-- Rate Limiter - Token bucket, distributed
-- Notification System - Multi-channel delivery
-- And many more...
+#### Infrastructure & Platform (Advanced)
+- [Multi-Tenant SaaS](./problems/16-multi-tenant-saas.md) - Tenant isolation, data partitioning
+- [Dropbox/Google Drive](./problems/08-dropbox.md) - File sync, delta sync
+- [Web Crawler](./problems/10-web-crawler.md) - Distributed crawling, politeness
+- [Distributed Cache](./problems/11-distributed-cache.md) - Consistency, eviction
+- [Ticketmaster](./problems/09-ticketmaster.md) - Concurrency control, seat locking
+- [API Gateway](./problems/38-api-gateway.md) - Authentication, rate limiting, routing
+
+#### Financial & Trading
+- [Stock Trading Platform](./problems/17-stock-trading.md) - Low latency, ACID
+- [Payment Processing](./problems/18-payment-processing.md) - Idempotency, 2-phase commit
+
+#### Advanced & Specialized
+- [Search Engine](./problems/19-search-engine.md) - Crawling, indexing, ranking
+- [Global CDN](./problems/29-global-cdn.md) - Edge caching, DDoS protection
+- [ML Training Platform](./problems/30-ml-training-platform.md) - Distributed training
+- [Real-Time Multiplayer Game](./problems/31-realtime-multiplayer-game.md) - Authoritative server
+- [Distributed File System](./problems/32-distributed-file-system.md) - HDFS, replication
+- [Blockchain/Cryptocurrency](./problems/33-blockchain-cryptocurrency.md) - Proof of Work
+- [Log Aggregation](./problems/34-log-aggregation.md) - ELK stack
+- [Messaging Queue](./problems/35-messaging-queue.md) - Kafka, exactly-once delivery
+- [Service Mesh](./problems/36-service-mesh.md) - Istio, circuit breakers
+- [Real-Time Analytics](./problems/37-real-time-analytics.md) - Stream processing
+
+**→ [See Full Problem List with Learning Path](./problems/README.md)**
 
 ## What Makes This Guide Different?
 

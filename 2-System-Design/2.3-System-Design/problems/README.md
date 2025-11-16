@@ -21,48 +21,49 @@ Each problem includes:
 ### Social Media & Content Platforms
 1. [Twitter](./01-twitter.md) - Social media with timeline, follows, real-time updates
 2. [Instagram](./02-instagram.md) - Photo/video sharing with feed ranking
-3. News Feed - ML-based ranking, fan-out strategies
+3. [News Feed](./15-news-feed.md) - ML-based ranking, fan-out strategies
 4. [YouTube](./07-youtube.md) - Video streaming, transcoding, CDN
 5. [WhatsApp/Messenger](./06-whatsapp.md) - Real-time messaging, E2E encryption
 
 ### Infrastructure & Cloud Services
 6. [Multi-Tenant SaaS Platform](./16-multi-tenant-saas.md) - Tenant isolation, data partitioning
-7. Cloud Storage (S3-like) - Object storage, durability guarantees
-8. API Gateway - Rate limiting, authentication, routing
-9. [Distributed Cache](./11-distributed-cache.md) - Consistency, eviction, partitioning
-10. Metrics & Monitoring System - Time-series data, alerting
+7. [Distributed Cache](./11-distributed-cache.md) - Consistency, eviction, partitioning
+8. [API Gateway](./38-api-gateway.md) - Rate limiting, authentication, routing
+9. [Log Aggregation](./34-log-aggregation.md) - ELK stack, time-series data
+10. [Service Mesh](./36-service-mesh.md) - Istio, circuit breaking, mutual TLS
 
 ### Marketplace & E-commerce
 11. [Uber/Lyft](./04-uber.md) - Geospatial indexing, real-time matching
-12. E-commerce Platform (Amazon) - Inventory, orders, recommendations
-13. [Ticketmaster](./09-ticketmaster.md) - Concurrency control, seat locking
-14. Hotel Booking System - Inventory management, overbooking
+12. [Ticketmaster](./09-ticketmaster.md) - Concurrency control, seat locking
 
 ### Utilities & Tools
-15. [URL Shortener](./03-url-shortener.md) - Key generation, analytics, redirects
-16. [Web Crawler](./10-web-crawler.md) - Politeness, deduplication, distributed crawling
-17. [Notification System](./14-notification-system.md) - Multi-channel, priority queues
-18. [Rate Limiter](./13-rate-limiter.md) - Token bucket, distributed coordination
+13. [URL Shortener](./03-url-shortener.md) - Key generation, analytics, redirects
+14. [Web Crawler](./10-web-crawler.md) - Politeness, deduplication, distributed crawling
+15. [Notification System](./14-notification-system.md) - Multi-channel, priority queues
+16. [Rate Limiter](./13-rate-limiter.md) - Token bucket, distributed coordination
 
 ### Media & Streaming
-19. [Netflix](./05-netflix.md) - Adaptive bitrate, CDN, recommendations
-20. Video Conferencing (Zoom) - WebRTC, SFU architecture, scalability
+17. [Netflix](./05-netflix.md) - Adaptive bitrate, CDN, recommendations
 
 ### Collaboration & Productivity
-21. Real-time Collaboration (Google Docs) - OT/CRDT, conflict resolution
-22. [Google Drive/Dropbox](./08-dropbox.md) - File sync, delta sync, conflict resolution
+18. [Google Drive/Dropbox](./08-dropbox.md) - File sync, delta sync, conflict resolution
 
 ### Data & Search
-23. [Yelp/Nearby Places](./12-yelp.md) - Geohashing, QuadTree, R-tree
-24. Search Engine - Crawling, indexing, ranking
+19. [Yelp/Nearby Places](./12-yelp.md) - Geohashing, QuadTree, R-tree
+20. [Search Engine](./19-search-engine.md) - Crawling, indexing, ranking
 
 ### Financial & Trading
-25. Stock Trading Platform - Low latency, ACID, order matching
-26. Payment Processing System - Idempotency, 2-phase commit
+21. [Stock Trading Platform](./17-stock-trading.md) - Low latency, ACID, order matching
+22. [Payment Processing System](./18-payment-processing.md) - Idempotency, 2-phase commit
 
-### Job Processing & Scheduling
-27. Distributed Job Scheduler - Task distribution, fault tolerance
-28. Background Job Queue - Retry logic, dead letter queues
+### Advanced Problems
+23. [Global CDN](./29-global-cdn.md) - Edge caching, DDoS protection, anycast routing
+24. [ML Training Platform](./30-ml-training-platform.md) - Distributed training, hyperparameter tuning
+25. [Real-Time Multiplayer Game](./31-realtime-multiplayer-game.md) - Authoritative server, lag compensation
+26. [Distributed File System](./32-distributed-file-system.md) - HDFS/GFS, replication, fault tolerance
+27. [Blockchain/Cryptocurrency](./33-blockchain-cryptocurrency.md) - Proof of Work, consensus
+28. [Messaging Queue](./35-messaging-queue.md) - Kafka, at-least-once/exactly-once delivery
+29. [Real-Time Analytics](./37-real-time-analytics.md) - Stream processing, time-series DB
 
 ## Learning Path
 
@@ -70,18 +71,27 @@ Each problem includes:
 1. URL Shortener - Learn about key generation, caching, analytics
 2. Rate Limiter - Token bucket, sliding window algorithms
 3. Notification System - Message queues, fan-out patterns
+4. Yelp - Geospatial indexing basics
 
 ### Intermediate
-4. Twitter - Fan-out on write vs read, cache strategies
-5. Instagram - Image processing pipeline, feed ranking
-6. Web Crawler - Distributed systems, politeness
-7. Ticketmaster - Concurrency control, pessimistic locking
+5. Twitter - Fan-out on write vs read, cache strategies
+6. Instagram - Image processing pipeline, feed ranking
+7. News Feed - Ranking algorithms, hybrid fan-out
+8. Web Crawler - Distributed systems, politeness
+9. Ticketmaster - Concurrency control, pessimistic locking
+10. Netflix - Adaptive bitrate, CDN strategies
+11. Dropbox - File chunking, delta sync
+12. Payment Processing - Idempotency, distributed transactions
 
 ### Advanced
-8. Multi-Tenant SaaS - Data isolation strategies, per-tenant resources
-9. Netflix - CDN, adaptive bitrate streaming, global distribution
-10. Real-time Collaboration - CRDTs, operational transformation
-11. Stock Trading Platform - Low latency, high throughput, ACID
+13. Multi-Tenant SaaS - Data isolation strategies, per-tenant resources
+14. Stock Trading Platform - Low latency, high throughput, ACID
+15. Global CDN - Edge caching, DDoS protection, anycast
+16. ML Training Platform - Distributed training, GPU scheduling
+17. Real-Time Multiplayer Game - Authoritative server, lag compensation
+18. Distributed File System - Replication, fault tolerance, HDFS
+19. Blockchain - Consensus mechanisms, Proof of Work
+20. Real-Time Analytics - Stream processing, time-series optimization
 
 ## Key Concepts Covered
 
