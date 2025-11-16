@@ -91,6 +91,23 @@ Additional IaC tools:
 - Helm Charts
 - Kustomize
 
+### [5.11 MLOps & LLMOps](./5.11_MLOps_LLMOps/)
+**NEW!** Complete Machine Learning Operations tutorials (22 tutorials):
+- **Foundation (01-05)**: ML Pipeline, DVC, MLflow, Model Registry, A/B Testing
+- **Advanced MLOps (06-09)**: Feature Store, Monitoring, Drift Detection, Auto Retraining
+- **LLMOps Fundamentals (10-14)**: Fine-tuning, Prompt Management, RAG, Evaluation, Vector DBs
+- **LLMOps Advanced (15-18)**: Cost Optimization, Multi-Model Router, Caching, Continuous Training
+- **Production Systems (19-22)**: Testing, FastAPI Serving, Observability, End-to-End Platform
+
+Each tutorial includes:
+- 📐 Detailed architecture diagrams (Mermaid)
+- 🌊 Data flow visualizations
+- 🔄 Sequence diagrams for workflows
+- 💻 Complete, runnable code examples
+- 🐳 Docker & Docker Compose configurations
+- ✅ Comprehensive verification steps
+- 💡 Production-ready best practices
+
 ## How to Use This Section
 
 1. **Pick a Technology**: Choose a subsection you want to learn
@@ -135,6 +152,17 @@ cat README.md
 # Follow the instructions
 ```
 
+### MLOps & LLMOps
+```bash
+cd 5.11_MLOps_LLMOps/01_Basic_ML_Pipeline
+cat README.md
+# Follow the instructions
+
+# Or jump to LLM tutorials
+cd 5.11_MLOps_LLMOps/12_RAG_Pipeline
+cat README.md
+```
+
 ## Progress Tracking
 
 Consider creating a checklist to track your progress:
@@ -148,6 +176,12 @@ Consider creating a checklist to track your progress:
 - [ ] Complete 5.8 Message Queues (all tutorials)
 - [ ] Complete 5.9 Service Mesh (all tutorials)
 - [ ] Complete 5.10 IaC Tools (all tutorials)
+- [ ] Complete 5.11 MLOps & LLMOps (22 tutorials)
+  - [ ] Foundation (01-05)
+  - [ ] Advanced MLOps (06-09)
+  - [ ] LLMOps Fundamentals (10-14)
+  - [ ] LLMOps Advanced (15-18)
+  - [ ] Production Systems (19-22)
 
 ## Tips for Success
 
