@@ -1,5 +1,9 @@
 # Python Cheatsheet - Quick Reference
 
+> **Official Documentation:**
+> - [Python Docs](https://docs.python.org/3/) | [Python Tutorial](https://docs.python.org/3/tutorial/)
+> - [PEP 8 Style Guide](https://pep8.org/) | [Real Python Tutorials](https://realpython.com/)
+
 Comprehensive Python guide for technical interviews and software engineering.
 
 ---

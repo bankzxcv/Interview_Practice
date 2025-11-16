@@ -1,5 +1,9 @@
 # TypeScript/JavaScript Cheatsheet - Quick Reference
 
+> **Official Documentation:**
+> - [JavaScript (MDN)](https://developer.mozilla.org/en-US/docs/Web/JavaScript) | [TypeScript Docs](https://www.typescriptlang.org/docs/)
+> - [Node.js Docs](https://nodejs.org/docs/) | [JavaScript.info](https://javascript.info/)
+
 Comprehensive guide for TypeScript and JavaScript in technical interviews and software engineering.
 
 ---

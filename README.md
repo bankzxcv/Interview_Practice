@@ -51,8 +51,8 @@ STAR method frameworks, common questions, and strategies for showcasing your imp
 
 ---
 
-### [5. Technical Stack Reference](./5-Technical-Stack/README.md)
-Comprehensive cheatsheets for programming languages (Python, TypeScript, Golang, Rust), databases (SQL, NoSQL), infrastructure (Docker, Kubernetes, Terraform), caching strategies, and monitoring tools (Elasticsearch, Grafana).
+### [4. Technical Stack Reference](./4-Technical-Stack/README.md)
+Comprehensive cheatsheets for programming languages (Python, TypeScript, Golang, Rust), databases (SQL, NoSQL), infrastructure (Docker, Kubernetes, Terraform), caching strategies, and monitoring tools (Elasticsearch, Grafana). Includes hands-on project setup tutorials for serverless functions, containerized applications, and end-to-end deployment guides.
 
 ---
 

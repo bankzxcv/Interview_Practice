@@ -1,5 +1,9 @@
 # Golang (Go) Cheatsheet - Quick Reference
 
+> **Official Documentation:**
+> - [Go Docs](https://go.dev/doc/) | [Go Tour](https://go.dev/tour/)
+> - [Effective Go](https://go.dev/doc/effective_go) | [Go by Example](https://gobyexample.com/)
+
 Comprehensive Go guide for technical interviews and backend engineering.
 
 ---
