@@ -1,5 +1,7 @@
 # Technical Stack Reference - Interview Cheatsheets
 
+> **Comprehensive Guides** with official documentation links, command outputs, and hands-on project tutorials
+
 Comprehensive technical reference guides covering programming languages, databases, infrastructure, and DevOps tools.
 
 ---
@@ -15,6 +17,7 @@ Comprehensive technical reference guides covering programming languages, databas
 ### Databases
 - [SQL](SQL.md) - Queries, joins, indexing, clustering, and optimization
 - [NoSQL](NoSQL.md) - MongoDB, Redis, Cassandra, DynamoDB, sharding, and replication
+  - ⭐ **Includes 4 Project Setup Tutorials:** Redis API caching, MongoDB CRUD, Serverless Lambda, Docker Compose stack
 
 ### Infrastructure & DevOps
 - [Docker](Docker.md) - Containers, images, Dockerfile, volumes, and networking
@@ -30,6 +33,23 @@ Comprehensive technical reference guides covering programming languages, databas
 
 ### Networking
 - [Networking](Networking.md) - OSI model, TCP/IP, HTTP, and protocols
+
+---
+
+## 🚀 Hands-On Project Tutorials
+
+The **[NoSQL Guide](NoSQL.md)** includes comprehensive end-to-end project setups:
+
+1. **Redis + Node.js API** - Complete caching layer with Express middleware
+2. **MongoDB CRUD Application** - Full REST API with Mongoose
+3. **Serverless Redis Function** - AWS Lambda with Redis integration
+4. **Docker Compose Stack** - Multi-database development environment (MongoDB, Redis, Cassandra + GUIs)
+
+Each tutorial includes:
+- Complete project structure
+- Full source code
+- Step-by-step setup instructions
+- Testing & deployment guides
 
 ---
 

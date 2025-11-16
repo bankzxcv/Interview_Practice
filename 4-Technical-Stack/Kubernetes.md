@@ -1,5 +1,9 @@
 # Kubernetes Cheatsheet - Quick Reference
 
+> **Official Documentation:**
+> - [Kubernetes Docs](https://kubernetes.io/docs/) | [kubectl Reference](https://kubernetes.io/docs/reference/kubectl/)
+> - [Kubernetes Tutorials](https://kubernetes.io/docs/tutorials/) | [Kubernetes Patterns](https://kubernetes.io/docs/concepts/)
+
 Container orchestration, scaling, and management with Kubernetes (K8s).
 
 ---

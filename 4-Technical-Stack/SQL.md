@@ -1,5 +1,9 @@
 # SQL Cheatsheet - Quick Reference
 
+> **Official Documentation:**
+> - [PostgreSQL Docs](https://www.postgresql.org/docs/) | [MySQL Docs](https://dev.mysql.com/doc/) | [SQL Server Docs](https://learn.microsoft.com/en-us/sql/)
+> - [SQL Tutorial](https://www.w3schools.com/sql/) | [PostgreSQL Tutorial](https://www.postgresqltutorial.com/)
+
 Comprehensive SQL guide covering queries, indexing, clustering, optimization, and best practices.
 
 ---

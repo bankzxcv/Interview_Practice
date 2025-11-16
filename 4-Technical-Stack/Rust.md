@@ -1,5 +1,9 @@
 # Rust Cheatsheet - Quick Reference
 
+> **Official Documentation:**
+> - [Rust Book](https://doc.rust-lang.org/book/) | [Rust by Example](https://doc.rust-lang.org/rust-by-example/)
+> - [Rust Standard Library](https://doc.rust-lang.org/std/) | [Rustlings](https://github.com/rust-lang/rustlings)
+
 Comprehensive Rust guide covering ownership, borrowing, lifetimes, and systems programming.
 
 ---
