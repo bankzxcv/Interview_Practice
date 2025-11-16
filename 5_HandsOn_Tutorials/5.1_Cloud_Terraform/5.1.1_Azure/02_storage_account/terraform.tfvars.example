@@ -1,0 +1,6 @@
+# terraform.tfvars.example
+
+resource_group_name    = "rg-learning-dev"
+location               = "eastus"
+environment            = "dev"
+storage_account_prefix = "stlearning"

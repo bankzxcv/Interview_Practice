@@ -1,0 +1,6 @@
+# terraform.tfvars.example
+# Copy this file to terraform.tfvars and customize as needed
+
+resource_group_name = "rg-learning-dev"
+location            = "eastus"
+environment         = "dev"
