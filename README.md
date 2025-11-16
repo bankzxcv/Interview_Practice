@@ -76,6 +76,14 @@ STAR method frameworks, common questions, and strategies for showcasing your imp
 - **Golang** - Goroutines, channels, interfaces, concurrency patterns
 - **Rust** - Ownership, borrowing, lifetimes, systems programming
 
+#### Design Patterns & Architecture
+- **Design Patterns** - 20+ patterns with TypeScript & Python implementations
+  - Creational: Singleton, Factory, Builder, Prototype, Abstract Factory
+  - Structural: Adapter, Decorator, Facade, Proxy, Composite, Bridge
+  - Behavioral: Strategy, Observer, Command, State, Chain of Responsibility, Template Method
+  - **Functional Programming** - Pure functions, composition, currying, functors, monads
+  - **Real-World Examples** - E-commerce, API Gateway, Microservices project structures
+
 #### Databases & Storage
 - **SQL** - Queries, joins, indexing, clustering, optimization techniques
 - **NoSQL** - MongoDB, Redis, Cassandra, DynamoDB, sharding, replication

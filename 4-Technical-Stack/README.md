@@ -14,6 +14,13 @@ Comprehensive technical reference guides covering programming languages, databas
 - [Golang](Golang.md) - Go syntax, goroutines, channels, and concurrency
 - [Rust](Rust.md) - Ownership, borrowing, lifetimes, and systems programming
 
+### Design Patterns & Architecture
+- **[Design Patterns](DesignPatterns.md)** - Complete guide with 20+ patterns in TypeScript & Python
+  - ⭐ **[Functional Programming Techniques](DesignPatterns-FunctionalProgramming.md)** - Pure functions, composition, currying, monads
+  - 📝 **Detailed Guides:** [Singleton](DesignPatterns-Singleton.md) | [Factory Method](DesignPatterns-FactoryMethod.md) | [Builder](DesignPatterns-Builder.md) | [Strategy](DesignPatterns-Strategy.md)
+  - 📚 **[Additional Patterns](DesignPatterns-Additional.md)** - Adapter, Decorator, Observer, Command, State, and more
+  - 🏗️ **[Real-World Project Structures](DesignPatterns-ProjectStructures.md)** - E-commerce, API Gateway, Microservices examples
+
 ### Databases
 - [SQL](SQL.md) - Queries, joins, indexing, clustering, and optimization
 - [NoSQL](NoSQL.md) - MongoDB, Redis, Cassandra, DynamoDB, sharding, and replication
@@ -61,6 +68,7 @@ Each tutorial includes:
 | [TypeScript/JavaScript](TypeScript-JavaScript.md) | Promises, async/await, types, closures |
 | [Golang](Golang.md) | Goroutines, channels, interfaces |
 | [Rust](Rust.md) | Ownership, borrowing, lifetimes |
+| **[Design Patterns](DesignPatterns.md)** | **Singleton, Factory, Builder, Strategy, Observer, Functional Programming** |
 | [SQL](SQL.md) | Joins, indexes, transactions, optimization |
 | [NoSQL](NoSQL.md) | MongoDB, Redis, Cassandra, sharding |
 | [Docker](Docker.md) | Images, containers, Dockerfile, compose |
