@@ -1,0 +1,27 @@
+# 01-basic-configmap.yaml
+# Basic ConfigMap with key-value pairs
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-config
+  labels:
+    app: demo
+    type: config
+data:
+  # Simple key-value pairs
+  DB_HOST: "postgres.default.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "myapp"
+  DB_MAX_CONNECTIONS: "100"
+  DB_TIMEOUT: "30"
+
+  # Multi-line value
+  DB_CONNECTION_STRING: |
+    host=postgres.default.svc.cluster.local
+    port=5432
+    dbname=myapp
+    sslmode=require
+    connect_timeout=30
+
+# All values are stored as strings
+# Environment-specific values should be in separate ConfigMaps

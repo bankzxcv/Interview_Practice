@@ -1,0 +1,64 @@
+name: Manual Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Person to greet'
+        required: true
+        default: 'World'
+      environment:
+        description: 'Environment to run on'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      debug_mode:
+        description: 'Enable debug logging'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Greet user
+      run: echo "Hello ${{ inputs.name }}!"
+
+    - name: Display environment
+      run: echo "Running on ${{ inputs.environment }} environment"
+
+    - name: Show all inputs
+      run: |
+        echo "Name: ${{ inputs.name }}"
+        echo "Environment: ${{ inputs.environment }}"
+        echo "Debug Mode: ${{ inputs.debug_mode }}"
+
+    - name: Debug information
+      if: inputs.debug_mode == true
+      run: |
+        echo "Debug mode is enabled!"
+        echo "Current directory: $(pwd)"
+        echo "Git branch: $(git branch --show-current 2>/dev/null || echo 'N/A')"
+        echo "Git commit: $(git rev-parse HEAD 2>/dev/null || echo 'N/A')"
+
+    - name: Environment-specific action
+      run: |
+        if [ "${{ inputs.environment }}" == "production" ]; then
+          echo "Running production deployment checks..."
+          echo "Would deploy to production servers"
+        elif [ "${{ inputs.environment }}" == "staging" ]; then
+          echo "Running staging deployment..."
+          echo "Would deploy to staging servers"
+        else
+          echo "Running development build..."
+          echo "Would deploy to development environment"
+        fi

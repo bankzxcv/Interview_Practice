@@ -1,0 +1,19 @@
+# 10-expand-pvc.yaml
+# Example of expanding a PVC (if StorageClass allows)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: expandable-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi  # Original size
+  storageClassName: standard
+
+# To expand:
+# kubectl patch pvc expandable-pvc -p '{"spec":{"resources":{"requests":{"storage":"2Gi"}}}}'
+#
+# Note: Pod may need restart to recognize new size
+# Check: kubectl exec <pod> -- df -h /mount-path

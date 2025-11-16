@@ -1,0 +1,44 @@
+# 09-advanced-job.yaml
+# Advanced job with all options
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: advanced-job
+spec:
+  # Completion settings
+  completions: 3
+  parallelism: 2
+
+  # Failure handling
+  backoffLimit: 4
+  activeDeadlineSeconds: 300  # Job fails if not complete in 5 min
+
+  # Cleanup
+  ttlSecondsAfterFinished: 3600  # Delete after 1 hour
+
+  template:
+    metadata:
+      labels:
+        app: advanced-job
+    spec:
+      containers:
+      - name: worker
+        image: busybox:1.36
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Job started: $(hostname)"
+          # Simulate work
+          sleep $((RANDOM % 30 + 10))
+          echo "Job completed: $(hostname)"
+
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+
+      restartPolicy: OnFailure  # Restart on failure

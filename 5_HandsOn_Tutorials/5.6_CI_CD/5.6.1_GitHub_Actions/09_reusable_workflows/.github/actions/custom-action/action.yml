@@ -1,0 +1,63 @@
+name: 'Setup and Test'
+description: 'Sets up environment and runs tests'
+author: 'Your Name'
+
+inputs:
+  language:
+    description: 'Programming language (python, node)'
+    required: true
+  version:
+    description: 'Language version'
+    required: false
+    default: 'latest'
+  install-command:
+    description: 'Command to install dependencies'
+    required: false
+    default: ''
+  test-command:
+    description: 'Command to run tests'
+    required: true
+
+outputs:
+  test-status:
+    description: 'Test execution status'
+    value: ${{ steps.run-tests.outputs.status }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      if: inputs.language == 'python'
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.version }}
+        cache: 'pip'
+      shell: bash
+
+    - name: Set up Node.js
+      if: inputs.language == 'node'
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.version }}
+        cache: 'npm'
+      shell: bash
+
+    - name: Install dependencies
+      if: inputs.install-command != ''
+      run: ${{ inputs.install-command }}
+      shell: bash
+
+    - name: Run tests
+      id: run-tests
+      run: |
+        ${{ inputs.test-command }}
+        echo "status=success" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ inputs.language }}
+        path: test-results/
+      shell: bash

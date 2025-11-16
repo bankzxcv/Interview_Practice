@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-secure
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: SecureP@ssw0rd123!
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./certs:/certs
+    command: |
+      postgres
+      -c ssl=on
+      -c ssl_cert_file=/certs/server-cert.pem
+      -c ssl_key_file=/certs/server-key.pem
+      -c password_encryption=scram-sha-256
+      -c log_connections=on
+      -c log_disconnections=on
+
+volumes:
+  postgres-data:

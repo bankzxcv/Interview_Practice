@@ -1,0 +1,20 @@
+# 04-daemonset-node-selector.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ssd-agent
+spec:
+  selector:
+    matchLabels:
+      app: ssd-agent
+  template:
+    metadata:
+      labels:
+        app: ssd-agent
+    spec:
+      nodeSelector:
+        disktype: ssd  # Only runs on nodes with this label
+      containers:
+      - name: agent
+        image: busybox:1.36
+        command: ["/bin/sh", "-c", "echo SSD agent on $(hostname); sleep 3600"]

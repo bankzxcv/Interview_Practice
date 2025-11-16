@@ -1,0 +1,27 @@
+{
+  "name": "release-automation-demo",
+  "version": "1.0.0",
+  "description": "GitHub Actions release automation demo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0",
+    "build": "echo \"Building...\" && mkdir -p dist && echo \"Build output\" > dist/index.js",
+    "release": "semantic-release"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/your-repo.git"
+  },
+  "keywords": ["release", "automation"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "semantic-release": "^22.0.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^9.2.0",
+    "@semantic-release/npm": "^11.0.0",
+    "@semantic-release/commit-analyzer": "^11.0.0",
+    "@semantic-release/release-notes-generator": "^12.0.0"
+  }
+}

@@ -1,0 +1,19 @@
+# 04-job-with-backoff.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: failing-job
+spec:
+  backoffLimit: 3  # Retry up to 3 times
+  template:
+    spec:
+      containers:
+      - name: failing-container
+        image: busybox:1.36
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Attempt failed"
+          exit 1  # Always fails
+      restartPolicy: Never  # Never restart within same pod

@@ -1,0 +1,93 @@
+name: Advanced Matrix Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux builds with multiple Python versions
+          - name: "Linux Python 3.9"
+            os: ubuntu-latest
+            python-version: '3.9'
+            arch: x64
+
+          - name: "Linux Python 3.11"
+            os: ubuntu-latest
+            python-version: '3.11'
+            arch: x64
+
+          - name: "Linux Python 3.12"
+            os: ubuntu-latest
+            python-version: '3.12'
+            arch: x64
+
+          # macOS build
+          - name: "macOS Python 3.11"
+            os: macos-latest
+            python-version: '3.11'
+            arch: x64
+
+          # Windows builds
+          - name: "Windows Python 3.11"
+            os: windows-latest
+            python-version: '3.11'
+            arch: x64
+
+          # Special configuration for Python 3.12 on Windows
+          - name: "Windows Python 3.12"
+            os: windows-latest
+            python-version: '3.12'
+            arch: x64
+            experimental: true
+
+    continue-on-error: ${{ matrix.experimental || false }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: ${{ matrix.arch }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest
+
+    - name: Run tests
+      working-directory: app
+      run: pytest -v test_platform.py
+
+    - name: Platform-specific step (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        echo "Running Windows-specific commands"
+        systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+
+    - name: Platform-specific step (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        echo "Running Linux-specific commands"
+        uname -a
+        lsb_release -a || cat /etc/os-release
+
+    - name: Platform-specific step (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        echo "Running macOS-specific commands"
+        sw_vers

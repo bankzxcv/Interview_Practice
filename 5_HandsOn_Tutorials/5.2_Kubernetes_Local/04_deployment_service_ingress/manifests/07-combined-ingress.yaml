@@ -1,0 +1,105 @@
+# 07-combined-ingress.yaml
+# Combined host-based and path-based routing
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: combined-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  # API host with version-based paths
+  - host: api.local
+    http:
+      paths:
+      - path: /v1
+        pathType: Prefix
+        backend:
+          service:
+            name: app1-service
+            port:
+              number: 80
+      - path: /v2
+        pathType: Prefix
+        backend:
+          service:
+            name: app2-service
+            port:
+              number: 80
+
+  # Web host - all paths to app1
+  - host: web.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app1-service
+            port:
+              number: 80
+
+  # Admin host - all paths to app2
+  - host: admin.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app2-service
+            port:
+              number: 80
+
+# Combined Routing Scenarios:
+# ---------------------------
+# 1. Different versions on same API host:
+#    api.local/v1 → app1-service (old version)
+#    api.local/v2 → app2-service (new version)
+#
+# 2. Different hosts for different purposes:
+#    web.local → app1-service (public website)
+#    admin.local → app2-service (admin panel)
+#
+# 3. Microservices architecture:
+#    api.local/users → user-service
+#    api.local/orders → order-service
+#    api.local/products → product-service
+#
+# Testing:
+# -------
+# curl -H "Host: api.local" http://localhost/v1
+# curl -H "Host: api.local" http://localhost/v2
+# curl -H "Host: web.local" http://localhost/
+# curl -H "Host: admin.local" http://localhost/
+#
+# Or add to /etc/hosts:
+# 127.0.0.1 api.local web.local admin.local
+#
+# Real-world example:
+# ------------------
+# Production setup might look like:
+#
+# rules:
+# - host: api.example.com
+#   http:
+#     paths:
+#     - path: /v1/users
+#       backend: {service: {name: user-service-v1}}
+#     - path: /v2/users
+#       backend: {service: {name: user-service-v2}}
+#     - path: /v1/orders
+#       backend: {service: {name: order-service}}
+#
+# - host: www.example.com
+#   http:
+#     paths:
+#     - path: /
+#       backend: {service: {name: frontend-service}}
+#
+# - host: admin.example.com
+#   http:
+#     paths:
+#     - path: /
+#       backend: {service: {name: admin-panel-service}}

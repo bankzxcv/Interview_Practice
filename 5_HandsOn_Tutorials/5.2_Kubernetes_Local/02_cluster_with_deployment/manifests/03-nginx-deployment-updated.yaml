@@ -1,0 +1,71 @@
+# 03-nginx-deployment-updated.yaml
+# Updated deployment with newer nginx version
+# Demonstrates rolling update capability
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+    tier: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+        tier: frontend
+        version: v2  # Updated version label
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.26-alpine  # UPDATED: newer version
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+# What Changed:
+# -------------
+# 1. image: nginx:1.25-alpine → nginx:1.26-alpine
+# 2. version label: v1 → v2
+#
+# What Happens When Applied:
+# ---------------------------
+# 1. Kubernetes detects the image change in pod template
+# 2. Creates a NEW ReplicaSet with the updated pod template
+# 3. Gradually scales up new ReplicaSet
+# 4. Gradually scales down old ReplicaSet
+# 5. Result: Zero-downtime rolling update
+#
+# During the update:
+# - Old pods: nginx:1.25-alpine (being terminated)
+# - New pods: nginx:1.26-alpine (being created)
+# - Service traffic continues flowing
+#
+# To watch the update:
+# kubectl rollout status deployment/nginx-deployment
+# kubectl get rs --watch
+# kubectl get pods --watch

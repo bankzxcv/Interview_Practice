@@ -1,0 +1,25 @@
+# 03-work-queue-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: work-queue-job
+spec:
+  # No completions specified = work queue pattern
+  parallelism: 3  # 3 workers processing queue
+  template:
+    spec:
+      containers:
+      - name: worker
+        image: busybox:1.36
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # Simulate processing items from queue
+          for i in 1 2 3; do
+            echo "Processing item $i"
+            sleep 5
+          done
+          echo "Queue empty, exiting"
+      restartPolicy: Never
+  backoffLimit: 4

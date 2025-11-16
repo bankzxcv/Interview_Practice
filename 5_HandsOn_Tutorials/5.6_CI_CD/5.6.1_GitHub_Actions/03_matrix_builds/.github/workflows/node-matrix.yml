@@ -1,0 +1,45 @@
+name: Node.js Matrix Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Node ${{ matrix.node-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: true  # Cancel all if one fails
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: [18, 20, 21]
+        # Exclude Node 21 on Windows (example)
+        exclude:
+          - os: windows-latest
+            node-version: 21
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Display Node version
+      run: node --version
+
+    - name: Display npm version
+      run: npm --version
+
+    - name: Install dependencies (if package.json exists)
+      run: |
+        if [ -f "package.json" ]; then npm ci; fi
+      shell: bash
+
+    - name: Run basic test
+      run: node -e "console.log('Node.js ${{ matrix.node-version }} works on ${{ matrix.os }}')"

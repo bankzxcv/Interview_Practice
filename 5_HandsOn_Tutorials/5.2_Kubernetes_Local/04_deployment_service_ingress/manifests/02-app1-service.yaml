@@ -1,0 +1,24 @@
+# 02-app1-service.yaml
+# ClusterIP service for App 1
+# Ingress will route traffic to this service
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1-service
+  labels:
+    app: app1
+spec:
+  type: ClusterIP  # Internal service (Ingress routes to it)
+  selector:
+    app: app1
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+
+# Why ClusterIP?
+# -------------
+# Ingress controller routes traffic to services
+# Services don't need to be exposed externally
+# Ingress provides the external access point

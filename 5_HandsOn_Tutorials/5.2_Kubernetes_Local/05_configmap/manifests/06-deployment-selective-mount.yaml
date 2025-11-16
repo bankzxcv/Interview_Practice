@@ -1,0 +1,56 @@
+# 06-deployment-selective-mount.yaml
+# Mount only specific keys from ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: selective-config
+data:
+  app-env: "production"
+  log-level: "info"
+  debug-mode: "false"
+  secret-key: "should-not-be-visible"  # We won't mount this
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: selective-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: selective-demo
+  template:
+    metadata:
+      labels:
+        app: selective-demo
+    spec:
+      containers:
+      - name: app
+        image: busybox:1.36
+        command: ["/bin/sh", "-c", "ls -la /etc/config && cat /etc/config/* && sleep 3600"]
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/config
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "25m"
+          limits:
+            memory: "32Mi"
+            cpu: "50m"
+      volumes:
+      - name: config-volume
+        configMap:
+          name: selective-config
+          items:  # Select specific keys
+          - key: app-env
+            path: app-env  # Filename in volume
+          - key: log-level
+            path: log-level
+          # secret-key is NOT mounted!
+
+# Benefits:
+# - Mount only needed keys
+# - Rename files (key != path)
+# - Prevent accidental exposure of sensitive keys

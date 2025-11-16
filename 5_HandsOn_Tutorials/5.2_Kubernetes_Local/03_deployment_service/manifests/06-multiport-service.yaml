@@ -1,0 +1,81 @@
+# 06-multiport-service.yaml
+# Service with multiple ports
+apiVersion: v1
+kind: Service
+metadata:
+  name: multiport-service
+  labels:
+    app: multiport
+spec:
+  type: NodePort
+  selector:
+    app: multiport
+  ports:
+  - port: 80
+    targetPort: http  # References named port in pod
+    nodePort: 30081
+    protocol: TCP
+    name: http        # Required when multiple ports
+  - port: 443
+    targetPort: https # References named port in pod
+    nodePort: 30082
+    protocol: TCP
+    name: https       # Required when multiple ports
+
+# Multi-port Service Rules:
+# -------------------------
+# 1. Each port MUST have a unique name
+# 2. Port names must be lowercase alphanumeric + hyphen
+# 3. targetPort can be:
+#    - Port number (80, 443)
+#    - Port name from pod spec (http, https)
+# 4. All ports must use the same protocol (TCP or UDP)
+#    - For mixed protocols, create separate services
+#
+# Field Explanations:
+# ------------------
+# ports[].name - REQUIRED for multi-port services
+#   - Must be unique within service
+#   - Used to identify the port
+#   - Can be referenced by Ingress, endpoints, etc.
+#
+# ports[].targetPort - Pod port to forward to
+#   - Can be number (80) or name (http)
+#   - Using names is more flexible
+#   - Pod must have a port with this name
+#
+# Access examples:
+# ---------------
+# From outside cluster:
+#   curl http://localhost:30081     # HTTP port
+#   curl -k https://localhost:30082 # HTTPS port
+#
+# From inside cluster:
+#   curl http://multiport-service:80
+#   curl https://multiport-service:443
+#
+# Common multi-port patterns:
+# --------------------------
+# 1. Web application:
+#    - http: 80
+#    - https: 443
+#
+# 2. Application + Metrics:
+#    - app: 8080
+#    - metrics: 9090
+#
+# 3. gRPC + HTTP:
+#    - grpc: 50051
+#    - http: 8080
+#
+# 4. Database:
+#    - main: 5432 (PostgreSQL)
+#    - admin: 8080
+#
+# Why not multiple services?
+# --------------------------
+# - Single service is simpler
+# - One DNS name, multiple ports
+# - Endpoints managed together
+# - But: Sometimes separate services are clearer
+#   (e.g., separate public and admin services)

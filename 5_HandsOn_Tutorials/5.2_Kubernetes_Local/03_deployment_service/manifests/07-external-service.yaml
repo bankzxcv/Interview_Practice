@@ -1,0 +1,81 @@
+# 07-external-service.yaml
+# Service without selector - points to external endpoint
+#
+# This demonstrates two related resources:
+# 1. Service without selector
+# 2. Manually created Endpoints
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-service
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+# Note: No selector! This service won't automatically create endpoints
+
+---
+# Manually create endpoints for the service
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: external-service  # Must match service name
+subsets:
+- addresses:
+  - ip: 93.184.216.34  # example.com IP address
+  ports:
+  - port: 80
+    name: http
+    protocol: TCP
+
+# Use Cases for Services Without Selectors:
+# -----------------------------------------
+# 1. External services (databases, APIs outside cluster)
+# 2. Services in different namespaces
+# 3. Migrating services to/from Kubernetes
+# 4. Pointing to IP addresses directly
+#
+# How it works:
+# ------------
+# 1. Service created without selector
+# 2. Endpoints manually created with same name
+# 3. kube-proxy routes traffic to specified IPs
+# 4. No automatic endpoint management
+#
+# Important notes:
+# ---------------
+# - Endpoints name MUST match service name
+# - Must manually update endpoints if IPs change
+# - No health checking of external endpoints
+# - Useful for gradual migrations
+#
+# Alternative: ExternalName Service
+# ---------------------------------
+# For DNS-based external services, use ExternalName:
+#
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: external-db
+# spec:
+#   type: ExternalName
+#   externalName: database.example.com
+#
+# Differences:
+# -----------
+# Service without selector:
+#   - Points to IP addresses
+#   - Supports load balancing
+#   - Can have multiple endpoints
+#
+# ExternalName:
+#   - Points to DNS name
+#   - No load balancing (DNS resolution only)
+#   - Returns CNAME record
+#
+# Test this service:
+# -----------------
+# kubectl run curl-test --image=curlimages/curl:8.5.0 --rm -i --restart=Never -- curl -s http://external-service
+# This will connect to example.com through the service!

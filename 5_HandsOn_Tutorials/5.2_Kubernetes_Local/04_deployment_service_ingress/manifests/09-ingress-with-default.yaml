@@ -1,0 +1,80 @@
+# 09-ingress-with-default.yaml
+# Ingress with default backend for unmatched routes
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-with-default
+spec:
+  ingressClassName: nginx
+
+  # Default backend for unmatched requests
+  defaultBackend:
+    service:
+      name: default-backend-service
+      port:
+        number: 80
+
+  # Specific rules
+  rules:
+  - host: app1.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app1-service
+            port:
+              number: 80
+
+  - host: app2.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app2-service
+            port:
+              number: 80
+
+# Default Backend:
+# ---------------
+# Handles requests that don't match any rules
+#
+# When used:
+# - Unknown hostname: curl -H "Host: unknown.local" http://localhost
+# - Unknown path: curl http://localhost/unknown-path (if no host rule matches)
+#
+# Without defaultBackend:
+# - Returns standard ingress controller 404
+# - Usually not user-friendly
+#
+# With defaultBackend:
+# - Returns custom 404 page
+# - Better user experience
+# - Can show helpful information, branding, etc.
+#
+# Global vs Per-Ingress Default:
+# ------------------------------
+# Per-Ingress (this file):
+#   spec.defaultBackend: {...}
+#   Only applies to this Ingress resource
+#
+# Global (IngressClass):
+#   Set default backend in ingress controller configuration
+#   Applies to all Ingress resources using that class
+#
+# Testing:
+# -------
+# Matched route:
+#   curl -H "Host: app1.local" http://localhost
+#   → Returns App 1
+#
+# Unmatched host:
+#   curl -H "Host: unknown.local" http://localhost
+#   → Returns 404 default backend
+#
+# Unmatched path (no catch-all rule):
+#   curl http://localhost/random-path
+#   → Returns 404 default backend

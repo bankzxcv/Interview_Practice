@@ -1,0 +1,65 @@
+name: Basic CI Workflow
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Print greeting
+      run: echo "Hello from GitHub Actions!"
+
+    - name: Display system information
+      run: |
+        echo "Runner OS: ${{ runner.os }}"
+        echo "Repository: ${{ github.repository }}"
+        echo "Branch: ${{ github.ref_name }}"
+        echo "Event: ${{ github.event_name }}"
+        echo "Actor: ${{ github.actor }}"
+        echo "Commit SHA: ${{ github.sha }}"
+
+    - name: List files
+      run: ls -la
+
+    - name: Check runner details
+      run: |
+        echo "CPU Architecture: $(uname -m)"
+        echo "CPU Cores: $(nproc)"
+        echo "Memory: $(free -h | grep Mem | awk '{print $2}')"
+        echo "Disk Space: $(df -h / | tail -1 | awk '{print $4}')"
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Run Python application
+      run: python app/hello.py
+
+    - name: Show environment variables
+      run: env | sort
+
+    - name: Create timestamp file
+      run: |
+        echo "Workflow completed at: $(date)" > workflow-timestamp.txt
+        cat workflow-timestamp.txt
+
+    - name: Conditional step (only on main branch)
+      if: github.ref == 'refs/heads/main'
+      run: echo "This step only runs on the main branch!"
+
+    - name: Conditional step (only on pull requests)
+      if: github.event_name == 'pull_request'
+      run: |
+        echo "This is a pull request!"
+        echo "PR Number: ${{ github.event.pull_request.number }}"
+        echo "PR Title: ${{ github.event.pull_request.title }}"

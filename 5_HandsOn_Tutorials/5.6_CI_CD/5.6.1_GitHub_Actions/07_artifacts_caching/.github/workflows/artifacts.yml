@@ -1,0 +1,64 @@
+name: Artifacts Demo
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create build artifacts
+      run: |
+        mkdir -p build
+        echo "Build output" > build/output.txt
+        echo "Build timestamp: $(date)" > build/timestamp.txt
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: |
+          build/
+          !build/*.tmp
+        retention-days: 30
+
+    - name: Create test reports
+      run: |
+        mkdir -p test-results
+        echo "Test results" > test-results/results.xml
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: test-results/
+        retention-days: 7
+
+  use-artifacts:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-artifacts
+        path: ./downloaded
+
+    - name: List artifacts
+      run: |
+        ls -R ./downloaded
+        cat ./downloaded/build/output.txt
+
+    - name: Use artifacts in deployment
+      run: |
+        echo "Deploying artifacts..."
+        # Deployment logic here

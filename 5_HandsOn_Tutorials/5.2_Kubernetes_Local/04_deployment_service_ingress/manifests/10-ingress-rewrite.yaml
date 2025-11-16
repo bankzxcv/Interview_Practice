@@ -1,0 +1,118 @@
+# 10-ingress-rewrite.yaml
+# Ingress with URL rewriting using annotations
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-rewrite
+  annotations:
+    # Capture group rewrite
+    # Path /something/(.*)  becomes  /$1
+    # Example: /old-api/users → /users
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+
+    # Use regex in path (required for capture groups)
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: rewrite.local
+    http:
+      paths:
+      # Example 1: Remove /old-api prefix
+      - path: /old-api(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: app1-service
+            port:
+              number: 80
+
+      # Example 2: Remove /v1 prefix
+      - path: /v1(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: app2-service
+            port:
+              number: 80
+
+# URL Rewriting Explained:
+# ------------------------
+# Problem:
+#   Client requests: /old-api/users
+#   Service expects: /users
+#   Without rewrite: Service receives /old-api/users → 404
+#
+# Solution:
+#   Use rewrite-target to modify the path
+#
+# Capture Groups:
+# --------------
+# Path: /old-api(/|$)(.*)
+#   - /old-api   : Literal match
+#   - (/|$)      : Group 1 - slash or end of string
+#   - (.*)       : Group 2 - capture everything after
+#
+# Rewrite: /$2
+#   - Replace with group 2 only
+#   - Drops /old-api prefix
+#
+# Examples:
+# --------
+# Request: /old-api/users
+#   Group 1: /
+#   Group 2: users
+#   Rewrite: /users
+#
+# Request: /old-api/users/123
+#   Group 1: /
+#   Group 2: users/123
+#   Rewrite: /users/123
+#
+# Request: /old-api
+#   Group 1: (empty - end of string)
+#   Group 2: (empty)
+#   Rewrite: /
+#
+# Common Rewrite Patterns:
+# -----------------------
+# 1. Simple prefix removal:
+#    path: /api(/|$)(.*)
+#    rewrite-target: /$2
+#    /api/users → /users
+#
+# 2. Path replacement:
+#    path: /old(/|$)(.*)
+#    rewrite-target: /new/$2
+#    /old/page → /new/page
+#
+# 3. Root rewrite:
+#    path: /app1(/|$)(.*)
+#    rewrite-target: /$2
+#    /app1/index.html → /index.html
+#
+# 4. No rewrite (preserve path):
+#    # Don't use rewrite-target annotation
+#    /api/users → /api/users
+#
+# Testing:
+# -------
+# curl -H "Host: rewrite.local" http://localhost/old-api/
+# curl -H "Host: rewrite.local" http://localhost/old-api/test
+# curl -H "Host: rewrite.local" http://localhost/v1/
+#
+# Annotations Reference:
+# ---------------------
+# nginx.ingress.kubernetes.io/rewrite-target: Target path pattern
+# nginx.ingress.kubernetes.io/use-regex: Enable regex in path
+# nginx.ingress.kubernetes.io/ssl-redirect: Force HTTPS
+# nginx.ingress.kubernetes.io/force-ssl-redirect: Force HTTPS (strict)
+# nginx.ingress.kubernetes.io/app-root: Redirect / to specific path
+# nginx.ingress.kubernetes.io/permanent-redirect: 301 redirect
+# nginx.ingress.kubernetes.io/temporal-redirect: 302 redirect
+#
+# PathType with Regex:
+# -------------------
+# When using regex and capture groups:
+#   pathType: ImplementationSpecific
+# Required because Exact and Prefix don't support regex

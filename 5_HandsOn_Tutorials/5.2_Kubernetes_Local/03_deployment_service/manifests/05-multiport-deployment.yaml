@@ -1,0 +1,66 @@
+# 05-multiport-deployment.yaml
+# Deployment with multiple ports exposed
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multiport-deployment
+  labels:
+    app: multiport
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: multiport
+  template:
+    metadata:
+      labels:
+        app: multiport
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25-alpine
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        - containerPort: 443
+          name: https
+          protocol: TCP
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http  # Can use port name instead of number
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+# Multi-port considerations:
+# --------------------------
+# 1. Each port should have a unique name
+# 2. Port names are used in service definitions
+# 3. Probes can reference ports by name
+# 4. Common multi-port scenarios:
+#    - HTTP + HTTPS
+#    - Application port + Metrics port
+#    - Application port + Admin port
+#    - Multiple protocol ports
+#
+# Port naming conventions:
+# -----------------------
+# - http: 80
+# - https: 443
+# - metrics: 9090, 8080, etc.
+# - admin: 8081, 9000, etc.
+# - grpc: 9090, 50051, etc.
+#
+# Benefits of named ports:
+# -----------------------
+# - Self-documenting
+# - Change port number without changing references
+# - Used in services to map to correct port

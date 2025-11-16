@@ -1,0 +1,56 @@
+name: Scheduled Workflow
+
+on:
+  schedule:
+    # Run every day at 9 AM UTC
+    - cron: '0 9 * * *'
+    # Run every Monday at 1 AM UTC
+    - cron: '0 1 * * 1'
+  workflow_dispatch:  # Allow manual trigger for testing
+
+jobs:
+  scheduled-job:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run scheduled task
+      run: |
+        echo "Running scheduled task at $(date)"
+        echo "This workflow runs daily at 9 AM UTC and weekly on Mondays at 1 AM UTC"
+
+    - name: Check repository status
+      run: |
+        echo "Repository: ${{ github.repository }}"
+        echo "Default branch: ${{ github.event.repository.default_branch }}"
+        echo "Latest commit: ${{ github.sha }}"
+
+    - name: Perform scheduled maintenance
+      run: |
+        echo "Performing maintenance tasks..."
+        echo "1. Checking for updates"
+        echo "2. Validating configurations"
+        echo "3. Generating reports"
+
+    - name: Weekly task (Mondays only)
+      if: github.event.schedule == '0 1 * * 1'
+      run: |
+        echo "Running weekly maintenance task!"
+        echo "This only executes on Monday at 1 AM UTC"
+
+    - name: Daily task
+      if: github.event.schedule == '0 9 * * *'
+      run: |
+        echo "Running daily task!"
+        echo "This executes every day at 9 AM UTC"
+
+    - name: Generate timestamp report
+      run: |
+        echo "=== Scheduled Workflow Report ===" > report.txt
+        echo "Execution Time: $(date)" >> report.txt
+        echo "Day of Week: $(date +%A)" >> report.txt
+        echo "Trigger: ${{ github.event_name }}" >> report.txt
+        cat report.txt

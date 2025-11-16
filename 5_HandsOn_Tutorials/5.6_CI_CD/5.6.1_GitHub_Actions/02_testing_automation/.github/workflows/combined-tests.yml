@@ -1,0 +1,94 @@
+name: Combined Test Suite
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  python-tests:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        cache-dependency-path: python-app/requirements.txt
+
+    - name: Install dependencies
+      working-directory: python-app
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run tests
+      working-directory: python-app
+      run: pytest --cov=. --cov-report=xml --cov-report=term-missing -v
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        files: python-app/coverage.xml
+        flags: python
+      continue-on-error: true
+
+  node-tests:
+    name: Node.js Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: node-app/package-lock.json
+
+    - name: Install dependencies
+      working-directory: node-app
+      run: npm ci
+
+    - name: Run tests
+      working-directory: node-app
+      run: npm run test:ci
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        files: node-app/coverage/lcov.info
+        flags: nodejs
+      continue-on-error: true
+
+  test-summary:
+    name: Test Summary
+    needs: [python-tests, node-tests]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Check test status
+      run: |
+        echo "## Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Test Suite | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|------------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Python Tests | ${{ needs.python-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Node.js Tests | ${{ needs.node-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ "${{ needs.python-tests.result }}" != "success" ] || [ "${{ needs.node-tests.result }}" != "success" ]; then
+          echo "❌ Some tests failed!" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+
+        echo "✅ All tests passed successfully!" >> $GITHUB_STEP_SUMMARY

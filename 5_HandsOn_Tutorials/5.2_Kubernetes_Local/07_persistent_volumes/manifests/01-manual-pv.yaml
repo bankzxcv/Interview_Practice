@@ -1,0 +1,15 @@
+# 01-manual-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: manual-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /tmp/data  # For kind/local clusters only
+    type: DirectoryOrCreate

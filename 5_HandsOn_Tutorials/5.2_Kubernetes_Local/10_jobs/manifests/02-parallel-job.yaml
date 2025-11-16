@@ -1,0 +1,21 @@
+# 02-parallel-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: parallel-job
+spec:
+  completions: 5      # Must complete 5 times
+  parallelism: 2      # Run 2 pods at a time
+  template:
+    spec:
+      containers:
+      - name: worker
+        image: busybox:1.36
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Worker started: $(hostname)"
+          sleep $((RANDOM % 20 + 10))
+          echo "Worker completed: $(hostname)"
+      restartPolicy: Never

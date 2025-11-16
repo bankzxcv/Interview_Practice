@@ -1,0 +1,26 @@
+# 08-daemonset-resources.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: resource-agent
+spec:
+  selector:
+    matchLabels:
+      app: resource-agent
+  template:
+    metadata:
+      labels:
+        app: resource-agent
+    spec:
+      containers:
+      - name: agent
+        image: nginx:alpine
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+        ports:
+        - containerPort: 80
