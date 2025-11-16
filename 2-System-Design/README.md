@@ -244,6 +244,8 @@ Asynchronous communication between services.
 - **SQS/SNS**: Managed AWS service
 - **Redis Streams**: Lightweight, in-memory
 
+**📚 See [Section 2.5 Message Queues](./2.5-Message-Queues/README.md) for comprehensive documentation on all message queue technologies including detailed comparisons, code examples, and decision guides.**
+
 ### 12. Microservices vs Monolith
 
 **Monolith**:
@@ -518,6 +520,15 @@ Interviewer will ask to go deeper on specific areas.
 - Cost estimation
 - Serverless architectures
 - Container orchestration
+
+### [2.5 Message Queues & Message Brokers](./2.5-Message-Queues/README.md)
+- Message queue fundamentals and patterns
+- RabbitMQ (message broker with flexible routing)
+- Apache Kafka (distributed event streaming)
+- AWS SQS & SNS (managed queue and pub/sub)
+- Azure Storage Queue & Service Bus (Azure messaging)
+- Redis Streams (lightweight streaming)
+- Comprehensive technology comparison and decision guide
 
 ---
 
