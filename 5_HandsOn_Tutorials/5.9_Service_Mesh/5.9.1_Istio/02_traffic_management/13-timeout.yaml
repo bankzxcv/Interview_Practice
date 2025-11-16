@@ -1,0 +1,17 @@
+---
+# Configure timeout for reviews service
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: reviews
+  namespace: bookinfo
+spec:
+  hosts:
+    - reviews
+  http:
+    - route:
+        - destination:
+            host: reviews
+            subset: v1
+      # Request must complete within 2 seconds
+      timeout: 2s

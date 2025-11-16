@@ -1,0 +1,46 @@
+---
+# Production-Ready Outlier Detection Configuration
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: httpbin
+  namespace: test
+spec:
+  host: httpbin
+  trafficPolicy:
+    # Connection pool settings
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 30s
+      http:
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 2
+        idleTimeout: 60s
+
+    # Outlier detection
+    outlierDetection:
+      # Number of consecutive 5xx errors before ejection
+      consecutive5xxErrors: 5
+
+      # Number of consecutive gateway errors before ejection
+      consecutiveGatewayErrors: 3
+
+      # Time interval for outlier detection analysis
+      interval: 10s
+
+      # Minimum ejection duration
+      baseEjectionTime: 30s
+
+      # Maximum % of instances that can be ejected
+      maxEjectionPercent: 50
+
+      # Minimum % of instances that must remain healthy
+      minHealthPercent: 10
+
+      # Split external and local origin errors
+      splitExternalLocalOriginErrors: true
+
+      # Consecutive local origin failures before ejection
+      consecutiveLocalOriginFailures: 5

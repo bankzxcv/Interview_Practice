@@ -1,0 +1,120 @@
+# 01-test-apps.yaml
+# Three-tier application for testing Network Policies
+
+---
+# Frontend Tier
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: netpol-demo
+  labels:
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        tier: frontend
+        app: webapp
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: netpol-demo
+spec:
+  selector:
+    tier: frontend
+  ports:
+  - port: 80
+    targetPort: 80
+---
+# Backend Tier
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: netpol-demo
+  labels:
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      tier: backend
+  template:
+    metadata:
+      labels:
+        tier: backend
+        app: webapp
+    spec:
+      containers:
+      - name: app
+        image: hashicorp/http-echo:latest
+        args:
+        - "-text=Backend Response"
+        - "-listen=:8080"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: netpol-demo
+spec:
+  selector:
+    tier: backend
+  ports:
+  - port: 8080
+    targetPort: 8080
+---
+# Database Tier
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database
+  namespace: netpol-demo
+  labels:
+    tier: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      tier: database
+  template:
+    metadata:
+      labels:
+        tier: database
+        app: webapp
+    spec:
+      containers:
+      - name: db
+        image: hashicorp/http-echo:latest
+        args:
+        - "-text=Database Response"
+        - "-listen=:8080"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: database
+  namespace: netpol-demo
+spec:
+  selector:
+    tier: database
+  ports:
+  - port: 8080
+    targetPort: 8080

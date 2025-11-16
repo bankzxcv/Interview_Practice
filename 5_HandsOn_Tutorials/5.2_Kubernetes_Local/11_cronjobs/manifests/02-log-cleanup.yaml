@@ -1,0 +1,101 @@
+# 02-log-cleanup.yaml
+# Clean up old logs every 6 hours
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: log-cleanup
+  labels:
+    component: maintenance
+    type: cleanup
+spec:
+  # Every 6 hours (at 0, 6, 12, 18)
+  schedule: "0 */6 * * *"
+
+  # Allow concurrent cleanup (different directories)
+  concurrencyPolicy: Allow
+
+  # Keep last 3 successful runs
+  successfulJobsHistoryLimit: 3
+
+  # Keep last 1 failed run
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    metadata:
+      labels:
+        cronjob: log-cleanup
+        component: maintenance
+    spec:
+      ttlSecondsAfterFinished: 3600
+
+      template:
+        metadata:
+          labels:
+            cronjob: log-cleanup
+            component: maintenance
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: cleanup
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "Starting log cleanup at $(date)"
+
+              # Create log directories if they don't exist
+              mkdir -p /logs/app /logs/system /logs/audit
+
+              # Create some test log files
+              for i in $(seq 1 5); do
+                DAYS_AGO=$((i * 2))
+                TIMESTAMP=$(date -d "$DAYS_AGO days ago" +%Y%m%d 2>/dev/null || date -v-${DAYS_AGO}d +%Y%m%d 2>/dev/null || date +%Y%m%d)
+                echo "Log entry $i" > /logs/app/app-$TIMESTAMP.log
+                echo "System log $i" > /logs/system/system-$TIMESTAMP.log
+              done
+
+              # Count logs before cleanup
+              BEFORE=$(find /logs -type f -name "*.log" | wc -l)
+              echo "Log files before cleanup: $BEFORE"
+
+              # Delete logs older than 7 days
+              DELETED=0
+              for dir in /logs/*; do
+                if [ -d "$dir" ]; then
+                  echo "Cleaning $dir..."
+                  # Note: 'find -delete' is more efficient but less portable
+                  FOUND=$(find "$dir" -name "*.log" -type f -mtime +7 -print)
+                  if [ -n "$FOUND" ]; then
+                    echo "$FOUND" | while read -r file; do
+                      rm -f "$file"
+                      DELETED=$((DELETED + 1))
+                      echo "Deleted: $file"
+                    done
+                  fi
+                fi
+              done
+
+              # Count logs after cleanup
+              AFTER=$(find /logs -type f -name "*.log" | wc -l)
+              echo "Log files after cleanup: $AFTER"
+              echo "Deleted $DELETED log files"
+
+              # Calculate space saved (simulated)
+              echo "Estimated space saved: ${DELETED}MB"
+
+              echo "Log cleanup completed at $(date)"
+            volumeMounts:
+            - name: log-storage
+              mountPath: /logs
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "50m"
+              limits:
+                memory: "256Mi"
+                cpu: "100m"
+          volumes:
+          - name: log-storage
+            emptyDir: {}

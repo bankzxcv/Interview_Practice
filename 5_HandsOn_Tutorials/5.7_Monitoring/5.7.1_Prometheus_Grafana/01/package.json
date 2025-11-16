@@ -1,0 +1,13 @@
+{
+  "name": "prometheus-sample-app",
+  "version": "1.0.0",
+  "description": "Sample app with Prometheus metrics",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "prom-client": "^15.0.0"
+  }
+}

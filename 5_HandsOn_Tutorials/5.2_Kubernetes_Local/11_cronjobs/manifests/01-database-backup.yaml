@@ -1,0 +1,110 @@
+# 01-database-backup.yaml
+# Daily database backup at 2 AM
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-database
+  labels:
+    component: backup
+    type: full-backup
+spec:
+  # Daily at 2 AM
+  schedule: "0 2 * * *"
+
+  # Don't run concurrent backups
+  concurrencyPolicy: Forbid
+
+  # Skip if can't start within 1 hour
+  startingDeadlineSeconds: 3600
+
+  # Keep last 7 successful backups
+  successfulJobsHistoryLimit: 7
+
+  # Keep last 3 failed backups for debugging
+  failedJobsHistoryLimit: 3
+
+  # Job template
+  jobTemplate:
+    metadata:
+      labels:
+        cronjob: backup-database
+        component: backup
+    spec:
+      # Delete job 24 hours after completion
+      ttlSecondsAfterFinished: 86400
+
+      # Retry up to 2 times
+      backoffLimit: 2
+
+      template:
+        metadata:
+          labels:
+            cronjob: backup-database
+            component: backup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: backup
+            image: postgres:15-alpine
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "Starting database backup at $(date)"
+
+              # Generate backup filename with timestamp
+              BACKUP_FILE="/backup/db-backup-$(date +%Y%m%d-%H%M%S).sql.gz"
+
+              # Check if backup already exists (idempotency)
+              TODAY_BACKUP="/backup/db-backup-$(date +%Y%m%d).sql.gz"
+              if [ -f "$TODAY_BACKUP" ]; then
+                echo "Backup already exists: $TODAY_BACKUP"
+                echo "Skipping to prevent duplicate backup"
+                exit 0
+              fi
+
+              # Simulate database backup
+              echo "-- Database Backup" > /tmp/backup.sql
+              echo "-- Date: $(date)" >> /tmp/backup.sql
+              echo "-- Database: production" >> /tmp/backup.sql
+              echo "SELECT 'Backup completed successfully';" >> /tmp/backup.sql
+
+              # Compress backup
+              gzip -c /tmp/backup.sql > "$BACKUP_FILE"
+
+              # Create symlink to today's backup
+              ln -sf "$BACKUP_FILE" "$TODAY_BACKUP"
+
+              # Get backup size
+              SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
+
+              echo "Backup completed successfully"
+              echo "File: $BACKUP_FILE"
+              echo "Size: $SIZE"
+
+              # Verify backup
+              if gzip -t "$BACKUP_FILE"; then
+                echo "Backup integrity verified"
+              else
+                echo "Backup verification failed!"
+                exit 1
+              fi
+
+              # Cleanup backups older than 30 days
+              find /backup -name "db-backup-*.sql.gz" -type f -mtime +30 -delete
+
+              echo "Backup process completed at $(date)"
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+          volumes:
+          - name: backup-storage
+            emptyDir: {}  # In production, use PV/PVC

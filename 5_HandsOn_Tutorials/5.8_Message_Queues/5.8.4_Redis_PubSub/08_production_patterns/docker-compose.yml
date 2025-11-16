@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  redis-master:
+    image: redis:7-alpine
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-SecurePass123}
+      --appendonly yes
+      --appendfsync everysec
+      --save 60 1000
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+      --slowlog-log-slower-than 10000
+      --slowlog-max-len 128
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - redis-prod
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+
+  redis-sentinel:
+    image: redis:7-alpine
+    command: >
+      redis-sentinel /etc/redis/sentinel.conf
+    volumes:
+      - ./sentinel.conf:/etc/redis/sentinel.conf
+    networks:
+      - redis-prod
+    depends_on:
+      - redis-master
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    ports:
+      - "9121:9121"
+    environment:
+      REDIS_ADDR: redis-master:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-SecurePass123}
+    networks:
+      - redis-prod
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - redis-prod
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    networks:
+      - redis-prod
+
+volumes:
+  redis_data:
+
+networks:
+  redis-prod:

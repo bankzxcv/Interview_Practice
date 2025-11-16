@@ -1,8 +1,20 @@
-# 5.4 Security - Hands-On Tutorials
+# 5.4 Security - Comprehensive Security Tutorials
 
 ## Overview
 
-Comprehensive security tutorials covering IAM, secrets management, encryption, SSL/TLS, scanning, and zero-trust architectures. Build security into your infrastructure from the ground up.
+**60 hands-on security tutorials** covering IAM, secrets management, encryption, SSL/TLS, scanning, and zero-trust architectures. Build security into your infrastructure from the ground up with production-ready practices.
+
+### 📊 Current Progress
+```
+[████████████████████░░░░░░░░░░░░░░░░░░░░] 18% Complete (11/60 tutorials)
+
+✅ 5.4.1 IAM & RBAC: 10/10 COMPLETE
+⏳ 5.4.2 Secrets Management: 1/10
+📋 5.4.3 Encryption: 0/10
+📋 5.4.4 SSL/TLS: 0/10
+📋 5.4.5 Security Scanning: 0/10
+📋 5.4.6 Zero Trust: 0/10
+```
 
 ## Security Topics Covered
 

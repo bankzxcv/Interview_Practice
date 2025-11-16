@@ -1,0 +1,138 @@
+# 03-report-generation.yaml
+# Generate reports on weekdays at 9 AM
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: generate-reports
+  labels:
+    component: reporting
+    type: daily-report
+spec:
+  # Weekdays at 9 AM
+  schedule: "0 9 * * 1-5"
+
+  # Don't generate concurrent reports (resource intensive)
+  concurrencyPolicy: Forbid
+
+  # Must start within 30 minutes or skip
+  startingDeadlineSeconds: 1800
+
+  # Keep last 5 successful reports
+  successfulJobsHistoryLimit: 5
+
+  # Keep last 2 failed attempts
+  failedJobsHistoryLimit: 2
+
+  jobTemplate:
+    metadata:
+      labels:
+        cronjob: generate-reports
+        component: reporting
+    spec:
+      # Delete job after 7 days
+      ttlSecondsAfterFinished: 604800
+
+      # Allow 1 retry
+      backoffLimit: 1
+
+      # Timeout after 30 minutes
+      activeDeadlineSeconds: 1800
+
+      template:
+        metadata:
+          labels:
+            cronjob: generate-reports
+            component: reporting
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: report-generator
+            image: alpine:3.18
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "Starting report generation at $(date)"
+
+              # Generate report filename
+              REPORT_DATE=$(date +%Y-%m-%d)
+              REPORT_FILE="/reports/daily-report-$REPORT_DATE.html"
+
+              # Check if report already exists (idempotency)
+              if [ -f "$REPORT_FILE" ]; then
+                echo "Report already exists: $REPORT_FILE"
+                echo "Skipping generation"
+                exit 0
+              fi
+
+              # Simulate data collection phase
+              echo "Phase 1: Collecting data..."
+              sleep 5
+
+              # Simulate data processing phase
+              echo "Phase 2: Processing data..."
+              sleep 5
+
+              # Generate HTML report
+              echo "Phase 3: Generating report..."
+              cat > "$REPORT_FILE" <<EOF
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <title>Daily Report - $REPORT_DATE</title>
+                <style>
+                  body { font-family: Arial, sans-serif; margin: 20px; }
+                  h1 { color: #333; }
+                  table { border-collapse: collapse; width: 100%; }
+                  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                  th { background-color: #4CAF50; color: white; }
+                </style>
+              </head>
+              <body>
+                <h1>Daily Report</h1>
+                <p>Generated: $(date)</p>
+                <h2>Summary</h2>
+                <table>
+                  <tr><th>Metric</th><th>Value</th></tr>
+                  <tr><td>Total Users</td><td>10,245</td></tr>
+                  <tr><td>Active Sessions</td><td>3,421</td></tr>
+                  <tr><td>Revenue</td><td>\$52,340</td></tr>
+                  <tr><td>Errors</td><td>12</td></tr>
+                </table>
+                <h2>Trends</h2>
+                <p>User engagement up 15% from yesterday</p>
+                <p>Revenue increased by 8%</p>
+              </body>
+              </html>
+              EOF
+
+              # Verify report generated
+              if [ -f "$REPORT_FILE" ]; then
+                SIZE=$(wc -c < "$REPORT_FILE")
+                echo "Report generated successfully"
+                echo "File: $REPORT_FILE"
+                echo "Size: $SIZE bytes"
+              else
+                echo "Report generation failed!"
+                exit 1
+              fi
+
+              # Simulate sending notification
+              echo "Phase 4: Sending notification..."
+              echo "Report ready: $REPORT_FILE" | tee /reports/notification.txt
+
+              echo "Report generation completed at $(date)"
+            volumeMounts:
+            - name: report-storage
+              mountPath: /reports
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+          volumes:
+          - name: report-storage
+            emptyDir: {}

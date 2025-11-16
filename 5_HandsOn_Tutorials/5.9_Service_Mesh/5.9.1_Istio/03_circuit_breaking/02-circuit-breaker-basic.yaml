@@ -1,0 +1,26 @@
+---
+# Basic Circuit Breaker Configuration
+# Limits connections and implements outlier detection
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: httpbin
+  namespace: test
+spec:
+  host: httpbin
+  trafficPolicy:
+    # Connection pool settings
+    connectionPool:
+      tcp:
+        maxConnections: 1      # Allow only 1 connection per instance
+      http:
+        http1MaxPendingRequests: 1    # Allow only 1 pending request
+        maxRequestsPerConnection: 1    # Only 1 request per connection
+
+    # Outlier detection (circuit breaker)
+    outlierDetection:
+      consecutive5xxErrors: 1          # Eject after 1 error
+      interval: 1s                     # Check every second
+      baseEjectionTime: 10s            # Eject for 10 seconds
+      maxEjectionPercent: 100          # Can eject all instances
+      minHealthPercent: 0              # No minimum health requirement

@@ -1,0 +1,116 @@
+# 06-with-starting-deadline.yaml
+# CronJob with starting deadline to prevent backlog after downtime
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: deadline-job
+  labels:
+    component: example
+    type: deadline-demo
+spec:
+  # Every 2 minutes
+  schedule: "*/2 * * * *"
+
+  # Don't run concurrent jobs
+  concurrencyPolicy: Forbid
+
+  # IMPORTANT: If job can't start within 100 seconds, skip it
+  # This prevents backlog of jobs after cluster downtime
+  startingDeadlineSeconds: 100
+
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    metadata:
+      labels:
+        cronjob: deadline-job
+    spec:
+      ttlSecondsAfterFinished: 300
+
+      template:
+        metadata:
+          labels:
+            cronjob: deadline-job
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: task
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "=== Job Execution ==="
+              echo "Scheduled time: (check CronJob status)"
+              echo "Actual start time: $(date)"
+              echo "Delay tolerance: 100 seconds"
+              echo ""
+              echo "This job will be skipped if it can't start within 100 seconds"
+              echo "of its scheduled time. This prevents job backlog after"
+              echo "cluster downtime or maintenance."
+              echo ""
+              echo "Job completed at: $(date)"
+            resources:
+              requests:
+                memory: "64Mi"
+                cpu: "50m"
+              limits:
+                memory: "128Mi"
+                cpu: "100m"
+---
+# Example without starting deadline for comparison
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: no-deadline-job
+  labels:
+    component: example
+    type: no-deadline-demo
+spec:
+  # Every 2 minutes
+  schedule: "*/2 * * * *"
+
+  concurrencyPolicy: Forbid
+
+  # NO startingDeadlineSeconds
+  # All missed jobs will run when cluster recovers
+
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    metadata:
+      labels:
+        cronjob: no-deadline-job
+    spec:
+      ttlSecondsAfterFinished: 300
+
+      template:
+        metadata:
+          labels:
+            cronjob: no-deadline-job
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: task
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "=== Job Execution (No Deadline) ==="
+              echo "Actual start time: $(date)"
+              echo ""
+              echo "This job has NO starting deadline."
+              echo "If cluster is down, ALL missed jobs will run"
+              echo "when cluster recovers (respecting concurrencyPolicy)."
+              echo ""
+              echo "Job completed at: $(date)"
+            resources:
+              requests:
+                memory: "64Mi"
+                cpu: "50m"
+              limits:
+                memory: "128Mi"
+                cpu: "100m"

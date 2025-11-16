@@ -1,0 +1,18 @@
+# 02-pod-reader-role.yaml
+# Role for reading pods in a namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+  namespace: rbac-demo
+  labels:
+    app: rbac-demo
+rules:
+# Allow reading pods
+- apiGroups: [""]  # "" indicates the core API group
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+# Allow reading pod logs
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get", "list"]

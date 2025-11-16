@@ -1,0 +1,85 @@
+stages:
+  - build
+  - deploy-dev
+  - deploy-staging
+  - deploy-prod
+
+variables:
+  DOCKER_IMAGE: $CI_REGISTRY_IMAGE
+  APP_NAME: myapp
+
+build:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - docker build -t ${DOCKER_IMAGE}:${CI_COMMIT_SHORT_SHA} .
+    - docker push ${DOCKER_IMAGE}:${CI_COMMIT_SHORT_SHA}
+  only:
+    - main
+    - develop
+
+.deploy-template: &deploy-template
+  image: bitnami/kubectl:latest
+  before_script:
+    - kubectl version --client
+    - kubectl config use-context ${KUBE_CONTEXT}
+  script:
+    - export DOCKER_IMAGE_TAG=${DOCKER_IMAGE}:${CI_COMMIT_SHORT_SHA}
+    - envsubst < k8s/deployment.yaml | kubectl apply -f -
+    - envsubst < k8s/service.yaml | kubectl apply -f -
+    - kubectl rollout status deployment/${APP_NAME} -n ${KUBE_NAMESPACE}
+    - kubectl get all -n ${KUBE_NAMESPACE} -l app=${APP_NAME}
+
+deploy-dev:
+  <<: *deploy-template
+  stage: deploy-dev
+  variables:
+    KUBE_NAMESPACE: dev
+    KUBE_CONTEXT: dev-cluster
+  environment:
+    name: development
+    url: https://dev.myapp.example.com
+    kubernetes:
+      namespace: dev
+  only:
+    - develop
+  needs:
+    - build
+
+deploy-staging:
+  <<: *deploy-template
+  stage: deploy-staging
+  variables:
+    KUBE_NAMESPACE: staging
+    KUBE_CONTEXT: staging-cluster
+  environment:
+    name: staging
+    url: https://staging.myapp.example.com
+    kubernetes:
+      namespace: staging
+  only:
+    - main
+  needs:
+    - build
+
+deploy-prod:
+  <<: *deploy-template
+  stage: deploy-prod
+  variables:
+    KUBE_NAMESPACE: production
+    KUBE_CONTEXT: prod-cluster
+  environment:
+    name: production
+    url: https://myapp.example.com
+    kubernetes:
+      namespace: production
+  when: manual
+  only:
+    - main
+  needs:
+    - build
+    - deploy-staging

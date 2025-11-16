@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'docker-localhost'
+    monitor: 'tutorial-monitor'
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          environment: 'development'
+
+  - job_name: 'sample-app'
+    static_configs:
+      - targets: ['sample-app:8080']
+        labels:
+          environment: 'development'
+          team: 'platform'

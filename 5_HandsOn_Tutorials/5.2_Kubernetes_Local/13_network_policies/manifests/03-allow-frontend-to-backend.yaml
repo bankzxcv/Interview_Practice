@@ -1,0 +1,23 @@
+# 03-allow-frontend-to-backend.yaml
+# Allow frontend pods to connect to backend pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-backend
+  namespace: netpol-demo
+spec:
+  # Apply to backend pods
+  podSelector:
+    matchLabels:
+      tier: backend
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow from frontend pods
+  - from:
+    - podSelector:
+        matchLabels:
+          tier: frontend
+    ports:
+    - protocol: TCP
+      port: 8080

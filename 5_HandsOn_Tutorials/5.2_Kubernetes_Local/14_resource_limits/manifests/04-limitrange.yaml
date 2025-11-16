@@ -1,0 +1,21 @@
+# 04-limitrange.yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: mem-cpu-limits
+  namespace: resources-demo
+spec:
+  limits:
+  - default:
+      memory: 512Mi
+      cpu: 200m
+    defaultRequest:
+      memory: 256Mi
+      cpu: 100m
+    max:
+      memory: 1Gi
+      cpu: 500m
+    min:
+      memory: 128Mi
+      cpu: 50m
+    type: Container

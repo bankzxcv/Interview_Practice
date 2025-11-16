@@ -1,0 +1,52 @@
+# Basic GitLab CI Pipeline Example
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  APP_NAME: "my-application"
+  APP_VERSION: "1.0.0"
+
+before_script:
+  - echo "Starting job execution..."
+  - echo "Pipeline ID: $CI_PIPELINE_ID"
+  - echo "Job ID: $CI_JOB_ID"
+
+build-job:
+  stage: build
+  script:
+    - echo "Building the application..."
+    - echo "App Name: $APP_NAME"
+    - echo "App Version: $APP_VERSION"
+    - mkdir -p build
+    - echo "Build $(date)" > build/build-info.txt
+    - echo "Commit: $CI_COMMIT_SHORT_SHA" >> build/build-info.txt
+    - cat build/build-info.txt
+  artifacts:
+    paths:
+      - build/
+    expire_in: 1 hour
+
+test-job:
+  stage: test
+  script:
+    - echo "Running tests..."
+    - echo "Testing application $APP_NAME version $APP_VERSION"
+    - ls -la build/
+    - cat build/build-info.txt
+    - echo "All tests passed!"
+  dependencies:
+    - build-job
+
+deploy-job:
+  stage: deploy
+  script:
+    - echo "Deploying application..."
+    - echo "Deploying to production server"
+    - echo "Application deployed successfully!"
+  environment:
+    name: production
+    url: https://example.com
+  when: manual

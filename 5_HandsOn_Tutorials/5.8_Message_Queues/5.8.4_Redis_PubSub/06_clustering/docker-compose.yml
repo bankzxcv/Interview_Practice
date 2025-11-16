@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  redis1:
+    image: redis:7-alpine
+    command: redis-server --port 6379 --cluster-enabled yes --cluster-config-file nodes.conf
+    ports: ["6379:6379"]
+    networks: [redis-cluster]
+
+  redis2:
+    image: redis:7-alpine
+    command: redis-server --port 6380 --cluster-enabled yes --cluster-config-file nodes.conf
+    ports: ["6380:6380"]
+    networks: [redis-cluster]
+
+  redis3:
+    image: redis:7-alpine
+    command: redis-server --port 6381 --cluster-enabled yes --cluster-config-file nodes.conf
+    ports: ["6381:6381"]
+    networks: [redis-cluster]
+
+  redis4:
+    image: redis:7-alpine
+    command: redis-server --port 6382 --cluster-enabled yes --cluster-config-file nodes.conf
+    ports: ["6382:6382"]
+    networks: [redis-cluster]
+
+  redis5:
+    image: redis:7-alpine
+    command: redis-server --port 6383 --cluster-enabled yes --cluster-config-file nodes.conf
+    ports: ["6383:6383"]
+    networks: [redis-cluster]
+
+  redis6:
+    image: redis:7-alpine
+    command: redis-server --port 6384 --cluster-enabled yes --cluster-config-file nodes.conf
+    ports: ["6384:6384"]
+    networks: [redis-cluster]
+
+networks:
+  redis-cluster:

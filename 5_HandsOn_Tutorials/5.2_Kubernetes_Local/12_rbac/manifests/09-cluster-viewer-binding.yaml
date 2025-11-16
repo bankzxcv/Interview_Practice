@@ -1,0 +1,16 @@
+# 09-cluster-viewer-binding.yaml
+# ClusterRoleBinding for cluster-wide read access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-viewer-binding
+  labels:
+    app: rbac-demo
+subjects:
+- kind: ServiceAccount
+  name: cluster-viewer
+  namespace: rbac-demo
+roleRef:
+  kind: ClusterRole
+  name: cluster-viewer
+  apiGroup: rbac.authorization.k8s.io

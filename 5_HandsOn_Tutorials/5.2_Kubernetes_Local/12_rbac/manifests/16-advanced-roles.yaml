@@ -1,0 +1,238 @@
+# 16-advanced-roles.yaml
+# Advanced RBAC patterns
+
+---
+# Role with resource names (restrict access to specific resources)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: specific-pod-reader
+  namespace: rbac-demo
+rules:
+# Only allow access to pods with specific names
+- apiGroups: [""]
+  resources: ["pods"]
+  resourceNames: ["rbac-test", "specific-pod"]  # Only these pods
+  verbs: ["get", "delete"]
+# Can list all pods but can't get others
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["list"]
+
+---
+# Role for CI/CD (deployment automation)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ci-cd-deployer
+  namespace: rbac-demo
+  labels:
+    app: rbac-demo
+    role: ci-cd
+rules:
+# Manage deployments
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Manage services
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Manage configmaps
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Read secrets (but not create/update/delete)
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+
+# Read pods and logs
+- apiGroups: [""]
+  resources: ["pods", "pods/log"]
+  verbs: ["get", "list", "watch"]
+
+# Manage ingresses
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+---
+# ServiceAccount for CI/CD
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ci-cd-deployer
+  namespace: rbac-demo
+  labels:
+    app: rbac-demo
+    role: ci-cd
+---
+# RoleBinding for CI/CD
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ci-cd-deployer-binding
+  namespace: rbac-demo
+  labels:
+    app: rbac-demo
+subjects:
+- kind: ServiceAccount
+  name: ci-cd-deployer
+  namespace: rbac-demo
+roleRef:
+  kind: Role
+  name: ci-cd-deployer
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Role for monitoring (read metrics and health)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: monitoring-reader
+  labels:
+    app: rbac-demo
+    role: monitoring
+rules:
+# Read pods and nodes
+- apiGroups: [""]
+  resources: ["pods", "nodes", "services", "endpoints"]
+  verbs: ["get", "list", "watch"]
+
+# Read metrics
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods", "nodes"]
+  verbs: ["get", "list"]
+
+# Read all deployments, statefulsets, daemonsets
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets", "daemonsets"]
+  verbs: ["get", "list", "watch"]
+
+---
+# ServiceAccount for monitoring
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: monitoring-reader
+  namespace: rbac-demo
+  labels:
+    app: rbac-demo
+    role: monitoring
+---
+# ClusterRoleBinding for monitoring
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: monitoring-reader-binding
+  labels:
+    app: rbac-demo
+subjects:
+- kind: ServiceAccount
+  name: monitoring-reader
+  namespace: rbac-demo
+roleRef:
+  kind: ClusterRole
+  name: monitoring-reader
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Role for log viewer (read pods and logs only)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: log-viewer
+  namespace: rbac-demo
+  labels:
+    app: rbac-demo
+    role: log-viewer
+rules:
+# Read pods
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+
+# Read pod logs
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get", "list"]
+
+# Read events
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["get", "list", "watch"]
+
+---
+# ServiceAccount for log viewer
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: log-viewer
+  namespace: rbac-demo
+  labels:
+    app: rbac-demo
+    role: log-viewer
+---
+# RoleBinding for log viewer
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: log-viewer-binding
+  namespace: rbac-demo
+  labels:
+    app: rbac-demo
+subjects:
+- kind: ServiceAccount
+  name: log-viewer
+  namespace: rbac-demo
+roleRef:
+  kind: Role
+  name: log-viewer
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ClusterRole for node reader (useful for cluster monitoring)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-reader
+  labels:
+    app: rbac-demo
+    role: node-reader
+rules:
+# Read nodes
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list", "watch"]
+
+# Read node metrics
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["nodes"]
+  verbs: ["get", "list"]
+
+# Read persistent volumes
+- apiGroups: [""]
+  resources: ["persistentvolumes"]
+  verbs: ["get", "list", "watch"]
+
+---
+# Aggregated ClusterRole (combines multiple roles)
+# These rules will be aggregated into built-in roles
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: custom-view-extension
+  labels:
+    # This label causes the rules to be aggregated into the 'view' ClusterRole
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+rules:
+# Add custom resources to view/edit/admin roles
+- apiGroups: ["custom.example.com"]
+  resources: ["customresources"]
+  verbs: ["get", "list", "watch"]

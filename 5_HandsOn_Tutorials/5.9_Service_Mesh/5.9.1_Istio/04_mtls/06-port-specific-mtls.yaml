@@ -1,0 +1,45 @@
+---
+# Port-Specific mTLS Configuration
+# Different mTLS modes for different ports
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: httpbin
+  namespace: mtls-test
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  mtls:
+    mode: STRICT
+  portLevelMtls:
+    # Port 8080: STRICT mTLS (override)
+    8080:
+      mode: STRICT
+    # Port 8081: PERMISSIVE for legacy clients
+    8081:
+      mode: PERMISSIVE
+    # Port 8082: DISABLE mTLS (for debugging only)
+    8082:
+      mode: DISABLE
+
+---
+# Service exposing multiple ports
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin
+  namespace: mtls-test
+spec:
+  selector:
+    app: httpbin
+  ports:
+    - name: http-strict
+      port: 8080
+      targetPort: 8080
+    - name: http-permissive
+      port: 8081
+      targetPort: 8081
+    - name: http-disabled
+      port: 8082
+      targetPort: 8082

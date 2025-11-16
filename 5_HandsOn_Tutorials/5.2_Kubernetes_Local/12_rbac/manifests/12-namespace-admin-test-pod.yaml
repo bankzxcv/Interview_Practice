@@ -1,0 +1,28 @@
+# 12-namespace-admin-test-pod.yaml
+# Pod for testing namespace admin permissions
+apiVersion: v1
+kind: Pod
+metadata:
+  name: namespace-admin-test
+  namespace: rbac-demo
+  labels:
+    app: rbac-demo
+    test: namespace-admin
+spec:
+  serviceAccountName: namespace-admin
+
+  containers:
+  - name: kubectl
+    image: bitnami/kubectl:1.28
+    command:
+    - sleep
+    - "3600"
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+
+  restartPolicy: Always

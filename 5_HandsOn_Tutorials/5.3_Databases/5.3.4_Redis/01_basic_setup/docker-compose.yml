@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis-basic
+    command: redis-server --requirepass redis123
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+volumes:
+  redis-data:

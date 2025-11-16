@@ -1,0 +1,31 @@
+# 11-namespace-admin.yaml
+# Using built-in 'admin' ClusterRole for full namespace control
+
+# Create ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: namespace-admin
+  namespace: rbac-demo
+  labels:
+    app: rbac-demo
+    role: admin
+---
+# Bind built-in 'admin' ClusterRole to ServiceAccount
+# This grants full control over namespace resources
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: namespace-admin-binding
+  namespace: rbac-demo
+  labels:
+    app: rbac-demo
+subjects:
+- kind: ServiceAccount
+  name: namespace-admin
+  namespace: rbac-demo
+roleRef:
+  # Using built-in ClusterRole
+  kind: ClusterRole
+  name: admin
+  apiGroup: rbac.authorization.k8s.io

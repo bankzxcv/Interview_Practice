@@ -1,0 +1,29 @@
+# 05-deployment-manager-role.yaml
+# Role for managing deployments
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: deployment-manager
+  namespace: rbac-demo
+  labels:
+    app: rbac-demo
+rules:
+# Full access to deployments
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# Full access to replicasets (created by deployments)
+- apiGroups: ["apps"]
+  resources: ["replicasets"]
+  verbs: ["get", "list", "watch"]
+
+# Read access to pods (to see deployment status)
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+
+# Read events (to see deployment progress)
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["get", "list", "watch"]

@@ -1,0 +1,128 @@
+# 08-cert-rotation.yaml
+# Monthly certificate rotation
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cert-rotation
+  labels:
+    component: security
+    type: cert-management
+spec:
+  # First day of every month at 2 AM
+  schedule: "0 2 1 * *"
+
+  # Never run concurrent rotations
+  concurrencyPolicy: Forbid
+
+  # Keep last 3 rotation records
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    metadata:
+      labels:
+        cronjob: cert-rotation
+        component: security
+    spec:
+      ttlSecondsAfterFinished: 2592000  # Keep for 30 days
+
+      backoffLimit: 1  # Only 1 retry for security operations
+
+      template:
+        metadata:
+          labels:
+            cronjob: cert-rotation
+            component: security
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: cert-rotator  # Needs permissions to update secrets
+          containers:
+          - name: rotate-certs
+            image: alpine:3.18
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "=== Certificate Rotation Started ==="
+              echo "Date: $(date)"
+
+              # Install required tools
+              apk add --no-cache openssl curl
+
+              # Check certificate expiry
+              echo "Checking current certificate..."
+
+              # In production, this would:
+              # 1. Generate new private key
+              # 2. Create CSR (Certificate Signing Request)
+              # 3. Submit to CA (Certificate Authority)
+              # 4. Retrieve signed certificate
+              # 5. Update Kubernetes secret
+              # 6. Trigger pod restarts if needed
+
+              # Simulate certificate generation
+              echo "Generating new private key..."
+              openssl genrsa -out /tmp/tls.key 2048
+
+              echo "Creating certificate signing request..."
+              openssl req -new -key /tmp/tls.key -out /tmp/tls.csr \
+                -subj "/C=US/ST=CA/L=San Francisco/O=MyOrg/CN=example.com"
+
+              echo "Generating self-signed certificate (90 days)..."
+              openssl x509 -req -days 90 \
+                -in /tmp/tls.csr \
+                -signkey /tmp/tls.key \
+                -out /tmp/tls.crt
+
+              # Verify certificate
+              echo ""
+              echo "Certificate details:"
+              openssl x509 -in /tmp/tls.crt -noout -text | grep -A2 "Validity"
+
+              # In production, update secret using kubectl or API
+              # kubectl create secret tls my-tls-secret \
+              #   --cert=/tmp/tls.crt \
+              #   --key=/tmp/tls.key \
+              #   --dry-run=client -o yaml | kubectl apply -f -
+
+              echo ""
+              echo "Certificate rotation completed successfully"
+              echo "Expiry: 90 days from $(date)"
+              echo "=== Certificate Rotation Finished ==="
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "200m"
+---
+# ServiceAccount for cert rotation (needs secret update permissions)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cert-rotator
+---
+# Role allowing secret updates
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cert-rotator-role
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "create", "update", "patch"]
+---
+# RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-rotator-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-rotator-role
+subjects:
+- kind: ServiceAccount
+  name: cert-rotator

@@ -1,0 +1,28 @@
+# 10-cluster-viewer-test-pod.yaml
+# Pod for testing cluster-wide viewing permissions
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cluster-viewer-test
+  namespace: rbac-demo
+  labels:
+    app: rbac-demo
+    test: cluster-viewer
+spec:
+  serviceAccountName: cluster-viewer
+
+  containers:
+  - name: kubectl
+    image: bitnami/kubectl:1.28
+    command:
+    - sleep
+    - "3600"
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+
+  restartPolicy: Always

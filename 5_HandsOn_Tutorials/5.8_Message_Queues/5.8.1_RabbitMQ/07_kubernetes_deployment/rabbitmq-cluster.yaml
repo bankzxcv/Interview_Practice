@@ -1,0 +1,64 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbitmq-cluster
+  namespace: default
+spec:
+  replicas: 3
+
+  image: rabbitmq:3.12-management
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+  persistence:
+    storageClassName: standard
+    storage: 10Gi
+
+  rabbitmq:
+    additionalConfig: |
+      cluster_formation.peer_discovery_backend = rabbit_peer_discovery_k8s
+      cluster_formation.k8s.host = kubernetes.default.svc.cluster.local
+      cluster_formation.k8s.address_type = hostname
+      vm_memory_high_watermark.relative = 0.6
+      disk_free_limit.relative = 1.5
+      cluster_partition_handling = autoheal
+
+  service:
+    type: ClusterIP
+
+  override:
+    statefulSet:
+      spec:
+        template:
+          spec:
+            containers:
+            - name: rabbitmq
+              env:
+              - name: RABBITMQ_DEFAULT_USER
+                value: admin
+              - name: RABBITMQ_DEFAULT_PASS
+                value: admin123
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-cluster-management
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: rabbitmq-cluster
+  ports:
+  - name: management
+    port: 15672
+    targetPort: 15672
+  - name: amqp
+    port: 5672
+    targetPort: 5672

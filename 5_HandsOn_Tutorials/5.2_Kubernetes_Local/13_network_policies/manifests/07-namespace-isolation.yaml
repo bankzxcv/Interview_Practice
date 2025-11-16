@@ -1,0 +1,28 @@
+# 07-namespace-isolation.yaml
+# Complete namespace isolation - only allow traffic within namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: namespace-isolation
+  namespace: isolated
+spec:
+  # Apply to all pods
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Only allow from same namespace
+  - from:
+    - podSelector: {}
+  egress:
+  # Only allow to same namespace and DNS
+  - to:
+    - podSelector: {}
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53

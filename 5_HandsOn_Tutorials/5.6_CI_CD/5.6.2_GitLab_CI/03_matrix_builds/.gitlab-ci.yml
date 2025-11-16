@@ -1,0 +1,44 @@
+stages:
+  - test
+  - integrate
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+# Test on multiple Python versions
+test-matrix:
+  stage: test
+  image: python:${PYTHON_VERSION}
+  parallel:
+    matrix:
+      - PYTHON_VERSION: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+  before_script:
+    - python --version
+    - pip install pytest pytest-cov
+    - pip install -r requirements.txt
+  script:
+    - echo "Testing on Python ${PYTHON_VERSION}"
+    - pytest tests/ -v --junitxml=report-${PYTHON_VERSION}.xml
+  artifacts:
+    when: always
+    reports:
+      junit: report-${PYTHON_VERSION}.xml
+    paths:
+      - report-${PYTHON_VERSION}.xml
+    expire_in: 1 week
+
+# Integration test (runs after all matrix tests)
+integration-test:
+  stage: integrate
+  image: python:3.11
+  script:
+    - echo "Running integration tests"
+    - pip install pytest
+    - pip install -r requirements.txt
+    - pytest tests/ -v
+  needs:
+    - test-matrix

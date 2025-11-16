@@ -1,0 +1,26 @@
+# 08-allow-dns.yaml
+# Allow all pods to access DNS (kube-dns / CoreDNS)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-access
+  namespace: netpol-demo
+spec:
+  # Apply to all pods
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  # Allow DNS queries to kube-system namespace
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53

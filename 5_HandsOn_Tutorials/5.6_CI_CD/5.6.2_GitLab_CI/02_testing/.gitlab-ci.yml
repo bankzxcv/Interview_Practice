@@ -1,0 +1,99 @@
+image: python:3.9
+
+stages:
+  - test
+  - coverage
+  - report
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+    - .venv/
+
+before_script:
+  - python --version
+  - pip install virtualenv
+  - virtualenv .venv
+  - source .venv/bin/activate
+  - pip install -r requirements.txt
+
+unit-test:
+  stage: test
+  script:
+    - echo "Running unit tests..."
+    - pytest tests/unit --junitxml=report.xml --cov=app --cov-report=xml --cov-report=term
+    - echo "Unit tests completed"
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - htmlcov/
+    expire_in: 30 days
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+
+integration-test:
+  stage: test
+  script:
+    - echo "Running integration tests..."
+    - pytest tests/integration --junitxml=integration-report.xml
+    - echo "Integration tests completed"
+  artifacts:
+    when: always
+    reports:
+      junit: integration-report.xml
+    expire_in: 30 days
+
+code-quality:
+  stage: test
+  script:
+    - echo "Running code quality checks..."
+    - pip install flake8 pylint
+    - flake8 app/ --max-line-length=100 --output-file=flake8-report.txt || true
+    - pylint app/ --output-format=text | tee pylint-report.txt || true
+  artifacts:
+    paths:
+      - flake8-report.txt
+      - pylint-report.txt
+    expire_in: 30 days
+  allow_failure: true
+
+coverage-analysis:
+  stage: coverage
+  script:
+    - echo "Analyzing code coverage..."
+    - pytest tests/ --cov=app --cov-report=html --cov-report=term
+    - coverage report
+    - coverage html
+  artifacts:
+    paths:
+      - htmlcov/
+    expire_in: 30 days
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+
+test-summary:
+  stage: report
+  script:
+    - echo "Generating test summary..."
+    - |
+      cat << EOF > test-summary.txt
+      Test Summary Report
+      ===================
+      Pipeline: $CI_PIPELINE_ID
+      Commit: $CI_COMMIT_SHORT_SHA
+      Branch: $CI_COMMIT_REF_NAME
+
+      All tests executed successfully!
+      EOF
+    - cat test-summary.txt
+  artifacts:
+    paths:
+      - test-summary.txt
+    expire_in: 1 week
+  when: on_success

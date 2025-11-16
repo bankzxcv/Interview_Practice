@@ -1,0 +1,212 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: custom-istio-installation
+spec:
+  # Installation profile: default, demo, minimal, remote, empty, preview
+  profile: default
+
+  # Istio components
+  components:
+    # Control plane
+    pilot:
+      enabled: true
+      k8s:
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2048Mi
+          limits:
+            cpu: 1000m
+            memory: 4096Mi
+        hpaSpec:
+          minReplicas: 2
+          maxReplicas: 5
+        env:
+          - name: PILOT_TRACE_SAMPLING
+            value: "100"
+
+    # Ingress gateway
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true
+        k8s:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 2000m
+              memory: 1024Mi
+          service:
+            type: LoadBalancer
+            ports:
+              - port: 15021
+                targetPort: 15021
+                name: status-port
+              - port: 80
+                targetPort: 8080
+                name: http2
+              - port: 443
+                targetPort: 8443
+                name: https
+              - port: 15443
+                targetPort: 15443
+                name: tls
+          hpaSpec:
+            minReplicas: 2
+            maxReplicas: 5
+
+    # Egress gateway (optional)
+    egressGateways:
+      - name: istio-egressgateway
+        enabled: false
+        k8s:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+
+  # Mesh configuration
+  meshConfig:
+    # Enable access logging
+    accessLogFile: /dev/stdout
+    accessLogEncoding: JSON
+
+    # Default config for all proxies
+    defaultConfig:
+      # Tracing configuration
+      tracing:
+        sampling: 100.0
+        zipkin:
+          address: zipkin.istio-system:9411
+
+      # Proxy resource limits
+      proxyMetadata:
+        ISTIO_META_DNS_CAPTURE: "true"
+        ISTIO_META_DNS_AUTO_ALLOCATE: "true"
+
+    # Enable auto mTLS
+    enableAutoMtls: true
+
+    # Outbound traffic policy: REGISTRY_ONLY or ALLOW_ANY
+    outboundTrafficPolicy:
+      mode: ALLOW_ANY
+
+    # Protocol detection timeout
+    protocolDetectionTimeout: 5s
+
+    # Default service ports
+    defaultServiceExportTo:
+      - "*"
+
+    # Default virtual service exports
+    defaultVirtualServiceExportTo:
+      - "*"
+
+    # Default destination rule exports
+    defaultDestinationRuleExportTo:
+      - "*"
+
+  # Values configuration
+  values:
+    global:
+      # Istio control plane namespace
+      istioNamespace: istio-system
+
+      # Network name
+      network: default
+
+      # Multi-cluster configuration
+      multiCluster:
+        clusterName: primary
+
+      # Mesh ID for multi-mesh scenarios
+      meshID: mesh1
+
+      # Proxy configuration
+      proxy:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 2000m
+            memory: 1024Mi
+
+        # Lifecycle configuration
+        lifecycle:
+          preStop:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - sleep 15
+
+        # Log level: trace, debug, info, warning, error, critical, off
+        logLevel: warning
+
+        # Component log level
+        componentLogLevel: "misc:error"
+
+      # Proxy init configuration
+      proxy_init:
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 1024Mi
+          requests:
+            cpu: 10m
+            memory: 10Mi
+
+      # Image pull policy
+      imagePullPolicy: IfNotPresent
+
+      # Enable CNI
+      cni:
+        enabled: false
+
+      # Logging configuration
+      logging:
+        level: default:info
+
+    # Pilot configuration
+    pilot:
+      autoscaleEnabled: true
+      autoscaleMin: 2
+      autoscaleMax: 5
+      cpu:
+        targetAverageUtilization: 80
+      memory:
+        targetAverageUtilization: 80
+
+      # Enable pod disruption budget
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: 1
+
+    # Telemetry v2 (metrics, logging, tracing)
+    telemetry:
+      enabled: true
+      v2:
+        enabled: true
+        prometheus:
+          enabled: true
+        stackdriver:
+          enabled: false
+
+    # Kiali dashboard
+    kiali:
+      enabled: false
+
+    # Prometheus
+    prometheus:
+      enabled: false
+
+    # Grafana
+    grafana:
+      enabled: false
+
+    # Tracing
+    tracing:
+      enabled: false

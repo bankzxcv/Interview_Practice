@@ -1,0 +1,30 @@
+# 06-allow-external-to-frontend.yaml
+# Allow external traffic (e.g., from ingress controller) to frontend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-external-to-frontend
+  namespace: netpol-demo
+spec:
+  # Apply to frontend pods
+  podSelector:
+    matchLabels:
+      tier: frontend
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow from anywhere on port 80
+  - from:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - protocol: TCP
+      port: 80
+  # Allow from ingress-nginx namespace (if exists)
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 80

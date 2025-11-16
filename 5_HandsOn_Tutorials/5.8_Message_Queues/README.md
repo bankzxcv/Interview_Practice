@@ -9,50 +9,50 @@ Master asynchronous messaging with 4 popular message broker systems. Learn from 
 ### [5.8.1 RabbitMQ](./5.8.1_RabbitMQ/)
 **Pattern**: Traditional message broker
 **Best For**: Task queues, work distribution, RPC
-- **Tutorial 01**: Basic setup, queues, publish/consume
-- **Tutorial 02**: Exchanges (direct, topic, fanout, headers)
-- **Tutorial 03**: Routing patterns
-- **Tutorial 04**: Dead letter queues, TTL
-- **Tutorial 05**: Clustering and high availability
-- **Tutorial 06**: Federation and shovel
-- **Tutorial 07**: Monitoring and management
-- **Tutorial 08**: Kubernetes deployment
+- **Tutorial 01**: Basic setup - Installation, first queue, producers/consumers
+- **Tutorial 02**: Exchanges & routing - Direct, topic, fanout, headers exchanges
+- **Tutorial 03**: Consumer/producer patterns - Work queues, priorities, TTL, DLX
+- **Tutorial 04**: Clustering - Multi-node RabbitMQ cluster setup
+- **Tutorial 05**: High availability - Quorum queues, mirrored queues, failover
+- **Tutorial 06**: Monitoring - Management UI, Prometheus, Grafana
+- **Tutorial 07**: Kubernetes deployment - RabbitMQ Operator, StatefulSets
+- **Tutorial 08**: Production patterns - Reliable delivery, error handling, best practices
 
 ### [5.8.2 Apache Kafka](./5.8.2_Kafka/)
 **Pattern**: Distributed streaming platform
 **Best For**: Event streaming, log aggregation, real-time analytics
-- **Tutorial 01**: Basic setup, topics, producers, consumers
-- **Tutorial 02**: Consumer groups, partitions
-- **Tutorial 03**: Kafka Connect
-- **Tutorial 04**: Kafka Streams
-- **Tutorial 05**: Schema Registry (Avro)
-- **Tutorial 06**: Exactly-once semantics
-- **Tutorial 07**: Monitoring with JMX
-- **Tutorial 08**: Kubernetes deployment (Strimzi)
+- **Tutorial 01**: Basic setup - Kafka installation, topics, first producer/consumer
+- **Tutorial 02**: Producers & consumers - Advanced configs, idempotence, compression
+- **Tutorial 03**: Partitions & replication - Partitioning strategy, ISR, replication
+- **Tutorial 04**: Consumer groups - Parallel processing, rebalancing, lag monitoring
+- **Tutorial 05**: Kafka Streams - Stream processing with Faust
+- **Tutorial 06**: Kafka Connect - JDBC, S3, Elasticsearch connectors
+- **Tutorial 07**: Kubernetes deployment - Strimzi operator, scaling
+- **Tutorial 08**: Production cluster - 3-node cluster, monitoring, best practices
 
 ### [5.8.3 NATS](./5.8.3_NATS/)
 **Pattern**: Lightweight, cloud-native messaging
 **Best For**: Microservices communication, edge computing
-- **Tutorial 01**: Basic pub/sub
-- **Tutorial 02**: Request-reply pattern
-- **Tutorial 03**: Queue groups
-- **Tutorial 04**: JetStream (persistence)
-- **Tutorial 05**: Key-Value store
-- **Tutorial 06**: Object store
-- **Tutorial 07**: Clustering and supercluster
-- **Tutorial 08**: Kubernetes deployment
+- **Tutorial 01**: Basic setup - NATS installation, pub/sub, subjects
+- **Tutorial 02**: Subject hierarchies & queue groups - Wildcards, load balancing
+- **Tutorial 03**: JetStream - Persistence, replay, acknowledgments
+- **Tutorial 04**: Clustering - Multi-node cluster, full mesh topology
+- **Tutorial 05**: Security - Authentication, authorization, TLS, ACLs
+- **Tutorial 06**: Monitoring - HTTP endpoints, Prometheus, metrics
+- **Tutorial 07**: Kubernetes deployment - Helm, StatefulSets, scaling
+- **Tutorial 08**: Production deployment - 3-node cluster, best practices
 
 ### [5.8.4 Redis Pub/Sub](./5.8.4_Redis_PubSub/)
 **Pattern**: In-memory pub/sub
 **Best For**: Real-time notifications, chat, caching with notifications
-- **Tutorial 01**: Basic pub/sub
-- **Tutorial 02**: Pattern matching subscriptions
-- **Tutorial 03**: Redis Streams
-- **Tutorial 04**: Consumer groups
-- **Tutorial 05**: Combining with Redis data structures
-- **Tutorial 06**: Persistence and reliability
-- **Tutorial 07**: Sentinel and cluster
-- **Tutorial 08**: Kubernetes deployment
+- **Tutorial 01**: Basic setup - Redis pub/sub, channels, fire-and-forget
+- **Tutorial 02**: Patterns - PSUBSCRIBE, wildcard matching, multi-channel
+- **Tutorial 03**: Redis Streams - Persistence, replay, consumer groups
+- **Tutorial 04**: Consumer groups - Load balancing, acknowledgments, pending messages
+- **Tutorial 05**: Persistence - RDB, AOF, durability for messaging
+- **Tutorial 06**: Clustering - Redis Cluster, Sentinel for HA
+- **Tutorial 07**: Kubernetes deployment - StatefulSets, Sentinel, scaling
+- **Tutorial 08**: Production patterns - Reliable task queues, monitoring, best practices
 
 ## Quick Start: RabbitMQ
 

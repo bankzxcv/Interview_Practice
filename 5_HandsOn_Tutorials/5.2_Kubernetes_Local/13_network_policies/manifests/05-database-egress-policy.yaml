@@ -1,0 +1,24 @@
+# 05-database-egress-policy.yaml
+# Restrict outgoing traffic from database (principle of least privilege)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: database-egress-policy
+  namespace: netpol-demo
+spec:
+  # Apply to database pods
+  podSelector:
+    matchLabels:
+      tier: database
+  policyTypes:
+  - Egress
+  egress:
+  # Allow DNS only
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+  # Database shouldn't initiate outgoing connections to other services

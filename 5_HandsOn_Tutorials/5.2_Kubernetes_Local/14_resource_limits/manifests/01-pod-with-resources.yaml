@@ -1,0 +1,17 @@
+# 01-pod-with-resources.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: resource-demo
+  namespace: resources-demo
+spec:
+  containers:
+  - name: app
+    image: nginx:alpine
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "200m"

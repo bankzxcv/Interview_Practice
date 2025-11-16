@@ -1,0 +1,35 @@
+---
+# Header-based routing for A/B testing
+# Beta users get v2, everyone else gets v1
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: reviews
+  namespace: bookinfo
+spec:
+  hosts:
+    - reviews
+  http:
+    # Rule 1: If user-group header is "beta", route to v2
+    - match:
+        - headers:
+            x-user-group:
+              exact: beta
+      route:
+        - destination:
+            host: reviews
+            subset: v2
+    # Rule 2: If user-group header is "internal", route to v3
+    - match:
+        - headers:
+            x-user-group:
+              exact: internal
+      route:
+        - destination:
+            host: reviews
+            subset: v3
+    # Rule 3: Default route to v1
+    - route:
+        - destination:
+            host: reviews
+            subset: v1

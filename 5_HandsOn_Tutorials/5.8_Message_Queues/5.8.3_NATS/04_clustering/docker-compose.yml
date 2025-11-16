@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  nats1:
+    image: nats:2.10-alpine
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command:
+      - "-js"
+      - "-m=8222"
+      - "--cluster_name=my-cluster"
+      - "--cluster=nats://0.0.0.0:6222"
+      - "--routes=nats://nats2:6222,nats://nats3:6222"
+    networks: [nats-cluster]
+
+  nats2:
+    image: nats:2.10-alpine
+    ports:
+      - "4223:4222"
+      - "8223:8222"
+    command:
+      - "-js"
+      - "-m=8222"
+      - "--cluster_name=my-cluster"
+      - "--cluster=nats://0.0.0.0:6222"
+      - "--routes=nats://nats1:6222,nats://nats3:6222"
+    networks: [nats-cluster]
+
+  nats3:
+    image: nats:2.10-alpine
+    ports:
+      - "4224:4222"
+      - "8224:8222"
+    command:
+      - "-js"
+      - "-m=8222"
+      - "--cluster_name=my-cluster"
+      - "--cluster=nats://0.0.0.0:6222"
+      - "--routes=nats://nats1:6222,nats://nats2:6222"
+    networks: [nats-cluster]
+
+networks:
+  nats-cluster:

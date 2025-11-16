@@ -1,0 +1,50 @@
+# 08-qos-examples.yaml
+# Examples of different QoS classes
+
+---
+# Guaranteed QoS (requests = limits)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: guaranteed-pod
+  namespace: resources-demo
+spec:
+  containers:
+  - name: app
+    image: nginx:alpine
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "100m"
+---
+# Burstable QoS (requests < limits)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: burstable-pod
+  namespace: resources-demo
+spec:
+  containers:
+  - name: app
+    image: nginx:alpine
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "50m"
+      limits:
+        memory: "512Mi"
+        cpu: "200m"
+---
+# BestEffort QoS (no resources specified)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: besteffort-pod
+  namespace: resources-demo
+spec:
+  containers:
+  - name: app
+    image: nginx:alpine

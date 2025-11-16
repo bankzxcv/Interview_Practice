@@ -1,0 +1,41 @@
+stages:
+  - build
+  - test
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .cache/pip
+    - .venv/
+
+build-app:
+  stage: build
+  image: python:3.11
+  script:
+    - pip install virtualenv
+    - virtualenv .venv
+    - source .venv/bin/activate
+    - pip install -r requirements.txt
+    - echo "Build output" > dist/app.bin
+  artifacts:
+    name: "build-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - dist/
+    expire_in: 1 week
+
+test-app:
+  stage: test
+  image: python:3.11
+  script:
+    - source .venv/bin/activate
+    - pytest tests/ --junitxml=report.xml
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
+    expire_in: 30 days
+  dependencies:
+    - build-app

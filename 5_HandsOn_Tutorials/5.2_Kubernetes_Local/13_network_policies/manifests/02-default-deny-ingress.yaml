@@ -1,0 +1,13 @@
+# 02-default-deny-ingress.yaml
+# Default deny all ingress traffic in the namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: netpol-demo
+spec:
+  # Apply to all pods in namespace
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  # No ingress rules = deny all ingress

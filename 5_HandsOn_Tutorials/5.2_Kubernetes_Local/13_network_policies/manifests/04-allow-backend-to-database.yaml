@@ -1,0 +1,23 @@
+# 04-allow-backend-to-database.yaml
+# Allow backend pods to connect to database pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-to-database
+  namespace: netpol-demo
+spec:
+  # Apply to database pods
+  podSelector:
+    matchLabels:
+      tier: database
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow only from backend pods
+  - from:
+    - podSelector:
+        matchLabels:
+          tier: backend
+    ports:
+    - protocol: TCP
+      port: 8080

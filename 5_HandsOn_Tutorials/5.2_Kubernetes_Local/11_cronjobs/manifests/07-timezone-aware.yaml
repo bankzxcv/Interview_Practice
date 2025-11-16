@@ -1,0 +1,142 @@
+# 07-timezone-aware.yaml
+# CronJob with time zone specification (Kubernetes 1.25+)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: timezone-job
+  labels:
+    component: example
+    type: timezone-demo
+spec:
+  # 9 AM Eastern Time
+  schedule: "0 9 * * *"
+
+  # Specify time zone (requires Kubernetes 1.25+)
+  # Without this, schedule is interpreted as UTC
+  timeZone: "America/New_York"
+
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    metadata:
+      labels:
+        cronjob: timezone-job
+    spec:
+      ttlSecondsAfterFinished: 3600
+
+      template:
+        metadata:
+          labels:
+            cronjob: timezone-job
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: task
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "=== Time Zone Demo ==="
+              echo "Scheduled: 9 AM America/New_York"
+              echo "Executed at: $(date)"
+              echo "UTC time: $(date -u)"
+              echo ""
+              echo "This job runs at 9 AM Eastern Time (EST/EDT)"
+              echo "Kubernetes automatically handles DST transitions"
+              echo ""
+              echo "Note: Requires Kubernetes 1.25+"
+              echo "Otherwise, schedule is interpreted as UTC"
+---
+# UTC-based schedule for comparison (works on all versions)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: utc-job
+  labels:
+    component: example
+    type: utc-demo
+spec:
+  # 9 AM UTC (4 AM or 5 AM Eastern, depending on DST)
+  schedule: "0 9 * * *"
+
+  # No timeZone specified = UTC
+
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    metadata:
+      labels:
+        cronjob: utc-job
+    spec:
+      ttlSecondsAfterFinished: 3600
+
+      template:
+        metadata:
+          labels:
+            cronjob: utc-job
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: task
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "=== UTC Schedule Demo ==="
+              echo "Scheduled: 9 AM UTC"
+              echo "Executed at: $(date)"
+              echo "UTC time: $(date -u)"
+              echo ""
+              echo "This job runs at 9 AM UTC"
+              echo "Works on all Kubernetes versions"
+              echo ""
+              echo "To run at 9 AM Eastern:"
+              echo "- Winter (EST): Schedule at 14:00 UTC"
+              echo "- Summer (EDT): Schedule at 13:00 UTC"
+---
+# Common time zones reference
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: timezone-reference
+data:
+  timezones.txt: |
+    Common Time Zones for CronJobs (Kubernetes 1.25+):
+
+    Americas:
+    - America/New_York      (Eastern: EST/EDT)
+    - America/Chicago       (Central: CST/CDT)
+    - America/Denver        (Mountain: MST/MDT)
+    - America/Los_Angeles   (Pacific: PST/PDT)
+    - America/Toronto       (Eastern Canada)
+    - America/Mexico_City   (Central Mexico)
+    - America/Sao_Paulo     (Brazil)
+
+    Europe:
+    - Europe/London         (GMT/BST)
+    - Europe/Paris          (CET/CEST)
+    - Europe/Berlin         (CET/CEST)
+    - Europe/Moscow         (MSK)
+
+    Asia:
+    - Asia/Tokyo            (JST)
+    - Asia/Shanghai         (CST)
+    - Asia/Singapore        (SGT)
+    - Asia/Kolkata          (IST)
+    - Asia/Dubai            (GST)
+
+    Pacific:
+    - Australia/Sydney      (AEST/AEDT)
+    - Pacific/Auckland      (NZST/NZDT)
+
+    Usage in CronJob:
+    spec:
+      schedule: "0 9 * * *"
+      timeZone: "America/New_York"
+
+    Note: Always use IANA time zone database names
+    Full list: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones

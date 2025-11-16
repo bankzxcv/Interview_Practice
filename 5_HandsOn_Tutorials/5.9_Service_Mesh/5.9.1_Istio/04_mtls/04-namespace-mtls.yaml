@@ -1,0 +1,30 @@
+---
+# Namespace-Specific mTLS Policy
+# Overrides global policy for this namespace
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: mtls-test
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# Example: Another namespace with PERMISSIVE mode
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: legacy-apps
+  labels:
+    istio-injection: enabled
+
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: legacy-apps
+spec:
+  mtls:
+    mode: PERMISSIVE

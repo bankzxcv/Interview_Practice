@@ -1,0 +1,176 @@
+# 09-resource-cleanup.yaml
+# Clean up old completed jobs and pods
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup-old-jobs
+  labels:
+    component: maintenance
+    type: cleanup
+spec:
+  # Run daily at 3 AM
+  schedule: "0 3 * * *"
+
+  concurrencyPolicy: Forbid
+
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    metadata:
+      labels:
+        cronjob: cleanup-old-jobs
+        component: maintenance
+    spec:
+      ttlSecondsAfterFinished: 86400
+
+      template:
+        metadata:
+          labels:
+            cronjob: cleanup-old-jobs
+            component: maintenance
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: job-cleaner
+          containers:
+          - name: cleanup
+            image: bitnami/kubectl:1.28
+            command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              echo "=== Resource Cleanup Started ==="
+              echo "Date: $(date)"
+
+              # Cleanup completed jobs older than 24 hours
+              echo ""
+              echo "1. Cleaning up completed jobs..."
+              COMPLETED_JOBS=$(kubectl get jobs --all-namespaces \
+                --field-selector status.successful=1 \
+                -o json | \
+                jq -r '.items[] |
+                  select(.status.completionTime != null) |
+                  select((now - (.status.completionTime | fromdateiso8601)) > 86400) |
+                  "\(.metadata.namespace)/\(.metadata.name)"' || echo "")
+
+              if [ -n "$COMPLETED_JOBS" ]; then
+                COUNT=0
+                echo "$COMPLETED_JOBS" | while read -r job; do
+                  if [ -n "$job" ]; then
+                    NS=$(echo "$job" | cut -d/ -f1)
+                    NAME=$(echo "$job" | cut -d/ -f2)
+                    echo "Deleting job: $NAME in namespace $NS"
+                    kubectl delete job "$NAME" -n "$NS" --ignore-not-found=true
+                    COUNT=$((COUNT + 1))
+                  fi
+                done
+                echo "Deleted $COUNT completed jobs"
+              else
+                echo "No old completed jobs to delete"
+              fi
+
+              # Cleanup failed jobs older than 7 days
+              echo ""
+              echo "2. Cleaning up old failed jobs..."
+              FAILED_JOBS=$(kubectl get jobs --all-namespaces \
+                --field-selector status.successful=0 \
+                -o json | \
+                jq -r '.items[] |
+                  select(.status.startTime != null) |
+                  select((now - (.status.startTime | fromdateiso8601)) > 604800) |
+                  "\(.metadata.namespace)/\(.metadata.name)"' || echo "")
+
+              if [ -n "$FAILED_JOBS" ]; then
+                echo "$FAILED_JOBS" | while read -r job; do
+                  if [ -n "$job" ]; then
+                    NS=$(echo "$job" | cut -d/ -f1)
+                    NAME=$(echo "$job" | cut -d/ -f2)
+                    echo "Deleting failed job: $NAME in namespace $NS"
+                    kubectl delete job "$NAME" -n "$NS" --ignore-not-found=true
+                  fi
+                done
+              else
+                echo "No old failed jobs to delete"
+              fi
+
+              # Cleanup completed pods
+              echo ""
+              echo "3. Cleaning up completed pods..."
+              COMPLETED_COUNT=$(kubectl get pods --all-namespaces \
+                --field-selector status.phase=Succeeded \
+                -o name | wc -l)
+
+              if [ "$COMPLETED_COUNT" -gt 0 ]; then
+                echo "Found $COMPLETED_COUNT completed pods"
+                kubectl delete pods --all-namespaces \
+                  --field-selector status.phase=Succeeded \
+                  --ignore-not-found=true
+                echo "Deleted completed pods"
+              else
+                echo "No completed pods to delete"
+              fi
+
+              # Cleanup failed pods older than 24 hours
+              echo ""
+              echo "4. Cleaning up old failed pods..."
+              FAILED_COUNT=$(kubectl get pods --all-namespaces \
+                --field-selector status.phase=Failed \
+                -o name | wc -l)
+
+              if [ "$FAILED_COUNT" -gt 0 ]; then
+                echo "Found $FAILED_COUNT failed pods"
+                # In production, add age check before deleting failed pods
+                # Keep recent failed pods for debugging
+                echo "Keeping failed pods for debugging (modify as needed)"
+              else
+                echo "No failed pods found"
+              fi
+
+              # Summary
+              echo ""
+              echo "=== Cleanup Summary ==="
+              echo "Remaining jobs: $(kubectl get jobs --all-namespaces -o name | wc -l)"
+              echo "Remaining pods: $(kubectl get pods --all-namespaces -o name | wc -l)"
+              echo "Completed at: $(date)"
+              echo "=== Resource Cleanup Finished ==="
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "200m"
+---
+# ServiceAccount for job cleanup
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: job-cleaner
+---
+# ClusterRole for cleanup operations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: job-cleaner-role
+rules:
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["get", "list", "delete"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "delete"]
+---
+# ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: job-cleaner-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: job-cleaner-role
+subjects:
+- kind: ServiceAccount
+  name: job-cleaner
+  namespace: default

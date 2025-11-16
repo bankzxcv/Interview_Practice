@@ -1,0 +1,48 @@
+# rolebindings.yaml
+---
+# Bind dev-sa to pod-reader role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dev-sa-pod-reader
+  namespace: development
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pod-reader
+subjects:
+  - kind: ServiceAccount
+    name: dev-sa
+    namespace: development
+
+---
+# Bind prod-deployer to deployment-manager role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: prod-deployer-binding
+  namespace: production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: deployment-manager
+subjects:
+  - kind: ServiceAccount
+    name: prod-deployer
+    namespace: production
+
+---
+# Bind readonly-sa to readonly role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: readonly-binding
+  namespace: testing
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: readonly
+subjects:
+  - kind: ServiceAccount
+    name: readonly-sa
+    namespace: testing

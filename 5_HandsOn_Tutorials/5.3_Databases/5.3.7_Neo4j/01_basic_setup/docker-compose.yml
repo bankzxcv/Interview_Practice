@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  neo4j:
+    image: neo4j:5.15
+    container_name: neo4j-basic
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    environment:
+      NEO4J_AUTH: neo4j/password123
+      NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
+    volumes:
+      - neo4j-data:/data
+volumes:
+  neo4j-data:

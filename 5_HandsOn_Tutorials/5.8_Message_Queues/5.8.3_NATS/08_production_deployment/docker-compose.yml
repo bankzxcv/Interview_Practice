@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  nats1:
+    image: nats:2.10-alpine
+    ports: ["4222:4222", "8222:8222"]
+    volumes:
+      - ./nats.conf:/etc/nats/nats.conf:ro
+      - nats1_data:/data
+    command: ["-c", "/etc/nats/nats.conf"]
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    networks: [nats-prod]
+
+  nats2:
+    image: nats:2.10-alpine
+    ports: ["4223:4222", "8223:8222"]
+    volumes:
+      - ./nats.conf:/etc/nats/nats.conf:ro
+      - nats2_data:/data
+    command: ["-c", "/etc/nats/nats.conf"]
+    networks: [nats-prod]
+
+  nats3:
+    image: nats:2.10-alpine
+    ports: ["4224:4222", "8224:8222"]
+    volumes:
+      - ./nats.conf:/etc/nats/nats.conf:ro
+      - nats3_data:/data
+    command: ["-c", "/etc/nats/nats.conf"]
+    networks: [nats-prod]
+
+  prometheus:
+    image: prom/prometheus
+    ports: ["9090:9090"]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks: [nats-prod]
+
+  grafana:
+    image: grafana/grafana
+    ports: ["3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    networks: [nats-prod]
+
+volumes:
+  nats1_data:
+  nats2_data:
+  nats3_data:
+
+networks:
+  nats-prod:

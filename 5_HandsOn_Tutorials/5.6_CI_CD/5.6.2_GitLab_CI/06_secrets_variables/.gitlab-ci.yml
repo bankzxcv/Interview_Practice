@@ -1,0 +1,52 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  APP_NAME: "myapp"
+  APP_VERSION: "1.0.0"
+  ENVIRONMENT: "development"
+
+build-job:
+  stage: build
+  variables:
+    BUILD_TYPE: "release"
+    OPTIMIZATION: "speed"
+  script:
+    - echo "Building ${APP_NAME} version ${APP_VERSION}"
+    - echo "Build type: ${BUILD_TYPE}"
+    - echo "Environment: ${ENVIRONMENT}"
+    - echo "Optimization: ${OPTIMIZATION}"
+    - echo "Pipeline ID: ${CI_PIPELINE_ID}"
+    - echo "Commit SHA: ${CI_COMMIT_SHORT_SHA}"
+
+deploy-dev:
+  stage: deploy
+  variables:
+    API_URL: "https://api.dev.example.com"
+    DB_HOST: "db.dev.example.com"
+    LOG_LEVEL: "debug"
+  script:
+    - echo "Deploying to development..."
+    - echo "API URL: ${API_URL}"
+    - echo "DB Host: ${DB_HOST}"
+    - echo "Log Level: ${LOG_LEVEL}"
+  environment:
+    name: development
+  only:
+    - develop
+
+deploy-prod:
+  stage: deploy
+  variables:
+    API_URL: "https://api.example.com"
+    DB_HOST: "db.example.com"
+    LOG_LEVEL: "warn"
+  script:
+    - echo "Deploying to production..."
+    - echo "API URL: ${API_URL}"
+  environment:
+    name: production
+  when: manual
+  only:
+    - main

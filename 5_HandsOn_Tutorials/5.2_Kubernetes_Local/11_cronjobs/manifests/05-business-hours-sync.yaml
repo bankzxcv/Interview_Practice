@@ -1,0 +1,102 @@
+# 05-business-hours-sync.yaml
+# Sync data every hour during business hours (9 AM - 5 PM), weekdays only
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: data-sync
+  labels:
+    component: data-sync
+    type: incremental
+spec:
+  # Every hour from 9 AM to 5 PM, Monday to Friday
+  schedule: "0 9-17 * * 1-5"
+
+  # Replace old sync if new one starts
+  concurrencyPolicy: Replace
+
+  # Keep minimal history
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    metadata:
+      labels:
+        cronjob: data-sync
+        component: data-sync
+    spec:
+      ttlSecondsAfterFinished: 7200  # 2 hours
+
+      template:
+        metadata:
+          labels:
+            cronjob: data-sync
+            component: data-sync
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: sync
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "Starting data sync at $(date)"
+
+              # Generate sync ID
+              SYNC_ID="sync-$(date +%Y%m%d-%H%M%S)"
+              echo "Sync ID: $SYNC_ID"
+
+              # Check current hour
+              HOUR=$(date +%H)
+              echo "Current hour: ${HOUR}:00"
+
+              # Verify we're in business hours
+              if [ "$HOUR" -lt 9 ] || [ "$HOUR" -gt 17 ]; then
+                echo "Outside business hours, skipping sync"
+                exit 0
+              fi
+
+              # Verify it's a weekday
+              DAY=$(date +%u)  # 1=Monday, 7=Sunday
+              if [ "$DAY" -gt 5 ]; then
+                echo "Weekend detected, skipping sync"
+                exit 0
+              fi
+
+              # Simulate data sync
+              echo "Syncing data from source to destination..."
+
+              # Phase 1: Check for changes
+              echo "Phase 1: Detecting changes..."
+              CHANGES=$((10 + RANDOM % 50))
+              echo "Found $CHANGES records to sync"
+
+              # Phase 2: Sync data
+              echo "Phase 2: Syncing records..."
+              SYNCED=0
+              while [ $SYNCED -lt $CHANGES ]; do
+                SYNCED=$((SYNCED + 10))
+                if [ $SYNCED -gt $CHANGES ]; then
+                  SYNCED=$CHANGES
+                fi
+                echo "Synced $SYNCED/$CHANGES records..."
+                sleep 1
+              done
+
+              # Phase 3: Verify sync
+              echo "Phase 3: Verifying sync..."
+              echo "All records synced successfully"
+
+              # Log sync result
+              echo "Sync completed successfully"
+              echo "Records synced: $CHANGES"
+              echo "Duration: $SECONDS seconds"
+              echo "Completed at: $(date)"
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "200m"

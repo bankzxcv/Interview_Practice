@@ -1,0 +1,321 @@
+# 10-advanced-patterns.yaml
+# Advanced CronJob patterns and examples
+
+---
+# Pattern 1: CronJob with init container for setup
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: job-with-init
+  labels:
+    pattern: init-container
+spec:
+  schedule: "0 4 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      template:
+        spec:
+          # Init container prepares environment
+          initContainers:
+          - name: setup
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Preparing environment..."
+              mkdir -p /data/input /data/output
+              echo "Setup completed"
+            volumeMounts:
+            - name: workspace
+              mountPath: /data
+
+          # Main container does the work
+          containers:
+          - name: worker
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Processing data..."
+              ls -la /data
+              echo "Work completed"
+            volumeMounts:
+            - name: workspace
+              mountPath: /data
+
+          restartPolicy: OnFailure
+          volumes:
+          - name: workspace
+            emptyDir: {}
+
+---
+# Pattern 2: CronJob with multiple containers (sidecar pattern)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: job-with-sidecar
+  labels:
+    pattern: sidecar
+spec:
+  schedule: "*/10 * * * *"
+  concurrencyPolicy: Allow
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 600
+      template:
+        spec:
+          restartPolicy: Never
+
+          containers:
+          # Main container
+          - name: main
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Main task started"
+              for i in $(seq 1 10); do
+                echo "Processing item $i..." > /shared/status.txt
+                sleep 2
+              done
+              echo "Main task completed" > /shared/status.txt
+              sleep 5  # Give sidecar time to read final status
+            volumeMounts:
+            - name: shared-data
+              mountPath: /shared
+
+          # Sidecar monitors main container
+          - name: monitor
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Monitor started"
+              while true; do
+                if [ -f /shared/status.txt ]; then
+                  echo "[Monitor] $(cat /shared/status.txt)"
+                fi
+                sleep 3
+
+                # Exit when main completes
+                if grep -q "completed" /shared/status.txt 2>/dev/null; then
+                  echo "Main task completed, monitor exiting"
+                  exit 0
+                fi
+              done
+            volumeMounts:
+            - name: shared-data
+              mountPath: /shared
+
+          volumes:
+          - name: shared-data
+            emptyDir: {}
+
+---
+# Pattern 3: CronJob with environment from ConfigMap and Secret
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cronjob-config
+data:
+  LOG_LEVEL: "INFO"
+  BATCH_SIZE: "100"
+  ENVIRONMENT: "production"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cronjob-secret
+type: Opaque
+stringData:
+  API_KEY: "secret-api-key-12345"
+  DB_PASSWORD: "supersecret"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: job-with-config
+  labels:
+    pattern: config-and-secrets
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: task
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "=== Configuration ==="
+              echo "Environment: $ENVIRONMENT"
+              echo "Log Level: $LOG_LEVEL"
+              echo "Batch Size: $BATCH_SIZE"
+              echo ""
+              echo "=== Secrets (masked) ==="
+              echo "API Key: ${API_KEY:0:10}..."
+              echo "DB Password: ***"
+              echo ""
+              echo "Task completed"
+
+            # Environment from ConfigMap
+            envFrom:
+            - configMapRef:
+                name: cronjob-config
+            - secretRef:
+                name: cronjob-secret
+
+            # Individual env vars
+            env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+---
+# Pattern 4: CronJob with retry and exponential backoff
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: job-with-retry-logic
+  labels:
+    pattern: retry-backoff
+spec:
+  schedule: "0 5 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+
+  jobTemplate:
+    spec:
+      # Retry up to 5 times
+      backoffLimit: 5
+
+      # Total timeout: 10 minutes
+      activeDeadlineSeconds: 600
+
+      ttlSecondsAfterFinished: 3600
+
+      template:
+        spec:
+          restartPolicy: OnFailure  # Retry on failure
+          containers:
+          - name: task
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              # Retry logic with exponential backoff
+              MAX_RETRIES=3
+              RETRY=0
+
+              while [ $RETRY -lt $MAX_RETRIES ]; do
+                echo "Attempt $((RETRY + 1)) of $MAX_RETRIES"
+
+                # Simulate task that might fail
+                if [ $RETRY -lt 2 ]; then
+                  echo "Task failed, will retry..."
+                  RETRY=$((RETRY + 1))
+
+                  # Exponential backoff: 2^retry seconds
+                  WAIT=$((2 ** RETRY))
+                  echo "Waiting $WAIT seconds before retry..."
+                  sleep $WAIT
+                else
+                  echo "Task succeeded!"
+                  exit 0
+                fi
+              done
+
+              echo "All retries exhausted"
+              exit 1
+            resources:
+              requests:
+                memory: "64Mi"
+                cpu: "50m"
+              limits:
+                memory: "128Mi"
+                cpu: "100m"
+
+---
+# Pattern 5: CronJob with volume from PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cronjob-data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: job-with-pvc
+  labels:
+    pattern: persistent-storage
+spec:
+  schedule: "0 6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 3600
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: task
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "=== Persistent Storage Job ==="
+              echo "Timestamp: $(date)" >> /data/job-history.log
+              echo ""
+
+              echo "Job history:"
+              cat /data/job-history.log
+
+              echo ""
+              echo "Job completed"
+            volumeMounts:
+            - name: data
+              mountPath: /data
+          volumes:
+          - name: data
+            persistentVolumeClaim:
+              claimName: cronjob-data
