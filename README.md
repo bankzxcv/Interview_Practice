@@ -2,6 +2,16 @@
 
 A comprehensive, well-organized guide to ace your technical interviews at top tech companies (FAANG and beyond).
 
+## ✨ What's New
+
+- 🎯 **25+ System Design Problems** - Complete end-to-end designs for Twitter, Uber, Netflix, and more
+- 🛠️ **4 Hands-On Project Tutorials** - Redis caching, MongoDB CRUD, Serverless Lambda, Docker Compose
+- 📚 **14 Technical Stack Guides** - Languages (Python, TS, Go, Rust), Databases, Infrastructure, Monitoring
+- 🔧 **40+ Total System Design Problems** - Backend, Frontend, and Full-Stack categories
+- 📖 **Comprehensive Reference Material** - Production-ready guides with official docs and best practices
+
+---
+
 ## 📚 Table of Contents
 
 ### [0. Introductory Call](./0-Introductory-Call/README.md)
@@ -37,12 +47,12 @@ Master 15 essential coding patterns with **10-15 problems each** (Easy → Hard)
 ---
 
 ### [2. System Design](./2-System-Design/README.md)
-From simple to advanced system design questions with **real-world trade-offs**, **numerical computations**, and **alternative solutions**.
+From simple to advanced system design questions with **real-world trade-offs**, **numerical computations**, and **alternative solutions**. Over **40+ comprehensive problems** across all subsections.
 
-- [**2.1 Backend Design**](./2-System-Design/2.1-Backend-Design/README.md) - APIs, databases, caching, message queues
-- [**2.2 Frontend Design**](./2-System-Design/2.2-Frontend-Design/README.md) - UI architecture, state management, performance
-- [**2.3 System Design**](./2-System-Design/2.3-System-Design/README.md) - Scalability, distributed systems, microservices
-- [**2.4 Cloud Integration**](./2-System-Design/2.4-Cloud-Integration/README.md) - AWS, GCP, Azure solutions
+- [**2.1 Backend Design**](./2-System-Design/2.1-Backend-Design/README.md) - 15 problems: REST APIs, rate limiters, caching, job queues, authentication, distributed locks
+- [**2.2 Frontend Design**](./2-System-Design/2.2-Frontend-Design/README.md) - 10+ problems: Component architecture, state management, real-time features, performance optimization
+- [**2.3 System Design**](./2-System-Design/2.3-System-Design/README.md) - **25+ end-to-end designs**: Twitter, Instagram, Uber, Netflix, YouTube, WhatsApp, Dropbox, URL shortener, distributed cache, payment processing, and more
+- [**2.4 Cloud Integration**](./2-System-Design/2.4-Cloud-Integration/README.md) - Cloud-native architectures, AWS/GCP/Azure services, serverless, containers
 
 ---
 
@@ -52,7 +62,29 @@ STAR method frameworks, common questions, and strategies for showcasing your imp
 ---
 
 ### [4. Technical Stack Reference](./4-Technical-Stack/README.md)
-Comprehensive cheatsheets for programming languages (Python, TypeScript, Golang, Rust), databases (SQL, NoSQL), infrastructure (Docker, Kubernetes, Terraform), caching strategies, and monitoring tools (Elasticsearch, Grafana). Includes hands-on project setup tutorials for serverless functions, containerized applications, and end-to-end deployment guides.
+**Production-ready reference guides** with official documentation links, command examples, and complete project tutorials.
+
+#### Programming Languages
+- **Python** - Syntax, data structures, comprehensions, decorators, common patterns
+- **TypeScript/JavaScript** - Modern JS/TS, promises, async/await, types, closures
+- **Golang** - Goroutines, channels, interfaces, concurrency patterns
+- **Rust** - Ownership, borrowing, lifetimes, systems programming
+
+#### Databases & Storage
+- **SQL** - Queries, joins, indexing, clustering, optimization techniques
+- **NoSQL** - MongoDB, Redis, Cassandra, DynamoDB, sharding, replication
+  - ⭐ **4 Complete Project Setups:** Redis API caching, MongoDB CRUD app, Serverless Lambda + Redis, Docker Compose multi-DB stack
+
+#### Infrastructure & DevOps
+- **Docker** - Containers, images, Dockerfile, volumes, networking, multi-stage builds
+- **Kubernetes** - Pods, deployments, services, scaling, ConfigMaps, Secrets
+- **Terraform** - Infrastructure as Code for AWS/GCP/Azure, modules, state management
+
+#### Performance & Observability
+- **Caching** - Strategies (LRU, LFU), Redis, Memcached, distributed caching, invalidation
+- **Elasticsearch** - Search engine, indexing, queries, aggregations
+- **Grafana** - Monitoring dashboards, alerts, visualization, data sources
+- **Networking** - OSI model, TCP/IP, HTTP/HTTPS, DNS, load balancing
 
 ---
 
@@ -70,8 +102,9 @@ Comprehensive cheatsheets for programming languages (Python, TypeScript, Golang,
 
 ### Daily Practice Routine
 - **Week 1-4**: Focus on 3-4 LeetCode patterns + 2-3 problems per day
-- **Week 5-6**: System design (1 problem every 2 days) + continued LeetCode
-- **Week 7-8**: Mock interviews + behavioral prep + review weak areas
+- **Week 5-8**: System design (backend, frontend, full-stack - 3-4 problems per week) + continued LeetCode practice
+- **Week 9-10**: Hands-on projects from Technical Stack + review language-specific syntax and patterns
+- **Week 11-12**: Mock interviews + behavioral prep + review weak areas
 - **Ongoing**: Consistency is key - even 30 minutes daily makes a difference
 
 ### Interview Type Breakdown
@@ -103,14 +136,18 @@ This is a living document. As you practice:
 ## 🎯 Success Metrics
 
 Track your progress:
-- [ ] Completed all 15 LeetCode patterns
-- [ ] Solved 150+ LeetCode problems
-- [ ] Designed 20+ systems
-- [ ] Prepared 10+ behavioral stories
+- [ ] Completed all 15 LeetCode patterns (150+ problems total)
+- [ ] Solved 150+ LeetCode problems across varying difficulty
+- [ ] Designed 40+ systems (backend, frontend, and full-stack)
+- [ ] Completed at least 2 hands-on technical stack projects
+- [ ] Prepared 10+ behavioral stories using STAR method
 - [ ] Completed 5+ mock interviews
+- [ ] Reviewed all technical stack references for your target role
 
 ---
 
 **Remember**: Consistency beats intensity. Show up every day, even for 30 minutes. You've got this! 💪
 
-*Last Updated: 2025-11-15*
+---
+
+*Last Updated: 2025-11-16*
