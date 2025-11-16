@@ -66,6 +66,28 @@ Sum = 5 + 11 = 16 ✓ Found again!
 ╚════════════════════════════════════════════════╝
 ```
 
+**Mermaid Flow Diagram**:
+```mermaid
+flowchart TD
+    Start([Start: Two Pointers at Ends]) --> Init[Left = 0<br/>Right = n-1]
+    Init --> CalcSum[Calculate: sum = arr-left- + arr-right-]
+    CalcSum --> CheckSum{Compare sum<br/>with target}
+    CheckSum -->|sum == target| Found[✓ Found pair!<br/>Return indices]
+    CheckSum -->|sum < target| MoveLeft[Move Left pointer right<br/>left++]
+    CheckSum -->|sum > target| MoveRight[Move Right pointer left<br/>right--]
+    MoveLeft --> CheckCross{Left < Right?}
+    MoveRight --> CheckCross
+    CheckCross -->|Yes| CalcSum
+    CheckCross -->|No| NotFound[✗ No pair found]
+    Found --> End([End])
+    NotFound --> End
+
+    style Found fill:#90EE90
+    style NotFound fill:#FFB6C6
+    style Start fill:#87CEEB
+    style End fill:#87CEEB
+```
+
 #### Technique 2: Same Direction (Fast & Slow Pointers)
 
 **Concept**: Both pointers move in same direction, but at different speeds
@@ -122,6 +144,26 @@ New Length = SLOW + 1 = 5
 ║  • When FAST finds new: copy to SLOW+1         ║
 ║  • Time: O(n), Space: O(1)                     ║
 ╚════════════════════════════════════════════════╝
+```
+
+**Mermaid Flow Diagram**:
+```mermaid
+flowchart TD
+    Start([Start: Remove Duplicates]) --> Init[slow = 0<br/>fast = 1]
+    Init --> Loop{fast < n?}
+    Loop -->|No| Return[Return: slow + 1<br/>unique elements]
+    Loop -->|Yes| Compare{arr-fast- !=<br/>arr-slow-?}
+    Compare -->|Yes - New Element| Copy[slow++<br/>arr-slow- = arr-fast-]
+    Compare -->|No - Duplicate| Skip[Skip duplicate]
+    Copy --> Next[fast++]
+    Skip --> Next
+    Next --> Loop
+    Return --> End([End])
+
+    style Start fill:#87CEEB
+    style End fill:#87CEEB
+    style Copy fill:#90EE90
+    style Skip fill:#FFE4B5
 ```
 
 #### Technique 3: Partitioning (Dutch National Flag)
@@ -192,6 +234,29 @@ Final Result:
 ║  • RIGHT boundary: (RIGHT...n) contains 2s     ║
 ║  • Time: O(n), Space: O(1)                     ║
 ╚════════════════════════════════════════════════╝
+```
+
+**Mermaid Flow Diagram**:
+```mermaid
+flowchart TD
+    Start([Start: Sort Colors]) --> Init[left = 0<br/>curr = 0<br/>right = n-1]
+    Init --> Loop{curr <= right?}
+    Loop -->|No| Done[✓ Array Sorted<br/>-0s--1s--2s-]
+    Loop -->|Yes| Check{arr-curr-<br/>value?}
+    Check -->|0 - Red| SwapLeft[Swap arr-curr- with arr-left-<br/>left++, curr++]
+    Check -->|1 - White| Stay[curr++<br/>stays in middle]
+    Check -->|2 - Blue| SwapRight[Swap arr-curr- with arr-right-<br/>right--<br/>DON'T move curr]
+    SwapLeft --> Loop
+    Stay --> Loop
+    SwapRight --> Loop
+    Done --> End([End])
+
+    style Start fill:#87CEEB
+    style End fill:#87CEEB
+    style Done fill:#90EE90
+    style SwapLeft fill:#FFB6C6
+    style Stay fill:#FFFFFF
+    style SwapRight fill:#ADD8E6
 ```
 
 #### Technique 4: Container Problem (Greedy Movement)
