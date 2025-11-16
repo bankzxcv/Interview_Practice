@@ -1,0 +1,20 @@
+# 07-daemonset-ondelete.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: manual-update-agent
+spec:
+  updateStrategy:
+    type: OnDelete  # Pods updated only when manually deleted
+  selector:
+    matchLabels:
+      app: manual-update-agent
+  template:
+    metadata:
+      labels:
+        app: manual-update-agent
+    spec:
+      containers:
+      - name: agent
+        image: busybox:1.36
+        command: ["/bin/sh", "-c", "echo Manual update agent; sleep 3600"]

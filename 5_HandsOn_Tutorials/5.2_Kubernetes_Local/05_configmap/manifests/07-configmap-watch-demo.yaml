@@ -1,0 +1,58 @@
+# 07-configmap-watch-demo.yaml
+# Demonstrates live config updates (volume mounts only)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: watch-config
+data:
+  message.txt: "Initial message"
+  timestamp.txt: "Created at startup"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: watch-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: watch-demo
+  template:
+    metadata:
+      labels:
+        app: watch-demo
+    spec:
+      containers:
+      - name: watcher
+        image: busybox:1.36
+        command:
+        - /bin/sh
+        - -c
+        - |
+          while true; do
+            echo "=== $(date) ==="
+            cat /etc/config/message.txt
+            sleep 10
+          done
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "25m"
+          limits:
+            memory: "32Mi"
+            cpu: "50m"
+      volumes:
+      - name: config
+        configMap:
+          name: watch-config
+
+# To test live updates:
+# 1. kubectl logs -f <pod-name>
+# 2. kubectl patch configmap watch-config -p '{"data":{"message.txt":"Updated!"}}'
+# 3. Watch logs - should show new message within ~60 seconds
+#
+# Note: kubelet syncs mounted ConfigMaps periodically (default: every 60s)

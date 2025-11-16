@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-backup
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backups:/backups
+      - ./scripts:/scripts
+    command: |
+      postgres
+      -c wal_level=replica
+      -c archive_mode=on
+      -c archive_command='test ! -f /backups/wal_archive/%f && cp %p /backups/wal_archive/%f'
+      -c max_wal_senders=3
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:

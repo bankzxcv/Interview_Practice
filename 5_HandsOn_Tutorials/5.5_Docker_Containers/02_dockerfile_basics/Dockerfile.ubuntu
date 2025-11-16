@@ -1,0 +1,22 @@
+# Simple Ubuntu container with common tools
+
+FROM ubuntu:22.04
+
+# Avoid prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update and install packages
+RUN apt-get update && \
+    apt-get install -y \
+    curl \
+    vim \
+    git \
+    wget \
+    htop \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set environment variable
+ENV WELCOME_MESSAGE="Hello from custom Ubuntu!"
+
+# Default command
+CMD ["bash"]

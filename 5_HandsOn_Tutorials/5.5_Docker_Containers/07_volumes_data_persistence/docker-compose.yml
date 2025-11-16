@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # PostgreSQL with persistent volume
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=mydb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      # Named volume for database data
+      - db_data:/var/lib/postgresql/data
+
+      # Bind mount for initialization scripts
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+
+      # Bind mount for custom config
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Application with bind mounts for development
+  app:
+    build: ./app
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/mydb
+    volumes:
+      # Bind mount for hot reload
+      - ./app/src:/app/src
+
+      # Named volume for node_modules (performance)
+      - node_modules:/app/node_modules
+
+      # Named volume for logs
+      - app_logs:/app/logs
+
+      # tmpfs for temporary files
+      - type: tmpfs
+        target: /app/tmp
+        tmpfs:
+          size: 100M
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Backup service
+  backup:
+    image: postgres:15-alpine
+    volumes:
+      # Read-only access to database data
+      - db_data:/var/lib/postgresql/data:ro
+
+      # Bind mount for backup destination
+      - ./backups:/backups
+    environment:
+      - PGPASSWORD=password
+    entrypoint: /bin/sh
+    command: >
+      -c "while true; do
+        echo 'Creating backup...';
+        pg_dump -h db -U user mydb > /backups/backup_$$(date +%Y%m%d_%H%M%S).sql;
+        echo 'Backup created';
+        sleep 86400;
+      done"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  # Database data volume
+  db_data:
+    driver: local
+
+  # Node modules volume
+  node_modules:
+
+  # Application logs
+  app_logs:

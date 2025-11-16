@@ -1,0 +1,56 @@
+name: Reusable Test Workflow
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: 'Node.js version to use'
+        required: false
+        type: string
+        default: '20'
+      run-lint:
+        description: 'Run linting'
+        required: false
+        type: boolean
+        default: true
+      working-directory:
+        description: 'Working directory'
+        required: false
+        type: string
+        default: '.'
+    outputs:
+      test-result:
+        description: 'Test execution result'
+        value: ${{ jobs.test.outputs.result }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.test.outputs.result }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      working-directory: ${{ inputs.working-directory }}
+      run: npm ci
+
+    - name: Run linter
+      if: inputs.run-lint
+      working-directory: ${{ inputs.working-directory }}
+      run: npm run lint || echo "No lint script"
+
+    - name: Run tests
+      id: test
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        npm test
+        echo "result=success" >> $GITHUB_OUTPUT

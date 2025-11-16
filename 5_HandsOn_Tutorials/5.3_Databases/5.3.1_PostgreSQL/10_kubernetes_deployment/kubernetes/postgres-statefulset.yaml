@@ -1,0 +1,158 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: postgres
+data:
+  POSTGRES_DB: mydb
+  POSTGRES_USER: postgres
+  postgresql.conf: |
+    max_connections = 100
+    shared_buffers = 256MB
+    effective_cache_size = 1GB
+    maintenance_work_mem = 64MB
+    checkpoint_completion_target = 0.9
+    wal_buffers = 16MB
+    default_statistics_target = 100
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    work_mem = 4MB
+    min_wal_size = 1GB
+    max_wal_size = 4GB
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  namespace: postgres
+type: Opaque
+stringData:
+  POSTGRES_PASSWORD: "SecureP@ssw0rd123!"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: postgres
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgres
+  selector:
+    app: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-lb
+  namespace: postgres
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgres
+  selector:
+    app: postgres
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: postgres
+spec:
+  serviceName: postgres-service
+  replicas: 3
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: postgres-config-volume
+          mountPath: /etc/postgresql/postgresql.conf
+          subPath: postgresql.conf
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U postgres
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U postgres
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+      volumes:
+      - name: postgres-config-volume
+        configMap:
+          name: postgres-config
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - postgres
+              topologyKey: kubernetes.io/hostname
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 10Gi

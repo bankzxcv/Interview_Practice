@@ -1,0 +1,30 @@
+# 08-deployment-basic-auth.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basic-auth-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: basic-auth-demo
+  template:
+    metadata:
+      labels:
+        app: basic-auth-demo
+    spec:
+      containers:
+      - name: app
+        image: busybox:1.36
+        command: ["/bin/sh", "-c", "echo User: $AUTH_USER && sleep 3600"]
+        env:
+        - name: AUTH_USER
+          valueFrom:
+            secretKeyRef:
+              name: basic-auth-secret
+              key: username
+        - name: AUTH_PASS
+          valueFrom:
+            secretKeyRef:
+              name: basic-auth-secret
+              key: password

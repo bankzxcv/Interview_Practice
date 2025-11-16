@@ -1,0 +1,17 @@
+# 03-pod-with-pvc.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pvc-demo-pod
+spec:
+  containers:
+  - name: app
+    image: busybox:1.36
+    command: ["/bin/sh", "-c", "sleep 3600"]
+    volumeMounts:
+    - name: storage
+      mountPath: /data
+  volumes:
+  - name: storage
+    persistentVolumeClaim:
+      claimName: manual-pvc

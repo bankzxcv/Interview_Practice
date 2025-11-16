@@ -1,0 +1,9 @@
+# 07-custom-storageclass.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-storage
+provisioner: rancher.io/local-path
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+allowVolumeExpansion: true

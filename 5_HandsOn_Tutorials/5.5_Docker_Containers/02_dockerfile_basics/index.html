@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker Static Site</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            max-width: 800px;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        p {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        ul {
+            list-style: none;
+            margin: 30px 0;
+        }
+
+        li {
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin: 5px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐳 Welcome to My Dockerized Website!</h1>
+        <p>This static website is being served by <strong>Nginx</strong> inside a Docker container.</p>
+
+        <h2 style="color: #764ba2; margin: 30px 0 15px 0;">Why Docker?</h2>
+        <ul>
+            <li><strong>Fast Deployment:</strong> Build once, run anywhere</li>
+            <li><strong>Consistent Environment:</strong> No more "works on my machine"</li>
+            <li><strong>Easy Scaling:</strong> Replicate containers effortlessly</li>
+            <li><strong>Resource Efficient:</strong> Lightweight compared to VMs</li>
+        </ul>
+
+        <h2 style="color: #764ba2; margin: 30px 0 15px 0;">Technologies Used</h2>
+        <div>
+            <span class="badge">Docker</span>
+            <span class="badge">Nginx</span>
+            <span class="badge">HTML5</span>
+            <span class="badge">CSS3</span>
+        </div>
+
+        <div class="footer">
+            <p>🚀 Built with Docker | Served by Nginx Alpine</p>
+        </div>
+    </div>
+</body>
+</html>

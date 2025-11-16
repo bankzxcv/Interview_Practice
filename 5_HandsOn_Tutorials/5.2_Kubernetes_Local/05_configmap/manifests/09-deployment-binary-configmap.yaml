@@ -1,0 +1,49 @@
+# 09-deployment-binary-configmap.yaml
+# Using ConfigMap with binary data
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: binary-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: binary-demo
+  template:
+    metadata:
+      labels:
+        app: binary-demo
+    spec:
+      containers:
+      - name: app
+        image: busybox:1.36
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Files in /etc/config:"
+          ls -lh /etc/config/
+          echo ""
+          echo "readme.txt content:"
+          cat /etc/config/readme.txt
+          echo ""
+          echo "logo.png file type:"
+          file /etc/config/logo.png
+          sleep 3600
+        volumeMounts:
+        - name: binary-config
+          mountPath: /etc/config
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "25m"
+          limits:
+            memory: "32Mi"
+            cpu: "50m"
+      volumes:
+      - name: binary-config
+        configMap:
+          name: binary-config
+
+# Binary data is automatically decoded when mounted
+# Files are created with the original binary content

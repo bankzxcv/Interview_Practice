@@ -1,0 +1,107 @@
+# 08-default-backend.yaml
+# Default backend for 404 pages
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: default-backend
+  labels:
+    app: default-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: default-backend
+  template:
+    metadata:
+      labels:
+        app: default-backend
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25-alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "25m"
+          limits:
+            memory: "32Mi"
+            cpu: "50m"
+      volumes:
+      - name: html
+        configMap:
+          name: default-backend-html
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: default-backend-service
+  labels:
+    app: default-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: default-backend
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: default-backend-html
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>404 Not Found</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+            .container {
+                text-align: center;
+                padding: 50px;
+                background: rgba(255,255,255,0.1);
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
+            }
+            h1 { font-size: 5em; margin: 0; }
+            h2 { font-size: 2em; margin: 10px 0; }
+            p { font-size: 1.2em; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>404</h1>
+            <h2>Page Not Found</h2>
+            <p>The page you're looking for doesn't exist.</p>
+            <p>This is the default backend.</p>
+        </div>
+    </body>
+    </html>
+
+# Purpose:
+# -------
+# Provides a custom 404 page for unknown routes
+# Better user experience than default ingress 404
+#
+# Usage:
+# -----
+# Reference in Ingress spec.defaultBackend
+# Or in IngressClass for global default

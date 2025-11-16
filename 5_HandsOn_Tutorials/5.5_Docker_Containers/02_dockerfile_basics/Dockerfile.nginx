@@ -1,0 +1,12 @@
+# Static Website with Nginx
+
+FROM nginx:alpine
+
+# Copy custom HTML
+COPY index.html /usr/share/nginx/html/
+
+# Expose port 80
+EXPOSE 80
+
+# Nginx runs automatically from the base image
+# No CMD needed as it's inherited from nginx:alpine

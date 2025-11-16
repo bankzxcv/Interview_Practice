@@ -1,0 +1,165 @@
+# 04-nginx-deployment-advanced.yaml
+# Advanced deployment with update strategy configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+    tier: frontend
+  annotations:
+    kubernetes.io/change-cause: "Update to nginx 1.26 with advanced strategy"
+spec:
+  replicas: 3
+
+  # Update strategy controls how pods are replaced during updates
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # Max pods above desired count during update
+      maxUnavailable: 1  # Max pods below desired count during update
+
+  # Minimum time a new pod should be ready before considered available
+  minReadySeconds: 5
+
+  # Number of old ReplicaSets to retain for rollback
+  revisionHistoryLimit: 10
+
+  # How long to wait before giving up on a deployment
+  progressDeadlineSeconds: 600
+
+  selector:
+    matchLabels:
+      app: nginx
+
+  template:
+    metadata:
+      labels:
+        app: nginx
+        tier: frontend
+        version: v2
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.26-alpine
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+
+        # Environment variables
+        env:
+        - name: NGINX_HOST
+          value: "localhost"
+        - name: NGINX_PORT
+          value: "80"
+
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+
+        # Liveness probe - restarts container if fails
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+            httpHeaders:
+            - name: Custom-Header
+              value: Awesome
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+
+        # Readiness probe - removes from service if fails
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+
+        # Startup probe - gives container time to start
+        startupProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 0
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 30  # 30 * 5s = 150s max startup time
+
+      # Termination grace period (time to allow for graceful shutdown)
+      terminationGracePeriodSeconds: 30
+
+      # DNS policy for the pod
+      dnsPolicy: ClusterFirst
+
+      # Restart policy
+      restartPolicy: Always
+
+# Advanced Field Explanations:
+# ---------------------------
+#
+# strategy.type: RollingUpdate vs Recreate
+# - RollingUpdate: Gradually replace pods (zero downtime)
+# - Recreate: Kill all pods, then create new ones (has downtime)
+#
+# strategy.rollingUpdate.maxSurge:
+# - Maximum number of pods that can be created over desired replicas
+# - Can be absolute number (1) or percentage (25%)
+# - Example: replicas=3, maxSurge=1 → max 4 pods during update
+#
+# strategy.rollingUpdate.maxUnavailable:
+# - Maximum number of pods that can be unavailable during update
+# - Can be absolute number (1) or percentage (25%)
+# - Example: replicas=3, maxUnavailable=1 → min 2 pods during update
+#
+# minReadySeconds:
+# - Minimum time a new pod should be ready before considered available
+# - Helps detect immediate crashes
+#
+# revisionHistoryLimit:
+# - Number of old ReplicaSets to keep for rollback
+# - Default: 10
+#
+# progressDeadlineSeconds:
+# - Max time for deployment to make progress
+# - After this, deployment is considered failed
+# - Default: 600 seconds (10 minutes)
+#
+# Probe Fields:
+# - initialDelaySeconds: Wait before first probe
+# - periodSeconds: How often to probe
+# - timeoutSeconds: Probe timeout
+# - successThreshold: Min consecutive successes to be considered successful
+# - failureThreshold: Min consecutive failures to be considered failed
+#
+# Probe Types:
+# 1. livenessProbe: Is container alive? (restart if fails)
+# 2. readinessProbe: Is container ready for traffic? (remove from service if fails)
+# 3. startupProbe: Has container started? (disables other probes until succeeds)
+#
+# Update Strategy Examples:
+# -------------------------
+#
+# Fast update (more resources, faster):
+#   maxSurge: 50%
+#   maxUnavailable: 50%
+#
+# Conservative update (less resources, slower):
+#   maxSurge: 1
+#   maxUnavailable: 0
+#
+# Balanced (default-like):
+#   maxSurge: 25%
+#   maxUnavailable: 25%

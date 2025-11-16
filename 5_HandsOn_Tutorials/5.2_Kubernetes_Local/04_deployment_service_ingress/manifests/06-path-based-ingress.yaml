@@ -1,0 +1,83 @@
+# 06-path-based-ingress.yaml
+# Ingress with path-based routing (single host, multiple paths)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: path-based-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:  # No host specified - matches all hosts
+      paths:
+      # Route /app1 to app1-service
+      - path: /app1
+        pathType: Prefix
+        backend:
+          service:
+            name: app1-service
+            port:
+              number: 80
+
+      # Route /app2 to app2-service
+      - path: /app2
+        pathType: Prefix
+        backend:
+          service:
+            name: app2-service
+            port:
+              number: 80
+
+# Path-based Routing:
+# ------------------
+# All requests to the same hostname/IP
+# Routed based on URL path
+#
+# Examples:
+# http://localhost/app1 → app1-service
+# http://localhost/app2 → app2-service
+#
+# rewrite-target annotation:
+# -------------------------
+# Rewrites the path before forwarding to service
+#
+# Without rewrite:
+#   Request: /app1/index.html
+#   Forwarded: /app1/index.html (to service)
+#   Service expects: /index.html
+#   Result: 404
+#
+# With rewrite-target: /
+#   Request: /app1/index.html
+#   Forwarded: /index.html (rewritten)
+#   Service expects: /index.html
+#   Result: 200 OK
+#
+# Advanced rewrite examples:
+# -------------------------
+# Capture groups:
+#   path: /app1/(.*)
+#   rewrite-target: /$1
+#   /app1/foo/bar → /foo/bar
+#
+# Static rewrite:
+#   path: /old-path
+#   rewrite-target: /new-path
+#   /old-path → /new-path
+#
+# PathType considerations:
+# -----------------------
+# Prefix: Matches /app1, /app1/, /app1/anything
+# Exact: Matches /app1 only (not /app1/)
+#
+# Order matters:
+# -------------
+# More specific paths should come first
+# / (root) should be last (catches everything)
+#
+# Testing:
+# -------
+# curl http://localhost/app1
+# curl http://localhost/app2
+# curl http://localhost/app1/subpath

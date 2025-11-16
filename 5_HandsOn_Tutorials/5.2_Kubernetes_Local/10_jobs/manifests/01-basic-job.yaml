@@ -1,0 +1,17 @@
+# 01-basic-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hello-job
+spec:
+  template:
+    metadata:
+      labels:
+        job-name: hello-job
+    spec:
+      containers:
+      - name: hello
+        image: busybox:1.36
+        command: ["/bin/sh", "-c", "echo Hello from Kubernetes Job! && sleep 10 && echo Job completed successfully"]
+      restartPolicy: Never  # Required for Jobs (Never or OnFailure)
+  backoffLimit: 3  # Retry up to 3 times on failure

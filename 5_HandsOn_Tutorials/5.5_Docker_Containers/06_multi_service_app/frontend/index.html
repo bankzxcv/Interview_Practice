@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager - Multi-Service Docker App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .health-status {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .health-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .status-dot.connected {
+            background: #28a745;
+        }
+
+        .status-dot.disconnected {
+            background: #dc3545;
+        }
+
+        .task-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .task-form h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        input, textarea, button, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            width: auto;
+            padding: 10px 20px;
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .task {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .task:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .task h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .task p {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .task-meta {
+            font-size: 0.85em;
+            color: #999;
+            margin-bottom: 15px;
+        }
+
+        .task-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .status-todo {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .status-in_progress {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .status-done {
+            background: #28a745;
+            color: white;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .task-actions button {
+            width: auto;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-done {
+            background: #28a745;
+        }
+
+        .btn-done:hover {
+            background: #218838;
+        }
+
+        .btn-in-progress {
+            background: #17a2b8;
+        }
+
+        .btn-in-progress:hover {
+            background: #138496;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Task Manager</h1>
+        <p class="subtitle">Multi-Service Docker Application Demo</p>
+
+        <div class="health-status" id="healthStatus">
+            <div class="health-item">
+                <span class="status-dot" id="dbStatus"></span>
+                <span>Database</span>
+            </div>
+            <div class="health-item">
+                <span class="status-dot" id="cacheStatus"></span>
+                <span>Cache</span>
+            </div>
+        </div>
+
+        <div class="task-form">
+            <h3>➕ Add New Task</h3>
+            <input type="text" id="taskTitle" placeholder="Task title *" required>
+            <textarea id="taskDescription" placeholder="Description (optional)" rows="3"></textarea>
+            <select id="taskStatus">
+                <option value="todo">📋 To Do</option>
+                <option value="in_progress">🚀 In Progress</option>
+                <option value="done">✅ Done</option>
+            </select>
+            <button onclick="addTask()">Add Task</button>
+        </div>
+
+        <div class="filter-buttons">
+            <button class="filter-btn active" onclick="filterTasks('all')">All</button>
+            <button class="filter-btn" onclick="filterTasks('todo')">To Do</button>
+            <button class="filter-btn" onclick="filterTasks('in_progress')">In Progress</button>
+            <button class="filter-btn" onclick="filterTasks('done')">Done</button>
+        </div>
+
+        <div id="taskList">
+            <div class="loading">Loading tasks...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        let allTasks = [];
+        let currentFilter = 'all';
+
+        // Check health status
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const health = await response.json();
+
+                document.getElementById('dbStatus').className =
+                    `status-dot ${health.database === 'connected' ? 'connected' : 'disconnected'}`;
+                document.getElementById('cacheStatus').className =
+                    `status-dot ${health.cache === 'connected' ? 'connected' : 'disconnected'}`;
+            } catch (error) {
+                console.error('Health check failed:', error);
+            }
+        }
+
+        async function loadTasks() {
+            try {
+                const response = await fetch(`${API_URL}/tasks`);
+                allTasks = await response.json();
+                renderTasks();
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                document.getElementById('taskList').innerHTML =
+                    '<div class="empty-state">❌ Error loading tasks</div>';
+            }
+        }
+
+        function renderTasks() {
+            const filteredTasks = currentFilter === 'all'
+                ? allTasks
+                : allTasks.filter(t => t.status === currentFilter);
+
+            const taskList = document.getElementById('taskList');
+
+            if (filteredTasks.length === 0) {
+                taskList.innerHTML = `
+                    <div class="empty-state">
+                        <p>📭 No tasks found</p>
+                        <p>Add a new task to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            taskList.innerHTML = filteredTasks.map(task => `
+                <div class="task">
+                    <h3>${escapeHtml(task.title)}</h3>
+                    <p>${escapeHtml(task.description || 'No description')}</p>
+                    <div class="task-meta">
+                        <span class="task-status status-${task.status}">
+                            ${formatStatus(task.status)}
+                        </span>
+                        <span>Created: ${new Date(task.created_at).toLocaleString()}</span>
+                    </div>
+                    <div class="task-actions">
+                        ${task.status !== 'in_progress' ?
+                            `<button class="btn-in-progress" onclick="updateTaskStatus(${task.id}, 'in_progress')">
+                                🚀 In Progress
+                            </button>` : ''}
+                        ${task.status !== 'done' ?
+                            `<button class="btn-done" onclick="updateTaskStatus(${task.id}, 'done')">
+                                ✅ Mark Done
+                            </button>` : ''}
+                        <button class="btn-delete" onclick="deleteTask(${task.id})">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function addTask() {
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const status = document.getElementById('taskStatus').value;
+
+            if (!title.trim()) {
+                alert('Please enter a task title');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/tasks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description, status })
+                });
+
+                if (response.ok) {
+                    document.getElementById('taskTitle').value = '';
+                    document.getElementById('taskDescription').value = '';
+                    document.getElementById('taskStatus').value = 'todo';
+                    loadTasks();
+                }
+            } catch (error) {
+                console.error('Error adding task:', error);
+                alert('Failed to add task');
+            }
+        }
+
+        async function updateTaskStatus(id, status) {
+            try {
+                const response = await fetch(`${API_URL}/tasks/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+
+                if (response.ok) {
+                    loadTasks();
+                }
+            } catch (error) {
+                console.error('Error updating task:', error);
+            }
+        }
+
+        async function deleteTask(id) {
+            if (!confirm('Delete this task?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/tasks/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    loadTasks();
+                }
+            } catch (error) {
+                console.error('Error deleting task:', error);
+            }
+        }
+
+        function filterTasks(filter) {
+            currentFilter = filter;
+
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            renderTasks();
+        }
+
+        function formatStatus(status) {
+            const statusMap = {
+                'todo': 'To Do',
+                'in_progress': 'In Progress',
+                'done': 'Done'
+            };
+            return statusMap[status] || status;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize
+        checkHealth();
+        loadTasks();
+
+        // Periodic health check
+        setInterval(checkHealth, 30000);
+    </script>
+</body>
+</html>

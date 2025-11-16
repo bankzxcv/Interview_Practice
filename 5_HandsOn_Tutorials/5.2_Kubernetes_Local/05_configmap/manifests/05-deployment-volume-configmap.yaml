@@ -1,0 +1,50 @@
+# 05-deployment-volume-configmap.yaml
+# Mount ConfigMap as volume (files)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: volume-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: volume-demo
+  template:
+    metadata:
+      labels:
+        app: volume-demo
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25-alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        # Mount nginx config
+        - name: config-volume
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf  # Mount specific file, not directory
+        # Mount html content
+        - name: config-volume
+          mountPath: /usr/share/nginx/html/index.html
+          subPath: index.html
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
+      volumes:
+      - name: config-volume
+        configMap:
+          name: nginx-config
+          # Optional: Set file permissions
+          defaultMode: 0644
+
+# Each ConfigMap key becomes a file
+# Key name = filename
+# Key value = file content
+#
+# subPath: Mount individual file (not entire ConfigMap as directory)
+# Without subPath: All keys mounted as files in mountPath directory

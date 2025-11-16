@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+  labels:
+    app: flask-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+        version: "1.0"
+    spec:
+      containers:
+      - name: flask-app
+        image: ghcr.io/your-org/your-repo:latest
+        ports:
+        - containerPort: 5000
+          name: http
+        env:
+        - name: APP_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: version
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5

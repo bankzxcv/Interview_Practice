@@ -1,0 +1,40 @@
+# 06-rwx-example.yaml
+# ReadWriteMany example (requires NFS or similar)
+# local-path does NOT support RWX - this is for reference only
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: shared-pvc
+spec:
+  accessModes:
+    - ReadWriteMany  # Multiple pods can mount
+  resources:
+    requests:
+      storage: 5Gi
+  # storageClassName: nfs  # Would need NFS storage class
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shared-storage-app
+spec:
+  replicas: 3  # Multiple pods sharing same volume
+  selector:
+    matchLabels:
+      app: shared-storage-app
+  template:
+    metadata:
+      labels:
+        app: shared-storage-app
+    spec:
+      containers:
+      - name: app
+        image: nginx:alpine
+        volumeMounts:
+        - name: shared-data
+          mountPath: /shared
+      volumes:
+      - name: shared-data
+        persistentVolumeClaim:
+          claimName: shared-pvc

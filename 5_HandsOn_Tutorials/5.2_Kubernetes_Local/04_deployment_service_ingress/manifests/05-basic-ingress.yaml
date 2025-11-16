@@ -1,0 +1,93 @@
+# 05-basic-ingress.yaml
+# Basic Ingress with host-based routing
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: basic-ingress
+  labels:
+    app: demo
+  annotations:
+    # Optional: Add annotations for ingress controller behavior
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  # Specify ingress class (required in newer Kubernetes versions)
+  ingressClassName: nginx
+
+  # Routing rules
+  rules:
+  # Rule 1: Route app1.local to app1-service
+  - host: app1.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app1-service
+            port:
+              number: 80
+
+  # Rule 2: Route app2.local to app2-service
+  - host: app2.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app2-service
+            port:
+              number: 80
+
+# Field Explanations:
+# ------------------
+# apiVersion: networking.k8s.io/v1 - Networking API group
+# kind: Ingress - Resource type
+#
+# metadata.annotations - Controller-specific configurations
+#   nginx.ingress.kubernetes.io/rewrite-target: Rewrite URL path
+#   nginx.ingress.kubernetes.io/ssl-redirect: Force HTTPS
+#   nginx.ingress.kubernetes.io/enable-cors: Enable CORS
+#
+# spec.ingressClassName - Which ingress controller handles this
+#   - nginx (NGINX Ingress Controller)
+#   - traefik (Traefik)
+#   - etc.
+#
+# spec.rules[] - List of routing rules
+# spec.rules[].host - Hostname to match (DNS name)
+#   - Can use wildcards: *.example.com
+#   - If omitted, matches all hosts
+#
+# spec.rules[].http.paths[] - List of path rules for this host
+# spec.rules[].http.paths[].path - URL path to match
+# spec.rules[].http.paths[].pathType - How to match the path
+#   - Exact: Exact match only
+#   - Prefix: Match path prefix
+#   - ImplementationSpecific: Controller-specific
+#
+# spec.rules[].http.paths[].backend - Where to send traffic
+# spec.rules[].http.paths[].backend.service - Service to route to
+# spec.rules[].http.paths[].backend.service.name - Service name
+# spec.rules[].http.paths[].backend.service.port.number - Service port
+#
+# How it works:
+# ------------
+# 1. Request arrives: http://app1.local/
+# 2. Ingress controller checks rules
+# 3. Matches host: app1.local
+# 4. Matches path: / (prefix)
+# 5. Routes to: app1-service:80
+# 6. Service load-balances to pods
+#
+# Testing:
+# -------
+# curl -H "Host: app1.local" http://localhost
+# curl -H "Host: app2.local" http://localhost
+#
+# Or add to /etc/hosts:
+# 127.0.0.1 app1.local app2.local
+#
+# Then:
+# curl http://app1.local
+# curl http://app2.local

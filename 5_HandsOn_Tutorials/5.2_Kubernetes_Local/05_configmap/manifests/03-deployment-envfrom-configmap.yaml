@@ -1,0 +1,42 @@
+# 03-deployment-envfrom-configmap.yaml
+# Import all ConfigMap keys as environment variables
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: envfrom-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: envfrom-demo
+  template:
+    metadata:
+      labels:
+        app: envfrom-demo
+    spec:
+      containers:
+      - name: app
+        image: busybox:1.36
+        command: ["/bin/sh", "-c", "env | grep DB_ && sleep 3600"]
+        envFrom:
+        # Import all keys from ConfigMap
+        - configMapRef:
+            name: database-config
+        # Can import from multiple ConfigMaps
+        # - configMapRef:
+        #     name: app-config
+        # Optional prefix for all keys
+        # - prefix: CONFIG_
+        #   configMapRef:
+        #     name: another-config
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "25m"
+          limits:
+            memory: "32Mi"
+            cpu: "50m"
+
+# Pros: Concise, imports all keys automatically
+# Cons: Key names must be valid env var names, can't rename
+# Note: Keys with invalid env var names (e.g., "app.name") are skipped

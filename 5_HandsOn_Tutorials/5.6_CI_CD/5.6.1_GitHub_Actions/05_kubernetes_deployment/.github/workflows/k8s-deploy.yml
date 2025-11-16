@@ -1,0 +1,99 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=sha,prefix={{branch}}-
+          type=ref,event=tag
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment || 'production' }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+
+    - name: Configure kubectl
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+
+    - name: Verify cluster connection
+      run: kubectl cluster-info
+
+    - name: Update deployment image
+      run: |
+        kubectl set image deployment/flask-app \
+          flask-app=${{ needs.build.outputs.image-tag }} \
+          --record
+
+    - name: Wait for rollout
+      run: |
+        kubectl rollout status deployment/flask-app --timeout=5m
+
+    - name: Verify deployment
+      run: |
+        kubectl get deployments
+        kubectl get pods
+        kubectl get services

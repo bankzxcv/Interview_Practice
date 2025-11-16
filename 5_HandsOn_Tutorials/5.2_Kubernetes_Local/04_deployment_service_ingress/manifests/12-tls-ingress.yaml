@@ -1,0 +1,142 @@
+# 12-tls-ingress.yaml
+# Ingress with TLS/SSL termination
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tls-ingress
+  annotations:
+    # Force HTTPS redirect
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+
+    # Force SSL redirect even if backend doesn't use HTTPS
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+
+  # TLS configuration
+  tls:
+  - hosts:
+    - secure.local
+    secretName: tls-secret  # References the TLS secret
+
+  rules:
+  - host: secure.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app1-service
+            port:
+              number: 80
+
+# TLS/SSL Termination:
+# -------------------
+# What is TLS termination?
+#   - Client connects via HTTPS (encrypted)
+#   - Ingress decrypts traffic
+#   - Forwards to backend via HTTP (unencrypted)
+#   - Backend doesn't need TLS support
+#
+# Flow:
+#   Client (HTTPS) → Ingress (decrypt) → Service (HTTP) → Pod
+#
+# Why terminate at Ingress?
+#   - Simplify backend services (no TLS config needed)
+#   - Centralize certificate management
+#   - Reduce backend CPU usage (no decryption)
+#   - Enable HTTP/2 at edge
+#
+# spec.tls[] Configuration:
+# ------------------------
+# hosts: List of hostnames covered by certificate
+#   - Must match certificate CN or SAN
+#   - Can have multiple hosts in one certificate
+#   - Can have multiple TLS configs for different hosts
+#
+# secretName: Name of TLS secret
+#   - Must be in same namespace as Ingress
+#   - Must be type: kubernetes.io/tls
+#   - Must have tls.crt and tls.key
+#
+# Multiple TLS Configurations:
+# ----------------------------
+# tls:
+# - hosts:
+#   - secure.local
+#   - www.secure.local
+#   secretName: tls-secret-1
+# - hosts:
+#   - api.local
+#   secretName: tls-secret-2
+#
+# SNI (Server Name Indication):
+# -----------------------------
+# Ingress uses SNI to select correct certificate
+# Client sends hostname in TLS handshake
+# Server responds with matching certificate
+#
+# Annotations:
+# -----------
+# ssl-redirect: "true"
+#   - Redirects HTTP to HTTPS
+#   - 308 Permanent Redirect
+#   - http://secure.local → https://secure.local
+#
+# force-ssl-redirect: "true"
+#   - Force SSL even if X-Forwarded-Proto is http
+#   - Useful behind load balancers
+#
+# ssl-passthrough: "true"
+#   - Don't terminate TLS at ingress
+#   - Pass encrypted traffic to backend
+#   - Backend must handle TLS
+#   - Can't do path-based routing (encrypted)
+#
+# Testing:
+# -------
+# HTTP (will redirect to HTTPS):
+#   curl -v -H "Host: secure.local" http://localhost
+#   # Look for: HTTP/1.1 308 Permanent Redirect
+#
+# HTTPS:
+#   curl -k -H "Host: secure.local" https://localhost
+#   # -k ignores certificate validation (self-signed)
+#
+# Check certificate:
+#   curl -vk https://localhost -H "Host: secure.local" 2>&1 | grep -A 10 "Server certificate"
+#
+# With proper DNS:
+#   # Add to /etc/hosts: 127.0.0.1 secure.local
+#   curl -k https://secure.local
+#
+# Browser:
+#   # Add to /etc/hosts: 127.0.0.1 secure.local
+#   # Visit: https://secure.local
+#   # Will show security warning (self-signed cert)
+#   # Click "Advanced" → "Proceed" to access
+#
+# Production Considerations:
+# -------------------------
+# 1. Use real certificates from trusted CA
+# 2. Enable HSTS (HTTP Strict Transport Security)
+#    nginx.ingress.kubernetes.io/hsts: "true"
+# 3. Configure cipher suites
+#    nginx.ingress.kubernetes.io/ssl-ciphers: "ECDHE-RSA-AES128-GCM-SHA256:..."
+# 4. Set TLS version
+#    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+# 5. Use cert-manager for automatic certificate renewal
+# 6. Monitor certificate expiration
+#
+# Backend HTTPS (end-to-end encryption):
+# --------------------------------------
+# For sensitive data, encrypt Ingress → Service too:
+# annotations:
+#   nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+#   nginx.ingress.kubernetes.io/ssl-verify: "false"  # If backend uses self-signed cert
+#
+# This requires:
+# - Service listens on HTTPS
+# - Pod has TLS certificate
+# - More complex but more secure

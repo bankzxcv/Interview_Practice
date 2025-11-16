@@ -1,0 +1,30 @@
+# 06-cronjob-history-limits.yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-job
+  labels:
+    app: backup
+spec:
+  schedule: "*/1 * * * *"  # Every minute for testing
+  concurrencyPolicy: Forbid  # Don't run if previous job still running
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      labels:
+        parent-cronjob: backup-job
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Backup started at $(date)"
+              sleep 10
+              echo "Backup completed at $(date)"
+          restartPolicy: OnFailure

@@ -1,0 +1,61 @@
+# 10-immutable-configmap.yaml
+# Immutable ConfigMap (cannot be modified after creation)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: immutable-config
+  labels:
+    environment: production
+immutable: true  # Makes ConfigMap immutable
+data:
+  APP_ENV: "production"
+  FEATURE_FLAG_X: "enabled"
+  API_VERSION: "v2"
+  MAX_RETRIES: "3"
+
+# Benefits of Immutable ConfigMaps:
+# ---------------------------------
+# 1. Protection: Prevents accidental changes to production config
+# 2. Performance: kube-apiserver doesn't need to watch for changes
+# 3. Safety: Applications won't see mid-update inconsistent states
+# 4. Scalability: Better for large clusters with many ConfigMaps
+#
+# When to use:
+# -----------
+# - Production configurations that shouldn't change
+# - Release-specific configurations (tied to app version)
+# - Critical settings that require controlled updates
+#
+# How to update:
+# -------------
+# Must delete and recreate:
+#   kubectl delete configmap immutable-config
+#   kubectl apply -f 10-immutable-configmap.yaml
+#
+# Or use versioned ConfigMaps:
+#   immutable-config-v1, immutable-config-v2, etc.
+#   Update deployment to reference new version
+#
+# Trade-offs:
+# ----------
+# ✅ Better safety and performance
+# ❌ Less flexible (can't hot-update)
+# ❌ Requires pod restart for updates anyway
+#
+# Best Practice Pattern:
+# ---------------------
+# Use immutable ConfigMaps with versioning:
+#
+# ConfigMaps:
+#   app-config-v1 (immutable: true)
+#   app-config-v2 (immutable: true)
+#
+# Deployment:
+#   configMapRef:
+#     name: app-config-v2  # Update this to switch versions
+#
+# Benefits:
+# - Clear version history
+# - Easy rollback (change version reference)
+# - No risk of partial updates
+# - Can run multiple versions simultaneously (blue-green deployment)

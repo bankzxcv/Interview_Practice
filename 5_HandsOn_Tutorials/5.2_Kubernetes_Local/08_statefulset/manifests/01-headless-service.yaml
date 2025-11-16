@@ -1,0 +1,12 @@
+# 01-headless-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-headless
+spec:
+  clusterIP: None  # Headless service
+  selector:
+    app: nginx
+  ports:
+  - port: 80
+    name: web

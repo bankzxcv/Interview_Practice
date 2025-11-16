@@ -1,0 +1,27 @@
+# 01-basic-daemonset.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-agent
+  labels:
+    app: node-agent
+spec:
+  selector:
+    matchLabels:
+      app: node-agent
+  template:
+    metadata:
+      labels:
+        app: node-agent
+    spec:
+      containers:
+      - name: agent
+        image: busybox:1.36
+        command: ["/bin/sh", "-c", "while true; do echo Node agent running on $(hostname); sleep 30; done"]
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"

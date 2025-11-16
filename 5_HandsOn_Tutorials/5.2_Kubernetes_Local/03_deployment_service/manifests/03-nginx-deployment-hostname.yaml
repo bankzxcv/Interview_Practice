@@ -1,0 +1,61 @@
+# 03-nginx-deployment-hostname.yaml
+# Nginx deployment that shows pod hostname (for testing load balancing)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+        tier: frontend
+    spec:
+      containers:
+      - name: nginx
+        image: nginxdemos/hello:latest
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+# What's different:
+# ----------------
+# - Using 'nginxdemos/hello' image instead of 'nginx'
+# - This image displays the pod hostname and IP in the response
+# - Perfect for demonstrating load balancing
+# - When you curl the service multiple times, you'll see different pod names
+#
+# Example response:
+# Server address: 10.244.0.5:80
+# Server name: nginx-deployment-abc123-xyz
+# Date: 16/Nov/2025:10:30:45 +0000
+#
+# Test load balancing:
+# -------------------
+# for i in {1..10}; do curl http://nginx-service | grep "Server name"; done
+# You'll see different server names (pod names) in the output!

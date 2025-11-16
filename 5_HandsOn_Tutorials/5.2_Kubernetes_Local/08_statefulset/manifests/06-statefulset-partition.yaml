@@ -1,0 +1,36 @@
+# 06-statefulset-partition.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+spec:
+  serviceName: nginx-service
+  replicas: 3
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 2  # Only pods >= 2 will be updated
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.26-alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: www
+          mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+  - metadata:
+      name: www
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 100Mi

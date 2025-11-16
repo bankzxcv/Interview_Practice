@@ -1,0 +1,46 @@
+# 01-standalone-pod.yaml
+# A single Pod without any controller
+# NOT recommended for production - used for learning purposes only
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx
+    environment: dev
+    created-by: manual
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.25-alpine
+    ports:
+    - containerPort: 80
+      name: http
+      protocol: TCP
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+
+# Field Explanations:
+# -----------------
+# apiVersion: v1 - Core API group for Pods
+# kind: Pod - Resource type
+# metadata.name - Unique name for the pod
+# metadata.labels - Key-value pairs for organizing and selecting resources
+# spec.containers - List of containers in the pod
+# spec.containers[].name - Name of the container (must be unique in pod)
+# spec.containers[].image - Docker image to use
+# spec.containers[].ports - Ports to expose from the container
+# spec.containers[].ports[].containerPort - Port number to expose
+# spec.containers[].ports[].name - Name for the port (optional but recommended)
+# spec.containers[].ports[].protocol - TCP or UDP (default: TCP)
+# spec.containers[].resources.requests - Minimum resources needed
+# spec.containers[].resources.limits - Maximum resources allowed
+#
+# Resource Units:
+# - CPU: 1 CPU = 1000m (millicores). 250m = 0.25 CPU cores
+# - Memory: Mi = Mebibytes, Gi = Gibibytes

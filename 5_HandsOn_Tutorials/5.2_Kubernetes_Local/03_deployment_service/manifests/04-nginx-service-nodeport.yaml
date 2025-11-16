@@ -1,0 +1,74 @@
+# 04-nginx-service-nodeport.yaml
+# NodePort Service - accessible from outside the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  labels:
+    app: nginx
+spec:
+  type: NodePort   # Exposes service on each node's IP
+  selector:
+    app: nginx
+  ports:
+  - port: 80       # Service port (ClusterIP port)
+    targetPort: 80 # Pod port
+    nodePort: 30080 # External port (30000-32767)
+    protocol: TCP
+    name: http
+
+# Field Explanations:
+# -------------------
+# spec.type: NodePort
+#   - Creates a ClusterIP service (automatic)
+#   - Additionally exposes service on each node's IP at a static port
+#   - Port range: 30000-32767
+#   - If nodePort not specified, Kubernetes assigns one automatically
+#
+# spec.ports[].nodePort - Static port on each node
+#   - Optional: If omitted, Kubernetes auto-assigns
+#   - Must be in range 30000-32767
+#   - Same port used on all nodes
+#
+# How it works:
+# -------------
+# Client → NodeIP:30080 → kube-proxy → ClusterIP:80 → Pod:80
+#
+# 1. Traffic arrives at any node's IP on port 30080
+# 2. kube-proxy routes to ClusterIP service (10.96.x.x:80)
+# 3. ClusterIP service load-balances to pod IPs on port 80
+# 4. Works even if request goes to node without pods!
+#
+# Access methods:
+# --------------
+# From outside cluster:
+#   curl http://<node-ip>:30080
+#
+# With kind (ports mapped to localhost):
+#   curl http://localhost:30080
+#
+# From inside cluster (still works):
+#   curl http://nginx-service
+#   curl http://10.96.x.x:80
+#
+# Three layers of access:
+# ----------------------
+# 1. NodePort: <NodeIP>:30080 (external access)
+# 2. ClusterIP: <ClusterIP>:80 (internal access)
+# 3. Pod IPs: <PodIP>:80 (direct pod access)
+#
+# When to use NodePort:
+# --------------------
+# ✅ Development and testing
+# ✅ On-premise clusters without load balancer
+# ✅ When you need simple external access
+#
+# ❌ Production with multiple services (port management becomes complex)
+# ❌ When you need advanced routing (use Ingress instead)
+# ❌ Cloud environments (use LoadBalancer instead)
+#
+# kind-specific notes:
+# -------------------
+# In kind, NodePort is accessible on localhost
+# This is because kind maps container ports to host ports
+# In a real cluster, you'd access via actual node IPs

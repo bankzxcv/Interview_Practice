@@ -1,0 +1,25 @@
+# 05-deployment-with-dynamic-pvc.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dynamic-storage-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dynamic-storage-app
+  template:
+    metadata:
+      labels:
+        app: dynamic-storage-app
+    spec:
+      containers:
+      - name: app
+        image: nginx:alpine
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: dynamic-pvc

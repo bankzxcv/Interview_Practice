@@ -1,0 +1,61 @@
+# 02-nginx-service-clusterip.yaml
+# ClusterIP Service - accessible only within the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  labels:
+    app: nginx
+spec:
+  type: ClusterIP  # Default type - can be omitted
+  selector:
+    app: nginx     # Selects pods with this label
+  ports:
+  - port: 80       # Service port (how clients connect)
+    targetPort: 80 # Pod port (where traffic goes)
+    protocol: TCP
+    name: http
+
+# Field Explanations:
+# -------------------
+# apiVersion: v1 - Core API for Services
+# kind: Service - Resource type
+#
+# metadata.name - Service name (used for DNS)
+# metadata.labels - Labels for the service itself
+#
+# spec.type - Service type (ClusterIP, NodePort, LoadBalancer, ExternalName)
+#   ClusterIP: Internal cluster IP (default)
+#   - Only accessible from within cluster
+#   - Automatically gets a virtual IP from cluster IP range
+#
+# spec.selector - Selects pods to route traffic to
+#   MUST match pod labels in deployment
+#   All pods with these labels become endpoints
+#
+# spec.ports[] - List of ports to expose
+# spec.ports[].port - Port the service listens on
+# spec.ports[].targetPort - Port on the pod to forward to
+#   Can be port number or port name (from pod spec)
+# spec.ports[].protocol - TCP or UDP
+# spec.ports[].name - Name for the port (required for multi-port services)
+#
+# How it works:
+# -------------
+# 1. Service gets assigned a ClusterIP (e.g., 10.96.123.45)
+# 2. DNS entry created: nginx-service.default.svc.cluster.local
+# 3. kube-proxy configures iptables rules on each node
+# 4. Traffic to ClusterIP:80 is load-balanced to pod IPs:80
+# 5. Endpoints are automatically managed based on selector
+#
+# DNS Resolution:
+# --------------
+# - nginx-service (same namespace)
+# - nginx-service.default (with namespace)
+# - nginx-service.default.svc.cluster.local (fully qualified)
+#
+# Usage from another pod:
+# ----------------------
+# curl http://nginx-service
+# curl http://nginx-service.default.svc.cluster.local
+# curl http://10.96.123.45  (using ClusterIP directly)

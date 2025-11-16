@@ -1,0 +1,47 @@
+name: Multi-Dimensional Matrix
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Python ${{ matrix.python }} / Node ${{ matrix.node }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ['3.10', '3.11']
+        node: [18, 20]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python }}
+
+    - name: Set up Node.js ${{ matrix.node }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node }}
+
+    - name: Display versions
+      run: |
+        echo "Python version: $(python --version)"
+        echo "Node version: $(node --version)"
+        echo "OS: ${{ matrix.os }}"
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest
+
+    - name: Run Python tests
+      working-directory: app
+      run: pytest -v test_platform.py

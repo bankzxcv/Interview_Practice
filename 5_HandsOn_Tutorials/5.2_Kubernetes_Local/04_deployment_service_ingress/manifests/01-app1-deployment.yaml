@@ -1,0 +1,81 @@
+# 01-app1-deployment.yaml
+# First application for ingress demo
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1
+  labels:
+    app: app1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app1
+  template:
+    metadata:
+      labels:
+        app: app1
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25-alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
+      volumes:
+      - name: html
+        configMap:
+          name: app1-html
+
+---
+# ConfigMap with custom HTML for App 1
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app1-html
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>App 1</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+            .container {
+                text-align: center;
+                padding: 50px;
+                background: rgba(255,255,255,0.1);
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
+            }
+            h1 { font-size: 3em; margin: 0; }
+            p { font-size: 1.2em; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🚀 Application 1</h1>
+            <p>This is App 1 served via Ingress</p>
+            <p>Host: app1.local</p>
+            <p>Path: /app1</p>
+        </div>
+    </body>
+    </html>

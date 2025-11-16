@@ -1,0 +1,78 @@
+# 10-database-backup-cronjob.yaml
+# Practical example: Database backup CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+spec:
+  # Run every day at 2 AM
+  schedule: "0 2 * * *"
+
+  # Don't run concurrent backups
+  concurrencyPolicy: Forbid
+
+  # If missed (node down), don't run old backup
+  startingDeadlineSeconds: 3600
+
+  # Keep history
+  successfulJobsHistoryLimit: 7   # Last 7 days
+  failedJobsHistoryLimit: 3
+
+  jobTemplate:
+    spec:
+      # Delete job after 24 hours
+      ttlSecondsAfterFinished: 86400
+
+      template:
+        metadata:
+          labels:
+            app: postgres-backup
+        spec:
+          containers:
+          - name: backup
+            image: postgres:15-alpine
+            env:
+            - name: PGHOST
+              value: postgres.default.svc.cluster.local
+            - name: PGUSER
+              value: postgres
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
+            command:
+            - /bin/sh
+            - -c
+            - |
+              BACKUP_FILE="/backup/backup-$(date +%Y%m%d-%H%M%S).sql"
+              echo "Starting backup to $BACKUP_FILE"
+              pg_dump -h $PGHOST -U $PGUSER postgres > $BACKUP_FILE
+              echo "Backup completed: $(ls -lh $BACKUP_FILE)"
+              # Cleanup old backups (keep last 30 days)
+              find /backup -name "backup-*.sql" -mtime +30 -delete
+
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+
+          restartPolicy: OnFailure
+
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: backup-pvc
+
+# Note: This assumes postgres-secret and backup-pvc exist
+# Create them separately:
+#
+# kubectl create secret generic postgres-secret --from-literal=password=postgres123
+# kubectl create pvc backup-pvc --storage=10Gi --access-modes=ReadWriteOnce

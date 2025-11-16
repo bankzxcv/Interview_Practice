@@ -1,0 +1,14 @@
+# 07-job-with-ttl.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ttl-job
+spec:
+  ttlSecondsAfterFinished: 100  # Delete job 100s after completion
+  template:
+    spec:
+      containers:
+      - name: job
+        image: busybox:1.36
+        command: ["/bin/sh", "-c", "echo Job with TTL; sleep 5; echo Done"]
+      restartPolicy: Never

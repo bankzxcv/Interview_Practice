@@ -1,0 +1,12 @@
+# 08-pvc-custom-storageclass.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: custom-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: fast-storage

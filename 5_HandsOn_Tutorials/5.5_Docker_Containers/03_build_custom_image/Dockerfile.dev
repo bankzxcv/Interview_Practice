@@ -1,0 +1,40 @@
+# Development version with debugging tools
+
+FROM python:3.9
+
+ARG APP_VERSION=1.0.0-dev
+
+LABEL version="${APP_VERSION}" \
+      environment="development"
+
+ENV APP_VERSION=${APP_VERSION} \
+    PYTHONUNBUFFERED=1 \
+    DEBUG=true \
+    ENVIRONMENT=development \
+    PORT=5000
+
+WORKDIR /app
+
+# Install development dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        curl \
+        vim \
+        git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements (includes dev dependencies)
+COPY requirements.txt requirements-dev.txt* ./
+
+# Install all dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    if [ -f requirements-dev.txt ]; then pip install --no-cache-dir -r requirements-dev.txt; fi
+
+# Copy application code
+COPY . .
+
+EXPOSE 5000
+
+# Run with Flask development server (auto-reload enabled)
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000", "--debug"]

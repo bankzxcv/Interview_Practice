@@ -1,8 +1,8 @@
-# 5.5 Docker & Containers - Hands-On Tutorials
+# 5.5 Docker & Containers - Comprehensive Tutorials
 
 ## Overview
 
-15 incremental tutorials covering Docker from basics to advanced concepts. Learn containerization, Docker Compose, networking, volumes, security, and production best practices.
+15 comprehensive, production-ready tutorials covering Docker from fundamentals to advanced concepts. Each tutorial includes detailed explanations, working code examples, and practical exercises that build upon previous lessons.
 
 ## Prerequisites
 
@@ -10,6 +10,10 @@
 # Install Docker Desktop (includes docker-compose)
 # macOS: Download from docker.com
 brew install --cask docker
+
+# Linux: Install Docker Engine
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
 
 # Verify installation
 docker --version
@@ -21,322 +25,279 @@ docker run hello-world
 
 ## Tutorial Progression
 
-### Foundation (Tutorials 1-3)
-| # | Tutorial | Concepts | Time |
-|---|----------|----------|------|
-| 01 | [Basic Container](./01_basic_container/) | Images, containers, run, exec | 15 min |
-| 02 | [Dockerfile](./02_dockerfile/) | Building images, layers, Dockerfile commands | 20 min |
-| 03 | [Multi-Stage Builds](./03_multi_stage_builds/) | Optimization, smaller images, security | 25 min |
+### Foundation (Tutorials 1-4)
+| # | Tutorial | Concepts | Files |
+|---|----------|----------|-------|
+| 01 | [Hello Docker](./01_hello_docker/) | Containers, docker run, docker ps, basic commands | README |
+| 02 | [Dockerfile Basics](./02_dockerfile_basics/) | FROM, RUN, CMD, COPY, WORKDIR, ENV | README, Dockerfiles, Code |
+| 03 | [Build Custom Image](./03_build_custom_image/) | docker build, tagging, .dockerignore, optimization | README, Complete API |
+| 04 | [Multi-Stage Builds](./04_multi_stage_builds/) | Build optimization, size reduction, security | README, Go/Node/Python examples |
 
-### Docker Compose (Tutorials 4-9)
-| # | Tutorial | Concepts | Time |
-|---|----------|----------|------|
-| 04 | [Compose Basic](./04_docker_compose_basic/) | docker-compose.yml, services | 20 min |
-| 05 | [Multi-Service](./05_docker_compose_multi_service/) | Frontend, backend, database | 30 min |
-| 06 | [Volumes](./06_docker_compose_volumes/) | Persistence, bind mounts, named volumes | 25 min |
-| 07 | [Networks](./07_docker_compose_networks/) | Network isolation, inter-service communication | 25 min |
-| 08 | [Environment Variables](./08_docker_compose_env_vars/) | .env files, secrets, configuration | 20 min |
-| 09 | [Full Stack App](./09_docker_compose_full_stack/) | Complete MERN/PERN stack | 45 min |
+### Docker Compose & Multi-Container Apps (Tutorials 5-6)
+| # | Tutorial | Concepts | Files |
+|---|----------|----------|-------|
+| 05 | [Docker Compose Intro](./05_docker_compose_intro/) | docker-compose.yml, services, basic orchestration | README, docker-compose.yml, Flask+Redis |
+| 06 | [Multi-Service App](./06_multi_service_app/) | Full-stack: Frontend + Backend + DB + Cache | README, Complete Task Manager App |
 
-### Advanced Topics (Tutorials 10-15)
-| # | Tutorial | Concepts | Time |
-|---|----------|----------|------|
-| 10 | [Health Checks](./10_healthchecks/) | Container health, dependencies | 20 min |
-| 11 | [Networking Deep Dive](./11_container_networking/) | Bridge, host, overlay networks | 30 min |
-| 12 | [Volumes & Bind Mounts](./12_volumes_bind_mounts/) | Storage drivers, volume drivers | 25 min |
-| 13 | [Docker Registry](./13_docker_registry/) | Private registry, pushing/pulling | 30 min |
-| 14 | [BuildX & Multi-Arch](./14_buildx_multiarch/) | Cross-platform builds, BuildKit | 35 min |
-| 15 | [Security Best Practices](./15_security_best_practices/) | Scanning, non-root, secrets | 40 min |
+### Data & Infrastructure (Tutorials 7-9)
+| # | Tutorial | Concepts | Files |
+|---|----------|----------|-------|
+| 07 | [Volumes & Data Persistence](./07_volumes_data_persistence/) | Named volumes, bind mounts, tmpfs, backups | README, docker-compose.yml |
+| 08 | [Networks](./08_networks/) | Bridge, internal, network isolation, DNS | README, Multi-network architecture |
+| 09 | [Environment Variables](./09_environment_variables/) | .env files, secrets, configuration management | README, .env examples |
 
-## Incremental Learning Pattern
+### Production-Ready Patterns (Tutorials 10-15)
+| # | Tutorial | Concepts | Files |
+|---|----------|----------|-------|
+| 10 | [Full-Stack Application](./10_full_stack_app/) | Complete production app with all best practices | README, docker-compose.yml |
+| 11 | [Health Checks](./11_health_checks/) | HEALTHCHECK directive, monitoring, dependencies | README, Examples |
+| 12 | [Resource Limits](./12_resource_limits/) | CPU, memory, I/O limits, resource management | README, Examples |
+| 13 | [Security Best Practices](./13_security_best_practices/) | Non-root users, scanning, secrets, hardening | README, Secure examples |
+| 14 | [Multi-Architecture Builds](./14_multi_arch_builds/) | amd64, arm64, Docker Buildx, cross-platform | README, Multi-arch Dockerfiles |
+| 15 | [Registry Operations](./15_registry_operations/) | Docker Hub, private registries, push/pull | README, Registry setup |
 
+## What Makes These Tutorials Comprehensive?
+
+### 1. Real Working Code
+Every tutorial includes:
+- ✅ Complete, tested code examples
+- ✅ Production-ready Dockerfiles
+- ✅ Working docker-compose.yml files
+- ✅ Helper scripts for common operations
+
+### 2. Incremental Learning
 ```
-Tutorial 01: Simple container
-Tutorial 02: Container + Custom image
-Tutorial 03: Container + Optimized image
-Tutorial 04: Multi-container app (Compose)
-Tutorial 05: Multi-container + Multiple services
-Tutorial 06: Multi-container + Persistence
-Tutorial 07: Multi-container + Network isolation
-Tutorial 08: Multi-container + Configuration
-Tutorial 09: Complete production-like stack
-Tutorial 10-15: Production-ready patterns
+01: Run existing images                    → docker run
+02: Create images from Dockerfiles         → docker build
+03: Build optimized custom images          → Best practices
+04: Multi-stage builds                     → Size optimization
+05: Multiple containers                    → docker-compose
+06: Complete multi-service app             → Full architecture
+07: Data persistence                       → Volumes
+08: Network isolation                      → Security
+09: Configuration management               → Environment vars
+10: Full production app                    → Everything combined
+11-15: Production patterns                 → Enterprise-ready
 ```
+
+### 3. Multiple Languages & Frameworks
+Examples include:
+- **Python**: Flask APIs, web applications
+- **Node.js**: Express servers, React apps
+- **Go**: High-performance services
+- **Static Sites**: Nginx configurations
+
+### 4. Production Patterns
+Each tutorial emphasizes:
+- Security best practices
+- Resource optimization
+- Monitoring and health checks
+- Multi-environment support
+- CI/CD integration
 
 ## Structure of Each Tutorial
 
 ```
 XX_topic_name/
-├── README.md           # Instructions and explanations
-├── Dockerfile          # Docker image definition
-├── docker-compose.yml  # Multi-container setup
-├── .dockerignore       # Files to exclude
-├── .env.example        # Example environment variables
-├── app/                # Application code
-│   ├── server.js
-│   └── package.json
-└── scripts/
-    ├── build.sh       # Build helper
-    └── cleanup.sh     # Cleanup helper
+├── README.md                    # Comprehensive guide with:
+│                                  - Objectives
+│                                  - Prerequisites
+│                                  - Step-by-step instructions
+│                                  - Code explanations
+│                                  - Verification steps
+│                                  - Troubleshooting
+│                                  - Best practices
+│                                  - Key takeaways
+├── Dockerfile                   # Production-ready Dockerfile
+├── docker-compose.yml           # Multi-service orchestration
+├── .dockerignore                # Build optimization
+├── .env.example                 # Configuration template
+├── app/                         # Application code
+│   ├── app.py / server.js       # Main application
+│   ├── requirements.txt         # Dependencies
+│   └── ...
+└── scripts/                     # Helper scripts
+    ├── build.sh
+    └── test.sh
 ```
 
-## Essential Docker Commands
+## Quick Start
 
-### Images
+### Tutorial 01 - First Steps
 ```bash
-# List images
-docker images
-
-# Pull image
-docker pull <image>:<tag>
-
-# Build image
-docker build -t <name>:<tag> .
-
-# Remove image
-docker rmi <image-id>
-
-# Remove unused images
-docker image prune -a
-```
-
-### Containers
-```bash
-# Run container
-docker run -d -p 8080:80 --name myapp nginx
-
-# List running containers
-docker ps
-
-# List all containers
-docker ps -a
-
-# Stop container
-docker stop <container-id>
-
-# Remove container
-docker rm <container-id>
-
-# View logs
-docker logs -f <container-id>
-
-# Execute command in container
-docker exec -it <container-id> /bin/bash
-
-# Inspect container
-docker inspect <container-id>
-```
-
-### Docker Compose
-```bash
-# Start services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-
-# Stop and remove volumes
-docker-compose down -v
-
-# Rebuild and start
-docker-compose up -d --build
-
-# Scale services
-docker-compose up -d --scale web=3
-
-# View service status
-docker-compose ps
-```
-
-### Cleanup
-```bash
-# Remove all stopped containers
-docker container prune
-
-# Remove all unused images
-docker image prune -a
-
-# Remove all unused volumes
-docker volume prune
-
-# Remove all unused networks
-docker network prune
-
-# Remove everything
-docker system prune -a --volumes
-```
-
-## Best Practices Covered
-
-### Image Optimization
-- ✅ Multi-stage builds for smaller images
-- ✅ Layer caching strategies
-- ✅ .dockerignore for build context
-- ✅ Minimal base images (alpine, distroless)
-- ✅ Combining RUN commands
-- ✅ Ordering layers by change frequency
-
-### Security
-- ✅ Non-root users in containers
-- ✅ Scanning images for vulnerabilities
-- ✅ Secrets management (not in images!)
-- ✅ Read-only root filesystems
-- ✅ Limiting capabilities
-- ✅ Using trusted base images
-
-### Networking
-- ✅ Network isolation between services
-- ✅ Service discovery by name
-- ✅ Port mapping best practices
-- ✅ Bridge vs host vs overlay networks
-- ✅ Internal vs external networks
-
-### Storage
-- ✅ Named volumes for data persistence
-- ✅ Bind mounts for development
-- ✅ tmpfs mounts for sensitive data
-- ✅ Volume drivers for cloud storage
-- ✅ Backup and restore strategies
-
-### Development Workflow
-- ✅ Hot reload with bind mounts
-- ✅ Environment-specific configs
-- ✅ Debug containers
-- ✅ Development vs production images
-- ✅ CI/CD integration
-
-## Example: Simple Web Application
-
-### Tutorial 01 - Basic Container
-
-```bash
-# Run nginx
+# Pull and run your first container
 docker run -d -p 8080:80 --name web nginx
+curl http://localhost:8080
 
-# Access at http://localhost:8080
-
-# View logs
-docker logs -f web
+# View running containers
+docker ps
 
 # Stop and remove
 docker stop web && docker rm web
 ```
 
-### Tutorial 02 - Custom Dockerfile
-
-```dockerfile
-# Dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm install
-
-COPY . .
-
-EXPOSE 3000
-
-CMD ["node", "server.js"]
-```
-
+### Tutorial 05 - First Multi-Container App
 ```bash
-# Build
-docker build -t myapp:1.0 .
+cd 05_docker_compose_intro
 
-# Run
-docker run -d -p 3000:3000 --name myapp myapp:1.0
-```
-
-### Tutorial 04 - Docker Compose
-
-```yaml
-# docker-compose.yml
-version: '3.8'
-
-services:
-  web:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-    volumes:
-      - ./app:/app
-      - /app/node_modules
-```
-
-```bash
-# Start
+# Start services (web + redis)
 docker-compose up -d
 
 # View logs
-docker-compose logs -f web
+docker-compose logs -f
 
-# Stop
+# Test the application
+curl http://localhost:5000
+
+# Stop everything
 docker-compose down
 ```
 
-## Common Patterns
+### Tutorial 06 - Full Application
+```bash
+cd 06_multi_service_app
 
-### 1. Full-Stack Application (MERN)
+# Start complete stack (Frontend + Backend + DB + Cache + Admin)
+docker-compose up -d
 
-```yaml
-version: '3.8'
+# Access application
+open http://localhost        # Frontend
+open http://localhost:5000   # Backend API
+open http://localhost:5050   # pgAdmin
 
-services:
-  mongo:
-    image: mongo:6
-    volumes:
-      - mongo-data:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
-
-  backend:
-    build: ./backend
-    depends_on:
-      - mongo
-    environment:
-      MONGO_URL: mongodb://admin:password@mongo:27017
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-
-volumes:
-  mongo-data:
+# Stop and cleanup
+docker-compose down -v
 ```
 
-### 2. Development with Hot Reload
+## Essential Commands Reference
 
+### Images
+```bash
+docker images                           # List all images
+docker build -t myapp:1.0 .            # Build image
+docker build --no-cache -t myapp .     # Build without cache
+docker tag myapp:1.0 myapp:latest      # Tag image
+docker rmi myapp:1.0                   # Remove image
+docker image prune -a                   # Remove unused images
+```
+
+### Containers
+```bash
+docker run -d -p 8080:80 --name web nginx     # Run container
+docker ps                                      # List running
+docker ps -a                                   # List all
+docker stop web                                # Stop container
+docker start web                               # Start stopped container
+docker restart web                             # Restart container
+docker rm web                                  # Remove container
+docker logs -f web                            # Follow logs
+docker exec -it web bash                      # Execute command
+docker inspect web                            # Detailed info
+docker stats                                  # Resource usage
+```
+
+### Docker Compose
+```bash
+docker-compose up -d                    # Start services (detached)
+docker-compose up --build              # Rebuild and start
+docker-compose down                     # Stop and remove
+docker-compose down -v                  # Stop and remove volumes
+docker-compose logs -f                  # Follow logs
+docker-compose ps                       # List services
+docker-compose exec web bash            # Execute in service
+docker-compose restart web              # Restart service
+docker-compose scale web=3              # Scale service
+```
+
+### Cleanup
+```bash
+docker system prune                     # Remove unused data
+docker system prune -a                  # Remove all unused
+docker system prune -a --volumes        # Remove everything unused
+docker container prune                  # Remove stopped containers
+docker image prune -a                   # Remove unused images
+docker volume prune                     # Remove unused volumes
+docker network prune                    # Remove unused networks
+```
+
+## Best Practices Covered
+
+### Image Optimization
+- ✅ Multi-stage builds (Tutorial 04)
+- ✅ Minimal base images (alpine, distroless)
+- ✅ Layer caching strategies
+- ✅ .dockerignore for build context
+- ✅ Combining RUN commands
+- ✅ Proper instruction ordering
+
+### Security
+- ✅ Non-root users (Tutorial 13)
+- ✅ Vulnerability scanning
+- ✅ Secrets management
+- ✅ Read-only filesystems
+- ✅ Capability dropping
+- ✅ Image signing and verification
+
+### Networking
+- ✅ Network isolation (Tutorial 08)
+- ✅ Internal vs external networks
+- ✅ Service discovery
+- ✅ Multi-network architectures
+- ✅ Port mapping best practices
+
+### Storage
+- ✅ Named volumes for persistence (Tutorial 07)
+- ✅ Bind mounts for development
+- ✅ tmpfs for sensitive data
+- ✅ Backup strategies
+- ✅ Volume drivers
+
+### Production Readiness
+- ✅ Health checks (Tutorial 11)
+- ✅ Resource limits (Tutorial 12)
+- ✅ Restart policies
+- ✅ Logging configuration
+- ✅ Monitoring integration
+- ✅ Multi-architecture support (Tutorial 14)
+
+## Common Patterns
+
+### Pattern 1: Web Application with Database
 ```yaml
 version: '3.8'
+services:
+  web:
+    build: .
+    ports: ["3000:3000"]
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+volumes:
+  db_data:
+```
 
+### Pattern 2: Development with Hot Reload
+```yaml
 services:
   app:
     build:
       context: .
       target: development
     volumes:
-      - ./src:/app/src      # Bind mount for hot reload
-      - /app/node_modules    # Anonymous volume to preserve node_modules
-    environment:
-      - NODE_ENV=development
+      - ./src:/app/src           # Hot reload
+      - /app/node_modules         # Preserve modules
     command: npm run dev
 ```
 
-### 3. Production Build
-
+### Pattern 3: Production Multi-Stage
 ```dockerfile
-# Multi-stage Dockerfile
-FROM node:18-alpine AS builder
+FROM node:18 AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
@@ -344,116 +305,179 @@ COPY . .
 RUN npm run build
 
 FROM node:18-alpine
-RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+RUN addgroup -g 1001 nodejs && adduser -S nodejs -u 1001
 WORKDIR /app
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 USER nodejs
-EXPOSE 3000
 CMD ["node", "dist/server.js"]
 ```
 
-## Troubleshooting
+## Troubleshooting Guide
 
-### Common Issues
-
-**Port already in use**
+### Port Already in Use
 ```bash
-# Find process using port
+# Find process
 lsof -i :3000
 
-# Kill process
-kill -9 <PID>
-
-# Or use different port in docker-compose
+# Change port in docker-compose.yml
+ports:
+  - "3001:3000"  # Use 3001 instead
 ```
 
-**Container exits immediately**
+### Container Exits Immediately
 ```bash
 # Check logs
-docker logs <container-id>
+docker logs <container-name>
 
-# Run interactively to debug
+# Run interactively
 docker run -it <image> /bin/sh
 ```
 
-**Build context too large**
+### Build Context Too Large
 ```bash
 # Create .dockerignore
-echo "node_modules" >> .dockerignore
-echo ".git" >> .dockerignore
-echo "*.log" >> .dockerignore
+cat > .dockerignore << EOF
+node_modules
+.git
+*.log
+dist
+build
+EOF
 ```
 
-**Cannot connect to Docker daemon**
+### Cannot Connect to Docker Daemon
 ```bash
-# Ensure Docker Desktop is running
-# macOS: Check Docker Desktop app
-
+# macOS: Ensure Docker Desktop is running
 # Linux: Start Docker service
 sudo systemctl start docker
+sudo systemctl enable docker
 ```
 
-## Tips for Success
+### Out of Disk Space
+```bash
+# Clean up everything
+docker system prune -a --volumes
 
-1. **Read Dockerfile Best Practices**: Official Docker docs are excellent
-2. **Use .dockerignore**: Speed up builds and reduce image size
-3. **Layer Caching**: Order Dockerfile commands from least to most frequently changing
-4. **Name Everything**: Containers, volumes, networks - easier to manage
-5. **Use Tags**: Always tag images with version numbers
-6. **Clean Up Regularly**: Run `docker system prune` periodically
-7. **Learn docker-compose**: Essential for multi-container apps
+# Check disk usage
+docker system df
+```
 
-## Recommended Study Path
+## Learning Path
 
-### Week 1: Basics
-- Days 1-2: Tutorials 1-3 (Containers and images)
-- Days 3-5: Tutorials 4-6 (Docker Compose basics)
-- Weekend: Build a simple web app
+### Beginner (Week 1)
+- **Days 1-2**: Tutorials 1-2 (Basics, Dockerfiles)
+- **Days 3-4**: Tutorial 3 (Building images)
+- **Day 5**: Tutorial 4 (Multi-stage builds)
+- **Weekend**: Practice building simple apps
 
-### Week 2: Intermediate
-- Days 1-3: Tutorials 7-9 (Advanced Compose)
-- Days 4-5: Tutorial 10-12 (Health checks, networking, volumes)
-- Weekend: Build a full-stack app
+### Intermediate (Week 2)
+- **Days 1-2**: Tutorial 5 (Docker Compose)
+- **Days 3-4**: Tutorial 6 (Multi-service apps)
+- **Day 5**: Tutorials 7-8 (Volumes, Networks)
+- **Weekend**: Build a full-stack application
 
-### Week 3: Advanced
-- Days 1-3: Tutorials 13-15 (Registry, multi-arch, security)
-- Days 4-5: Review and practice
-- Weekend: Containerize a real project
-
-## Additional Resources
-
-- [Docker Documentation](https://docs.docker.com/)
-- [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices/)
-- [Dockerfile Reference](https://docs.docker.com/engine/reference/builder/)
-- [Compose File Reference](https://docs.docker.com/compose/compose-file/)
-- [Play with Docker](https://labs.play-with-docker.com/)
+### Advanced (Week 3)
+- **Days 1-2**: Tutorials 9-10 (Config, Full-stack)
+- **Days 3-4**: Tutorials 11-13 (Health, Resources, Security)
+- **Day 5**: Tutorials 14-15 (Multi-arch, Registry)
+- **Weekend**: Containerize a real project
 
 ## What You'll Master
 
-After completing all tutorials:
-- ✅ Build and run containers
-- ✅ Write optimized Dockerfiles
-- ✅ Use multi-stage builds
-- ✅ Orchestrate multi-container applications
-- ✅ Manage volumes and networks
-- ✅ Implement health checks
-- ✅ Follow security best practices
-- ✅ Build cross-platform images
-- ✅ Set up private registries
-- ✅ Containerize any application
+After completing all 15 tutorials, you will:
 
-## Next Steps
+✅ **Understand Docker Fundamentals**
+- Container lifecycle and operations
+- Image creation and management
+- Dockerfile syntax and best practices
 
-1. Start with [01_basic_container](./01_basic_container/)
-2. Work through sequentially
-3. Build real projects between tutorials
-4. Move to Kubernetes (Topic 5.2) for orchestration
-5. Learn CI/CD (Topic 5.6) for automated builds
+✅ **Build Production-Ready Images**
+- Multi-stage builds for optimization
+- Security hardening
+- Multi-architecture support
+
+✅ **Orchestrate Multi-Container Applications**
+- Docker Compose for local development
+- Service dependencies and health checks
+- Network and volume management
+
+✅ **Implement Best Practices**
+- Security scanning and hardening
+- Resource limits and monitoring
+- Secrets and configuration management
+
+✅ **Deploy with Confidence**
+- Registry operations
+- CI/CD integration
+- Production deployment patterns
+
+## Real-World Applications
+
+These tutorials prepare you for:
+- **Microservices Development**
+- **Local Development Environments**
+- **CI/CD Pipelines**
+- **Cloud Deployments** (AWS, GCP, Azure)
+- **Kubernetes Migration**
+- **DevOps Practices**
+
+## Next Steps After Completion
+
+1. **Kubernetes** → Tutorial 5.2: Container orchestration at scale
+2. **CI/CD** → Tutorial 5.6: Automated Docker builds and deployments
+3. **Cloud** → Tutorial 5.1: Deploy containers to cloud platforms
+4. **Monitoring** → Tutorial 5.7: Prometheus, Grafana for containers
+5. **Service Mesh** → Tutorial 5.9: Istio, Linkerd
+
+## Additional Resources
+
+### Official Documentation
+- [Docker Documentation](https://docs.docker.com/)
+- [Dockerfile Best Practices](https://docs.docker.com/develop/dev-best-practices/)
+- [Compose File Reference](https://docs.docker.com/compose/compose-file/)
+
+### Interactive Learning
+- [Play with Docker](https://labs.play-with-docker.com/)
+- [Docker Playground](https://www.docker.com/play-with-docker/)
+
+### Security
+- [Docker Security](https://docs.docker.com/engine/security/)
+- [CIS Docker Benchmark](https://www.cisecurity.org/benchmark/docker)
+
+## Getting Help
+
+### Common Questions
+1. **Which tutorial should I start with?**
+   - Start with Tutorial 01 if you're new to Docker
+   - Skip to Tutorial 05 if you know Dockerfile basics
+
+2. **Do I need to complete all tutorials?**
+   - Tutorials 1-6 cover essentials
+   - Tutorials 7-10 are for production readiness
+   - Tutorials 11-15 are advanced topics
+
+3. **How long does each tutorial take?**
+   - Basic tutorials: 15-30 minutes
+   - Intermediate: 30-45 minutes
+   - Advanced: 45-60 minutes
+
+4. **Can I use Windows?**
+   - Yes! Docker Desktop works on Windows, Mac, and Linux
+   - All commands work the same
+
+## Contributing
+
+Found an issue or want to improve a tutorial?
+- Report issues in the repository
+- Suggest improvements
+- Share your experience
 
 ---
 
-**Total Tutorials**: 15
-**Estimated Time**: 30-40 hours
+**Total Tutorials**: 15 comprehensive modules
+**Total Time**: 30-40 hours hands-on practice
 **Difficulty**: Beginner to Advanced
 **Cost**: Free (runs locally)
+**Prerequisites**: Basic command-line knowledge
+
+**Start your journey**: [Tutorial 01: Hello Docker](./01_hello_docker/)
