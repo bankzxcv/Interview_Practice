@@ -54,6 +54,42 @@ Master asynchronous messaging with 4 popular message broker systems. Learn from 
 - **Tutorial 07**: Sentinel and cluster
 - **Tutorial 08**: Kubernetes deployment
 
+### [5.8.5 AWS Queue Services](./5.8.5_AWS_Queues/)
+**Pattern**: Managed cloud messaging services
+**Best For**: Cloud-native applications, serverless architectures, AWS ecosystem
+- **Tutorial 01**: Amazon SQS - Standard and FIFO queues
+- **Tutorial 02**: Amazon SNS - Topics and subscriptions
+- **Tutorial 03**: SQS + SNS integration (fanout pattern)
+- **Tutorial 04**: Dead letter queues and message visibility
+- **Tutorial 05**: Amazon MQ (managed RabbitMQ/ActiveMQ)
+- **Tutorial 06**: Lambda integration with SQS/SNS
+- **Tutorial 07**: EventBridge for event routing
+- **Tutorial 08**: Production patterns and cost optimization
+
+### [5.8.6 Azure Queue Services](./5.8.6_Azure_Queues/)
+**Pattern**: Microsoft Azure managed messaging
+**Best For**: Azure cloud applications, enterprise integration, .NET applications
+- **Tutorial 01**: Azure Queue Storage basics
+- **Tutorial 02**: Azure Service Bus queues
+- **Tutorial 03**: Service Bus topics and subscriptions
+- **Tutorial 04**: Message sessions and ordering
+- **Tutorial 05**: Dead lettering and auto-forwarding
+- **Tutorial 06**: Azure Functions integration
+- **Tutorial 07**: Service Bus with Event Grid
+- **Tutorial 08**: Production deployment and monitoring
+
+### [5.8.7 Google Cloud Pub/Sub](./5.8.7_GCP_PubSub/)
+**Pattern**: Google Cloud managed pub/sub
+**Best For**: GCP applications, real-time analytics, global distribution
+- **Tutorial 01**: Basic Pub/Sub setup and publishing
+- **Tutorial 02**: Pull and push subscriptions
+- **Tutorial 03**: Message ordering and exactly-once delivery
+- **Tutorial 04**: Dead letter topics and retry policies
+- **Tutorial 05**: Schema validation
+- **Tutorial 06**: Cloud Functions and Dataflow integration
+- **Tutorial 07**: BigQuery and data pipeline integration
+- **Tutorial 08**: Global deployment and monitoring
+
 ## Quick Start: RabbitMQ
 
 ### Docker Compose Setup
@@ -196,17 +232,19 @@ Producer → [Topic/Partition 0] → Consumer Group A
 
 ## Broker Comparison
 
-| Feature | RabbitMQ | Kafka | NATS | Redis Pub/Sub |
-|---------|----------|-------|------|---------------|
-| **Pattern** | Message Queue | Event Stream | Pub/Sub | Pub/Sub |
-| **Persistence** | ✅ Optional | ✅ Always | ✅ JetStream | ⚠️ Optional |
-| **Ordering** | ✅ Per queue | ✅ Per partition | ❌ | ❌ |
-| **Replay** | ❌ | ✅ | ✅ JetStream | ✅ Streams |
-| **Throughput** | Medium | Very High | High | Very High |
-| **Latency** | Low | Medium | Very Low | Very Low |
-| **Complexity** | Medium | High | Low | Low |
-| **Best For** | Task queues | Event streaming | Microservices | Real-time |
-| **Protocol** | AMQP | Custom | Custom | Redis |
+| Feature | RabbitMQ | Kafka | NATS | Redis | AWS SQS/SNS | Azure Service Bus | GCP Pub/Sub |
+|---------|----------|-------|------|-------|-------------|-------------------|-------------|
+| **Pattern** | Message Queue | Event Stream | Pub/Sub | Pub/Sub | Queue/Pub-Sub | Queue/Topic | Pub/Sub |
+| **Persistence** | ✅ Optional | ✅ Always | ✅ JetStream | ⚠️ Optional | ✅ Always | ✅ Always | ✅ Always |
+| **Ordering** | ✅ Per queue | ✅ Per partition | ❌ | ❌ | ⚠️ FIFO only | ✅ Sessions | ✅ Per key |
+| **Replay** | ❌ | ✅ | ✅ JetStream | ✅ Streams | ❌ | ❌ | ✅ Snapshots |
+| **Throughput** | Medium | Very High | High | Very High | High | High | Very High |
+| **Latency** | Low | Medium | Very Low | Very Low | Medium | Medium | Low |
+| **Complexity** | Medium | High | Low | Low | Very Low | Low | Low |
+| **Hosting** | Self-hosted | Self-hosted | Self-hosted | Self-hosted | Managed | Managed | Managed |
+| **Cost** | Free | Free | Free | Free | Pay-per-use | Pay-per-use | Pay-per-use |
+| **Best For** | Task queues | Event streaming | Microservices | Real-time | Serverless | Enterprise | Analytics |
+| **Protocol** | AMQP | Custom | Custom | Redis | HTTPS/SDK | AMQP/SDK | gRPC/SDK |
 
 ## Best Practices Covered
 
@@ -353,23 +391,41 @@ brew install rabbitmq
 
 ## Recommended Study Path
 
-### Week 1: Traditional Queues
+### Week 1-2: Open Source Brokers (Self-Hosted)
+**Week 1: Traditional Queues**
 - Days 1-4: RabbitMQ (all 8 tutorials)
 - Day 5: Build a task queue application
 - Weekend: Review and experiment
 
-### Week 2: Event Streaming
+**Week 2: Event Streaming**
 - Days 1-5: Kafka (all 8 tutorials)
 - Weekend: Build a streaming application
 
-### Week 3: Lightweight Messaging
+### Week 3-4: Lightweight Messaging
+**Week 3: Cloud-Native & In-Memory**
 - Days 1-3: NATS (all 8 tutorials)
 - Days 4-5: Redis Pub/Sub (tutorials 1-5)
 - Weekend: Compare patterns
 
-### Week 4: Integration
-- Days 1-2: Complete Redis Pub/Sub
+**Week 4: Complete Open Source**
+- Days 1-2: Complete Redis Pub/Sub (tutorials 6-8)
 - Days 3-5: Build multi-broker application
+- Weekend: Architecture comparison
+
+### Week 5-6: Cloud Provider Queues (Managed Services)
+**Week 5: AWS Ecosystem**
+- Days 1-3: AWS SQS/SNS (tutorials 1-4)
+- Days 4-5: Amazon MQ & Lambda integration (tutorials 5-6)
+- Weekend: EventBridge & cost optimization (tutorials 7-8)
+
+**Week 6: Azure & GCP**
+- Days 1-2: Azure Queue Storage & Service Bus (tutorials 1-4)
+- Days 3-5: Azure Functions & Event Grid (tutorials 5-8)
+- Weekend: GCP Pub/Sub quickstart
+
+### Week 7: Google Cloud & Integration
+- Days 1-3: GCP Pub/Sub complete (all 8 tutorials)
+- Days 4-5: Cross-cloud comparison project
 - Weekend: Choose right tool for use cases
 
 ## What You'll Master
@@ -412,25 +468,73 @@ API Gateway → [user.login] → Auth Service → [user.validated] → API Gatew
 Comment Service → [post.123.comments] → Notification Service → WebSocket → User
 ```
 
+**AWS SQS/SNS**: Serverless order processing
+```
+API Gateway → Lambda → [SNS: order.created] → [SQS: inventory-queue] → Lambda (Inventory)
+                                            → [SQS: email-queue] → Lambda (Email)
+                                            → [SQS: analytics-queue] → Lambda (Analytics)
+```
+
+**Azure Service Bus**: Enterprise integration
+```
+CRM System → [Service Bus Topic: customer.updated] → Subscription (Marketing) → Marketing App
+                                                   → Subscription (Support) → Support App
+                                                   → Subscription (Analytics) → Data Warehouse
+```
+
+**GCP Pub/Sub**: Real-time data pipeline
+```
+IoT Devices → [Pub/Sub: sensor-data] → Dataflow → BigQuery
+                                     → Cloud Functions → Firestore
+                                     → Cloud Run → Monitoring Dashboard
+```
+
 ## Additional Resources
 
+### Open Source Brokers
 - [RabbitMQ Documentation](https://www.rabbitmq.com/documentation.html)
 - [Kafka Documentation](https://kafka.apache.org/documentation/)
 - [NATS Documentation](https://docs.nats.io/)
 - [Redis Pub/Sub](https://redis.io/topics/pubsub)
+
+### Cloud Providers
+- [AWS SQS Documentation](https://docs.aws.amazon.com/sqs/)
+- [AWS SNS Documentation](https://docs.aws.amazon.com/sns/)
+- [Amazon MQ Documentation](https://docs.aws.amazon.com/amazon-mq/)
+- [Azure Service Bus](https://docs.microsoft.com/en-us/azure/service-bus-messaging/)
+- [Azure Queue Storage](https://docs.microsoft.com/en-us/azure/storage/queues/)
+- [Google Cloud Pub/Sub](https://cloud.google.com/pubsub/docs)
+
+### Patterns & Best Practices
 - [Enterprise Integration Patterns](https://www.enterpriseintegrationpatterns.com/)
+- [Cloud Design Patterns](https://docs.microsoft.com/en-us/azure/architecture/patterns/)
 
 ## Next Steps
 
+### For Self-Hosted Solutions:
 1. Start with RabbitMQ (easiest to learn)
 2. Learn Kafka for event streaming
 3. Explore NATS for cloud-native
 4. Use Redis Pub/Sub for simple use cases
-5. Build event-driven applications
+
+### For Cloud Solutions:
+1. AWS SQS/SNS for serverless architectures
+2. Azure Service Bus for enterprise integration
+3. GCP Pub/Sub for real-time analytics
+4. Amazon MQ when you need managed RabbitMQ
+
+### General Path:
+1. Learn one open-source broker deeply (RabbitMQ recommended)
+2. Understand event streaming with Kafka
+3. Explore cloud-managed services for your cloud provider
+4. Build event-driven applications
+5. Compare costs and choose the right tool
 
 ---
 
-**Total Tutorials**: 32 (4 brokers × 8 tutorials)
-**Estimated Time**: 50-70 hours
+**Total Tutorials**: 56 (7 message systems × 8 tutorials)
+**Estimated Time**: 90-110 hours
 **Difficulty**: Intermediate to Advanced
-**Cost**: Free (runs locally)
+**Cost**:
+- Open source brokers: Free (runs locally)
+- Cloud services: Pay-per-use (free tier available for learning)
