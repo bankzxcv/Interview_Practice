@@ -551,10 +551,11 @@ locals {
   base_storage_gb = 10
   storage_multiplier = 2.5
 
+  # 10 * 2.5 = 25.0, ceil() rounds up
   total_storage = ceil(base_storage_gb * storage_multiplier)  # Result: 25
 
-  # Ensure minimum storage
-  final_storage = max(total_storage, 20)  # At least 20 GB
+  # Ensure minimum storage (max of 25 and 20)
+  final_storage = max(total_storage, 20)  # Result: 25 (at least 20 GB)
 }
 ```
 
@@ -641,16 +642,18 @@ locals {
   region = "us-east-1"
 
   # Build resource name with prefix
+  # Joins ["myapp", "prod"] with "-" then converts to lowercase
   resource_prefix = lower(join("-", [local.project, local.environment]))
   # Result: "myapp-prod"
 
-  # Create fully qualified name
+  # Create fully qualified name using printf-style formatting
   instance_name = format("%s-%s-instance", local.resource_prefix, local.region)
   # Result: "myapp-prod-us-east-1-instance"
 
-  # Extract environment from tag
+  # Extract environment from tag by removing prefix
   tag_value = "Environment:Production"
-  environment_name = trimprefix(tag_value, "Environment:")  # Result: "Production"
+  environment_name = trimprefix(tag_value, "Environment:")
+  # Result: "Production" (prefix "Environment:" removed)
 }
 ```
 
@@ -801,7 +804,7 @@ locals {
   ports = [80, 443, 8080]
   protocols = ["tcp", "tcp", "tcp"]
 
-  # Create ingress rules from lists
+  # Create ingress rules from lists using for expression
   ingress_rules = [
     for idx, port in local.ports : {
       from_port   = port
@@ -810,6 +813,11 @@ locals {
       cidr_blocks = ["0.0.0.0/0"]
     }
   ]
+  # Result: [
+  #   {from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"]},
+  #   {from_port = 443, to_port = 443, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"]},
+  #   {from_port = 8080, to_port = 8080, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"]}
+  # ]
 }
 ```
 
@@ -829,6 +837,7 @@ locals {
 
   # base64gzip - Compresses and encodes to base64
   compressed = base64gzip("This is a long string that will be compressed")
+  # Result: "H4sIAAAAAAAA/..." (gzip-compressed data encoded in base64)
 
   # csvdecode - Parses CSV into list of maps
   csv_data = <<-EOF
@@ -899,21 +908,29 @@ resource "aws_instance" "web" {
   ami           = "ami-abc123"
   instance_type = "t2.micro"
 
-  # Base64 encode user data
+  # Base64 encode user data (required by AWS)
+  # 1. templatefile() reads and renders the template with variables
+  # 2. base64encode() converts the rendered script to base64
   user_data = base64encode(templatefile("${path.module}/user-data.sh", {
     hostname = "web-server"
     region   = var.region
   }))
+  # Result: "IyEvYmluL2Jhc2g..." (base64-encoded user data script)
 }
 
 # Example: Config from JSON
 locals {
+  # Read JSON file as string
   config_json = file("${path.module}/config.json")
-  config = jsondecode(local.config_json)
+  # Result: '{"database": {"host": "db.example.com", "port": 5432}}'
 
-  # Access parsed values
-  database_host = local.config.database.host
-  database_port = local.config.database.port
+  # Parse JSON string into HCL object
+  config = jsondecode(local.config_json)
+  # Result: {database = {host = "db.example.com", port = 5432}}
+
+  # Access parsed values using dot notation
+  database_host = local.config.database.host  # Result: "db.example.com"
+  database_port = local.config.database.port  # Result: 5432
 }
 ```
 
@@ -936,9 +953,11 @@ locals {
 
   # file - Reads file content as string
   config_file = file("${path.module}/config.txt")
+  # Result: "database=postgres\nport=5432\n..." (entire file content as string)
 
   # fileexists - Checks if file exists
-  has_config = fileexists("${path.module}/config.txt")  # Result: true or false
+  has_config = fileexists("${path.module}/config.txt")
+  # Result: true (if file exists) or false (if file doesn't exist)
 
   # fileset - Lists files matching pattern
   template_files = fileset(path.module, "templates/*.tpl")
@@ -949,35 +968,45 @@ locals {
 
   # filebase64 - Reads file as base64
   encoded_file = filebase64("${path.module}/image.png")
+  # Result: "iVBORw0KGgoAAAANSUhEUgAA..." (base64-encoded file content)
 
   # filebase64sha256 - Returns base64-encoded SHA256 hash
   file_hash = filebase64sha256("${path.module}/lambda.zip")
+  # Result: "n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg=" (used for Lambda versioning)
 
   # filebase64sha512 - Returns base64-encoded SHA512 hash
   file_hash_512 = filebase64sha512("${path.module}/data.bin")
+  # Result: "MJ7MSJwS1utMxA9QyQLytNDtd+..." (base64-encoded SHA512 hash)
 
   # filemd5 - Returns MD5 hash of file
   file_md5 = filemd5("${path.module}/script.sh")
+  # Result: "d41d8cd98f00b204e9800998ecf8427e" (32-character hex MD5 hash)
 
   # filesha1 - Returns SHA1 hash of file
   file_sha1 = filesha1("${path.module}/archive.tar")
+  # Result: "da39a3ee5e6b4b0d3255bfef95601890afd80709" (40-character hex SHA1 hash)
 
   # filesha256 - Returns SHA256 hash of file
   file_sha256 = filesha256("${path.module}/binary")
+  # Result: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" (64-char hex)
 
   # filesha512 - Returns SHA512 hash of file
   file_sha512 = filesha512("${path.module}/package.zip")
+  # Result: "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce..." (128-char hex)
 
   # pathexpand - Expands ~ to home directory
   home_path = pathexpand("~/.ssh/id_rsa")
   # Result: "/home/username/.ssh/id_rsa"
 
-  # templatefile - Renders template file
+  # templatefile - Renders template file with variables
   user_data = templatefile("${path.module}/user-data.tpl", {
     hostname    = "web-server"
     environment = var.environment
     ports       = [80, 443]
   })
+  # Result: Rendered template with variables substituted
+  # If template contains: "hostname = ${hostname}, env = ${environment}"
+  # Result: "hostname = web-server, env = production"
 }
 
 # Path References
@@ -997,10 +1026,11 @@ locals {
 
 # Example: Load multiple template files
 locals {
-  # Get all template files
+  # Get all template files matching pattern
   templates = fileset(path.module, "templates/*.tpl")
+  # Result: ["templates/app.tpl", "templates/web.tpl", "templates/db.tpl"]
 
-  # Render each template
+  # Render each template with variables
   rendered_templates = {
     for template in local.templates :
     template => templatefile("${path.module}/${template}", {
@@ -1008,6 +1038,11 @@ locals {
       region      = var.region
     })
   }
+  # Result: {
+  #   "templates/app.tpl" = "rendered content of app.tpl...",
+  #   "templates/web.tpl" = "rendered content of web.tpl...",
+  #   "templates/db.tpl" = "rendered content of db.tpl..."
+  # }
 }
 
 # Example: Lambda function deployment
@@ -1016,17 +1051,22 @@ resource "aws_lambda_function" "api" {
   function_name    = "api-function"
   role            = aws_iam_role.lambda.arn
   handler         = "index.handler"
+  # Compute hash of zip file - Lambda redeploys when hash changes
   source_code_hash = filebase64sha256("${path.module}/lambda.zip")
+  # Result: "n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg="
   runtime         = "nodejs18.x"
 }
 
 # Example: Conditional file inclusion
 locals {
+  # Check if custom config exists, use it; otherwise use default
   config = fileexists("${path.module}/custom-config.json") ? (
     jsondecode(file("${path.module}/custom-config.json"))
   ) : (
     jsondecode(file("${path.module}/default-config.json"))
   )
+  # Result: HCL object from whichever config file exists
+  # Example: {database = {host = "localhost", port = 5432}, app = {name = "myapp"}}
 }
 ```
 
@@ -1064,9 +1104,16 @@ locals {
 
   # timeadd - Add duration to timestamp
   tomorrow = timeadd(timestamp(), "24h")
-  next_week = timeadd(timestamp(), "168h")  # 7 days
-  next_month = timeadd(timestamp(), "720h")  # 30 days
-  future_time = timeadd(timestamp(), "1h30m")  # 1 hour 30 minutes
+  # Result: "2024-11-19T14:30:45Z" (24 hours from current timestamp)
+
+  next_week = timeadd(timestamp(), "168h")
+  # Result: "2024-11-25T14:30:45Z" (7 days = 168 hours)
+
+  next_month = timeadd(timestamp(), "720h")
+  # Result: "2024-12-18T14:30:45Z" (30 days = 720 hours)
+
+  future_time = timeadd(timestamp(), "1h30m")
+  # Result: "2024-11-18T16:00:45Z" (1 hour 30 minutes from now)
 
   # timecmp - Compare two timestamps
   is_after = timecmp("2024-11-18T15:00:00Z", "2024-11-18T14:00:00Z")
@@ -1079,8 +1126,9 @@ locals {
   # Result: 0 (equal)
 
   # plantimestamp - Consistent timestamp for apply
-  # Unlike timestamp(), this remains constant during planning
+  # Unlike timestamp(), this remains constant during planning/applying
   plan_time = plantimestamp()
+  # Result: "2024-11-18T14:30:45Z" (same value throughout terraform apply)
 }
 
 # Format Date Specification
@@ -1107,9 +1155,14 @@ locals {
 # Example: Resource expiration
 locals {
   created_at = timestamp()
-  expires_at = timeadd(local.created_at, "720h")  # 30 days
+  # Result: "2024-11-18T14:30:45Z"
 
+  expires_at = timeadd(local.created_at, "720h")  # 30 days
+  # Result: "2024-12-18T14:30:45Z"
+
+  # Check if current time is after expiration time
   is_expired = timecmp(timestamp(), local.expires_at) > 0
+  # Result: false (not expired) or true (expired)
 }
 
 # Example: Time-based tagging
@@ -1119,14 +1172,22 @@ resource "aws_instance" "web" {
 
   tags = {
     Name      = "web-server"
+    # Format current time for display
     CreatedAt = formatdate("YYYY-MM-DD hh:mm:ss", plantimestamp())
+    # Result: "2024-11-18 14:30:45"
+
+    # Calculate and format expiration date (30 days from now)
     ExpiresAt = formatdate("YYYY-MM-DD", timeadd(plantimestamp(), "720h"))
+    # Result: "2024-12-18"
   }
 }
 
 # Example: Backup rotation
 locals {
+  # Create timestamp string for backup naming
   backup_timestamp = formatdate("YYYY-MM-DD-hhmm", plantimestamp())
+  # Result: "2024-11-18-1430"
+
   backup_name = "backup-${local.backup_timestamp}"
   # Result: "backup-2024-11-18-1430"
 }
@@ -1173,12 +1234,12 @@ locals {
   # uuid - Generates random UUID
   random_id = uuid()
   # Result: "e7a4f8c9-1234-5678-9abc-def012345678"
-  # WARNING: Generates new UUID on each plan!
+  # WARNING: Generates NEW UUID on each plan - not recommended for resources!
 
-  # uuidv5 - Generates deterministic UUID v5
-  namespace = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"  # DNS namespace
+  # uuidv5 - Generates deterministic UUID v5 (preferred for resources)
+  namespace = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"  # DNS namespace (standard)
   deterministic_uuid = uuidv5(namespace, "example.com")
-  # Result: Always same UUID for same inputs
+  # Result: "cfbff0d1-9375-5685-968c-48ce8b15ae17" (always same for same inputs)
 }
 
 # Example: Content-based versioning
@@ -1187,8 +1248,9 @@ resource "aws_s3_object" "config" {
   key    = "config.json"
   source = "${path.module}/config.json"
 
-  # ETag based on content hash
+  # ETag based on content hash - S3 updates object when hash changes
   etag = md5(file("${path.module}/config.json"))
+  # Result: "5d41402abc4b2a76b9719d911017c592" (MD5 hash of file content)
 }
 
 # Example: Lambda versioning with hash
@@ -1199,27 +1261,34 @@ resource "aws_lambda_function" "api" {
   handler         = "index.handler"
   runtime         = "nodejs18.x"
 
-  # Trigger update when code changes
+  # Trigger update when code changes - Lambda redeploys on hash change
   source_code_hash = base64sha256(file("${path.module}/lambda.zip"))
+  # Result: "RBNvo1WzZ4oRRq0W9+hknpT7T8If536DEMBg9hyq/4o="
 }
 
 # Example: Unique resource naming
 locals {
-  # Create unique but deterministic names
+  # Create unique but deterministic names using UUID v5
   namespace_uuid = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
+  # Generate deterministic UUID from project and environment
   bucket_uuid = uuidv5(local.namespace_uuid, "${var.project}-${var.environment}")
+  # Result: "a1b2c3d4-5678-5901-2345-6789abcdef01"
+
+  # Use first 8 characters of UUID for short unique identifier
   bucket_name = "data-${substr(local.bucket_uuid, 0, 8)}"
-  # Result: "data-a1b2c3d4" (same for same inputs)
+  # Result: "data-a1b2c3d4" (always same for same project+environment)
 }
 
 # Example: Secret hashing
 locals {
-  # Hash API keys for comparison (not storage!)
+  # Hash API keys for comparison (not for storage!)
   api_key_hash = sha256(var.api_key)
+  # Result: "9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca7"
 
-  # Generate password hash
+  # Generate password hash (includes salt, different each time)
   user_password = bcrypt(var.user_password)
+  # Result: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"
 }
 ```
 
@@ -1270,24 +1339,26 @@ locals {
   vpc_cidr = "10.0.0.0/16"
 
   # Create 3 public subnets (/20 = 4096 IPs each)
+  # Formula: /16 + 4 bits = /20, index determines which subnet
   public_subnets = [
-    cidrsubnet(local.vpc_cidr, 4, 0),   # 10.0.0.0/20
-    cidrsubnet(local.vpc_cidr, 4, 1),   # 10.0.16.0/20
-    cidrsubnet(local.vpc_cidr, 4, 2),   # 10.0.32.0/20
+    cidrsubnet(local.vpc_cidr, 4, 0),   # Result: "10.0.0.0/20"
+    cidrsubnet(local.vpc_cidr, 4, 1),   # Result: "10.0.16.0/20"
+    cidrsubnet(local.vpc_cidr, 4, 2),   # Result: "10.0.32.0/20"
   ]
 
   # Create 3 private subnets (/20)
   private_subnets = [
-    cidrsubnet(local.vpc_cidr, 4, 3),   # 10.0.48.0/20
-    cidrsubnet(local.vpc_cidr, 4, 4),   # 10.0.64.0/20
-    cidrsubnet(local.vpc_cidr, 4, 5),   # 10.0.80.0/20
+    cidrsubnet(local.vpc_cidr, 4, 3),   # Result: "10.0.48.0/20"
+    cidrsubnet(local.vpc_cidr, 4, 4),   # Result: "10.0.64.0/20"
+    cidrsubnet(local.vpc_cidr, 4, 5),   # Result: "10.0.80.0/20"
   ]
 
   # Create database subnets (/24 = 256 IPs each)
+  # Formula: /16 + 8 bits = /24
   database_subnets = [
-    cidrsubnet(local.vpc_cidr, 8, 96),  # 10.0.96.0/24
-    cidrsubnet(local.vpc_cidr, 8, 97),  # 10.0.97.0/24
-    cidrsubnet(local.vpc_cidr, 8, 98),  # 10.0.98.0/24
+    cidrsubnet(local.vpc_cidr, 8, 96),  # Result: "10.0.96.0/24"
+    cidrsubnet(local.vpc_cidr, 8, 97),  # Result: "10.0.97.0/24"
+    cidrsubnet(local.vpc_cidr, 8, 98),  # Result: "10.0.98.0/24"
   ]
 }
 
@@ -1295,12 +1366,13 @@ locals {
 locals {
   availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
 
-  # Automatically create subnet for each AZ
+  # Automatically create subnet for each AZ using for expression
   az_subnets = {
     for idx, az in local.availability_zones :
     az => cidrsubnet("10.0.0.0/16", 8, idx)
   }
-  # Result: {
+  # Result: Map of availability zone to subnet CIDR
+  # {
   #   "us-east-1a" = "10.0.0.0/24"
   #   "us-east-1b" = "10.0.1.0/24"
   #   "us-east-1c" = "10.0.2.0/24"
@@ -1312,33 +1384,44 @@ locals {
   subnet_cidr = "10.0.1.0/24"
 
   # Reserve first 10 IPs for infrastructure
-  gateway_ip = cidrhost(local.subnet_cidr, 1)       # 10.0.1.1
-  dns_ip_1 = cidrhost(local.subnet_cidr, 2)         # 10.0.1.2
-  dns_ip_2 = cidrhost(local.subnet_cidr, 3)         # 10.0.1.3
+  gateway_ip = cidrhost(local.subnet_cidr, 1)       # Result: "10.0.1.1"
+  dns_ip_1 = cidrhost(local.subnet_cidr, 2)         # Result: "10.0.1.2"
+  dns_ip_2 = cidrhost(local.subnet_cidr, 3)         # Result: "10.0.1.3"
 
-  # Application IPs start from 10
+  # Generate application IPs starting from host 10
   app_ips = [
     for i in range(10, 20) :
     cidrhost(local.subnet_cidr, i)
   ]
-  # Result: ["10.0.1.10", "10.0.1.11", ..., "10.0.1.19"]
+  # Result: List of 10 consecutive IPs
+  # ["10.0.1.10", "10.0.1.11", "10.0.1.12", ..., "10.0.1.19"]
 }
 
 # Example: Multi-tier network
 locals {
   vpc_cidr = "10.0.0.0/16"
 
-  # Use cidrsubnets for automatic allocation
+  # Use cidrsubnets for automatic allocation (no overlaps)
   all_subnets = cidrsubnets(
     local.vpc_cidr,
     4, 4, 4,  # 3 public subnets (/20)
     4, 4, 4,  # 3 private subnets (/20)
     8, 8, 8   # 3 database subnets (/24)
   )
+  # Result: List of 9 non-overlapping subnet CIDRs
+  # ["10.0.0.0/20", "10.0.16.0/20", "10.0.32.0/20",
+  #  "10.0.48.0/20", "10.0.64.0/20", "10.0.80.0/20",
+  #  "10.0.96.0/24", "10.0.97.0/24", "10.0.98.0/24"]
 
+  # Extract subnets by tier using slice
   public_subnet_cidrs = slice(local.all_subnets, 0, 3)
+  # Result: ["10.0.0.0/20", "10.0.16.0/20", "10.0.32.0/20"]
+
   private_subnet_cidrs = slice(local.all_subnets, 3, 6)
+  # Result: ["10.0.48.0/20", "10.0.64.0/20", "10.0.80.0/20"]
+
   database_subnet_cidrs = slice(local.all_subnets, 6, 9)
+  # Result: ["10.0.96.0/24", "10.0.97.0/24", "10.0.98.0/24"]
 }
 ```
 
@@ -1402,17 +1485,22 @@ locals {
 
 # Example: Safe variable access
 locals {
-  # Use try to handle missing values
+  # Use try to handle missing values - returns first successful expression
   database_host = try(var.database_config.host, "localhost")
+  # Result: var.database_config.host if it exists, otherwise "localhost"
+
   database_port = try(var.database_config.port, 5432)
+  # Result: var.database_config.port if it exists, otherwise 5432
 
-  # Use can to check if value is valid
+  # Use can to check if value is valid (returns true/false)
   has_valid_config = can(var.database_config.host)
+  # Result: true if var.database_config.host exists and is valid, false otherwise
 
-  # Combine can with ternary
+  # Combine can with ternary for conditional logic
   connection_string = can(var.database_config.host) ? (
     "${var.database_config.host}:${var.database_config.port}"
   ) : "localhost:5432"
+  # Result: "db.example.com:5432" if config exists, otherwise "localhost:5432"
 }
 
 # Example: Type validation
@@ -1437,35 +1525,50 @@ variable "ports" {
 }
 
 locals {
-  # Ensure ports is always a list
+  # Ensure ports is always a list (handles both single value and list inputs)
   ports_list = try(tolist(var.ports), [var.ports])
+  # If var.ports = 80, Result: [80]
+  # If var.ports = [80, 443], Result: [80, 443]
 
-  # Convert all to numbers
+  # Convert all to numbers (in case they're strings)
   ports_numbers = [
     for port in local.ports_list :
     tonumber(port)
   ]
+  # If ports_list = ["80", "443"], Result: [80, 443]
 }
 
 # Example: Dynamic type conversion
 locals {
   # Input could be string or number
   input_value = var.dynamic_input
+  # Example: input_value could be 42 or "42"
 
   # Safely convert based on type
   as_string = tostring(local.input_value)
+  # Result: "42" (regardless of input type)
+
   as_number = try(tonumber(local.input_value), 0)
+  # Result: 42 (or 0 if conversion fails)
+
   as_bool = try(tobool(local.input_value), false)
+  # Result: true if input is truthy, false otherwise or on error
 
   # Check type and handle accordingly
   is_number = type(local.input_value) == "number"
-  is_string = type(local.input_value) == "string"
+  # Result: true if input is number, false otherwise
 
+  is_string = type(local.input_value) == "string"
+  # Result: true if input is string, false otherwise
+
+  # Process based on type
   processed_value = local.is_number ? (
-    local.input_value * 2
+    local.input_value * 2  # Double if number
   ) : (
-    length(local.input_value)
+    length(local.input_value)  # Get length if string
   )
+  # If input_value = 42, Result: 84
+  # If input_value = "hello", Result: 5
 }
 
 # Example: Null safety
@@ -1478,18 +1581,22 @@ variable "optional_config" {
 }
 
 locals {
-  # Safe access with try
+  # Safe access with try - won't error if var.optional_config is null
   config_host = try(var.optional_config.host, "default-host")
+  # Result: "db.example.com" if config provided, otherwise "default-host"
 
   # Check if not null
   has_config = var.optional_config != null
+  # Result: true if config is provided, false if null
 
-  # Use coalesce for null handling
+  # Use coalesce for null handling - returns first non-null value
   final_host = coalesce(
     try(var.optional_config.host, null),
     var.fallback_host,
     "localhost"
   )
+  # Result: First non-null value from the list
+  # Priority: optional_config.host > fallback_host > "localhost"
 }
 ```
 
