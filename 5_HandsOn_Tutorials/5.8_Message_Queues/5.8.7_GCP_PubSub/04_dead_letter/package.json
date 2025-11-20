@@ -1,0 +1,17 @@
+{
+  "name": "gcp-pubsub-04-dead-letter",
+  "version": "1.0.0",
+  "description": "Tutorial 04: Dead Letter Topics and Retry Policies - TypeScript Examples",
+  "scripts": {
+    "setup": "ts-node setup-dead-letter.ts",
+    "process": "ts-node process-dead-letters.ts"
+  },
+  "dependencies": {
+    "@google-cloud/pubsub": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}

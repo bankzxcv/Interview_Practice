@@ -1,0 +1,19 @@
+{
+  "name": "aws-amazon-mq-typescript",
+  "version": "1.0.0",
+  "description": "TypeScript examples for Amazon MQ (RabbitMQ/ActiveMQ)",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-mq": "^3.470.0",
+    "amqplib": "^0.10.3",
+    "stompit": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.4",
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
+  }
+}

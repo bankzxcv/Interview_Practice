@@ -1,0 +1,33 @@
+{
+  "name": "gcp-pubsub-01-basic-setup",
+  "version": "1.0.0",
+  "description": "Tutorial 01: Basic Pub/Sub Setup and Publishing - TypeScript Examples",
+  "main": "index.js",
+  "scripts": {
+    "test-auth": "ts-node test-auth.ts",
+    "verify": "ts-node verify-install.ts",
+    "create-topic": "ts-node create-topic.ts",
+    "publish-basic": "ts-node publish-basic.ts",
+    "publish-attributes": "ts-node publish-with-attributes.ts",
+    "publish-batched": "ts-node publish-batched.ts",
+    "emulator": "ts-node emulator-example.ts"
+  },
+  "keywords": [
+    "gcp",
+    "pubsub",
+    "typescript",
+    "messaging"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@google-cloud/pubsub": "^4.0.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}

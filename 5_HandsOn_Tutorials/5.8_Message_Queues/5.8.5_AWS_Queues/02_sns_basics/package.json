@@ -1,0 +1,41 @@
+{
+  "name": "aws-sns-basics-typescript",
+  "version": "1.0.0",
+  "description": "TypeScript examples for AWS SNS basics - Topics and Subscriptions",
+  "main": "index.ts",
+  "scripts": {
+    "create-topic": "ts-node create-topic.ts",
+    "publish": "ts-node publish-messages.ts",
+    "subscribe": "ts-node subscriptions.ts",
+    "fanout": "ts-node fanout-pattern.ts",
+    "build": "tsc",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"**/*.ts\""
+  },
+  "keywords": [
+    "aws",
+    "sns",
+    "typescript",
+    "pub-sub",
+    "fanout",
+    "message-filtering"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-sns": "^3.470.0",
+    "@aws-sdk/client-sqs": "^3.470.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

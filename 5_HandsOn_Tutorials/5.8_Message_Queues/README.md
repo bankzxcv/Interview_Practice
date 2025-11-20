@@ -147,6 +147,45 @@ async function sendMessage() {
 sendMessage();
 ```
 
+### Simple Producer (TypeScript)
+
+```typescript
+import amqp, { Connection, Channel } from 'amqplib';
+
+interface TaskMessage {
+  task: string;
+  timestamp: number;
+}
+
+async function sendMessage(): Promise<void> {
+  let connection: Connection | null = null;
+  let channel: Channel | null = null;
+
+  try {
+    connection = await amqp.connect('amqp://admin:password@localhost');
+    channel = await connection.createChannel();
+
+    const queue = 'tasks';
+    await channel.assertQueue(queue, { durable: true });
+
+    const message: TaskMessage = { task: 'process data', timestamp: Date.now() };
+    channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)), {
+      persistent: true
+    });
+
+    console.log('Sent:', message);
+  } catch (error) {
+    console.error('Error sending message:', error);
+    throw error;
+  } finally {
+    if (channel) await channel.close();
+    if (connection) await connection.close();
+  }
+}
+
+sendMessage().catch(console.error);
+```
+
 ### Simple Consumer (Node.js)
 
 ```javascript
@@ -175,6 +214,54 @@ async function receiveMessages() {
 }
 
 receiveMessages();
+```
+
+### Simple Consumer (TypeScript)
+
+```typescript
+import amqp, { Connection, Channel, ConsumeMessage } from 'amqplib';
+
+interface TaskMessage {
+  task: string;
+  timestamp: number;
+}
+
+async function receiveMessages(): Promise<void> {
+  try {
+    const connection: Connection = await amqp.connect('amqp://admin:password@localhost');
+    const channel: Channel = await connection.createChannel();
+
+    const queue = 'tasks';
+    await channel.assertQueue(queue, { durable: true });
+    channel.prefetch(1); // Process one message at a time
+
+    console.log('Waiting for messages...');
+
+    await channel.consume(queue, async (msg: ConsumeMessage | null) => {
+      if (!msg) return;
+
+      try {
+        const message: TaskMessage = JSON.parse(msg.content.toString());
+        console.log('Received:', message);
+
+        // Simulate work
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Acknowledge message
+        channel.ack(msg);
+      } catch (error) {
+        console.error('Error processing message:', error);
+        // Reject and requeue the message
+        channel.nack(msg, false, true);
+      }
+    });
+  } catch (error) {
+    console.error('Error in consumer:', error);
+    throw error;
+  }
+}
+
+receiveMessages().catch(console.error);
 ```
 
 ## Messaging Patterns
@@ -341,6 +428,52 @@ async function processMessage(msg) {
 }
 ```
 
+### 2. Idempotent Consumer (TypeScript)
+
+```typescript
+import { Channel, ConsumeMessage } from 'amqplib';
+
+class IdempotentConsumer {
+  private processedIds: Set<string> = new Set();
+  private channel: Channel;
+
+  constructor(channel: Channel) {
+    this.channel = channel;
+  }
+
+  async processMessage(msg: ConsumeMessage): Promise<void> {
+    const messageId = msg.properties.messageId as string;
+
+    // Check if already processed
+    if (this.processedIds.has(messageId)) {
+      console.log('Duplicate message, skipping');
+      this.channel.ack(msg);
+      return;
+    }
+
+    try {
+      // Process message
+      await this.doWork(msg.content);
+
+      // Mark as processed
+      this.processedIds.add(messageId);
+
+      // Acknowledge
+      this.channel.ack(msg);
+    } catch (error) {
+      console.error('Error processing message:', error);
+      this.channel.nack(msg, false, true);
+    }
+  }
+
+  private async doWork(content: Buffer): Promise<void> {
+    // Your work here
+    const data = JSON.parse(content.toString());
+    console.log('Processing:', data);
+  }
+}
+```
+
 ### 3. Kafka Consumer with Error Handling
 
 ```javascript
@@ -372,6 +505,90 @@ async function run() {
 }
 ```
 
+### 3. Kafka Consumer with Error Handling (TypeScript)
+
+```typescript
+import { Kafka, Consumer, EachMessagePayload, KafkaMessage } from 'kafkajs';
+
+interface Event {
+  id: string;
+  type: string;
+  data: unknown;
+  timestamp: number;
+}
+
+class KafkaConsumerService {
+  private kafka: Kafka;
+  private consumer: Consumer;
+
+  constructor(clientId: string, brokers: string[], groupId: string) {
+    this.kafka = new Kafka({
+      clientId,
+      brokers
+    });
+    this.consumer = this.kafka.consumer({ groupId });
+  }
+
+  async run(): Promise<void> {
+    await this.consumer.connect();
+    await this.consumer.subscribe({ topic: 'events', fromBeginning: false });
+
+    await this.consumer.run({
+      eachMessage: async ({ topic, partition, message }: EachMessagePayload) => {
+        try {
+          if (!message.value) {
+            console.warn('Received empty message');
+            return;
+          }
+
+          const event: Event = JSON.parse(message.value.toString());
+          await this.processEvent(event);
+        } catch (error) {
+          console.error('Processing error:', error);
+          // Send to dead letter topic
+          await this.sendToDeadLetter(message);
+        }
+      },
+    });
+  }
+
+  private async processEvent(event: Event): Promise<void> {
+    console.log('Processing event:', event);
+    // Your event processing logic here
+  }
+
+  private async sendToDeadLetter(message: KafkaMessage): Promise<void> {
+    const producer = this.kafka.producer();
+    await producer.connect();
+
+    try {
+      await producer.send({
+        topic: 'events-dead-letter',
+        messages: [{
+          key: message.key,
+          value: message.value,
+          headers: {
+            ...message.headers,
+            'original-topic': 'events',
+            'error-timestamp': Date.now().toString()
+          }
+        }]
+      });
+    } finally {
+      await producer.disconnect();
+    }
+  }
+
+  async disconnect(): Promise<void> {
+    await this.consumer.disconnect();
+  }
+}
+
+// Usage
+const service = new KafkaConsumerService('my-app', ['localhost:9092'], 'my-group');
+service.run().catch(console.error);
+```
+
 ## Prerequisites
 
 ```bash
@@ -379,9 +596,15 @@ async function run() {
 brew install --cask docker
 
 # Language clients (choose your language)
+
+# JavaScript/Node.js
 npm install amqplib kafkajs nats redis
 
-# or
+# TypeScript
+npm install amqplib kafkajs nats redis
+npm install --save-dev @types/amqplib typescript ts-node
+
+# or Python
 pip install pika kafka-python nats-py redis
 
 # Optional: CLI tools

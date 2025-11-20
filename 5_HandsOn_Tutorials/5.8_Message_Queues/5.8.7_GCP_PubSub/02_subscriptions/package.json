@@ -1,0 +1,19 @@
+{
+  "name": "gcp-pubsub-02-subscriptions",
+  "version": "1.0.0",
+  "description": "Tutorial 02: Pull and Push Subscriptions - TypeScript Examples",
+  "scripts": {
+    "create-subscription": "ts-node create-subscription.ts",
+    "sync-pull": "ts-node sync-pull.ts",
+    "async-pull": "ts-node async-pull.ts",
+    "flow-control": "ts-node flow-control.ts"
+  },
+  "dependencies": {
+    "@google-cloud/pubsub": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}

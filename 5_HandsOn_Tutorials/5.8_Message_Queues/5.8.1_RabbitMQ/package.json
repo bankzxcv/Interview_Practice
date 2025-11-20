@@ -1,0 +1,34 @@
+{
+  "name": "rabbitmq-typescript-examples",
+  "version": "1.0.0",
+  "description": "TypeScript code examples for RabbitMQ tutorials",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "format": "prettier --write \"**/*.ts\""
+  },
+  "keywords": [
+    "rabbitmq",
+    "typescript",
+    "amqp",
+    "message-queue",
+    "tutorials"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.4",
+    "@types/node": "^20.10.0",
+    "prettier": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
