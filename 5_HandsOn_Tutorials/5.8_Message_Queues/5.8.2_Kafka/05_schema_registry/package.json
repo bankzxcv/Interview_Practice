@@ -1,0 +1,25 @@
+{
+  "name": "kafka-schema-registry-typescript",
+  "version": "1.0.0",
+  "description": "Kafka Schema Registry with Avro - TypeScript Examples",
+  "main": "index.js",
+  "scripts": {
+    "producer": "ts-node producer_avro.ts",
+    "consumer": "ts-node consumer_avro.ts",
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["kafka", "typescript", "schema-registry", "avro", "serialization"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "@kafkajs/confluent-schema-registry": "^3.3.0",
+    "avro-js": "^1.11.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
+  }
+}

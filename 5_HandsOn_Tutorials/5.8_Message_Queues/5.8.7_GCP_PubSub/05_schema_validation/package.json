@@ -1,0 +1,17 @@
+{
+  "name": "gcp-pubsub-05-schema-validation",
+  "version": "1.0.0",
+  "description": "Tutorial 05: Schema Validation - TypeScript Examples",
+  "scripts": {
+    "create-schema": "ts-node avro-schema.ts",
+    "publish": "ts-node publish-with-schema.ts"
+  },
+  "dependencies": {
+    "@google-cloud/pubsub": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}

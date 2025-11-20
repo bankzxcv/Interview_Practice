@@ -1,0 +1,17 @@
+{
+  "name": "gcp-pubsub-03-ordering-delivery",
+  "version": "1.0.0",
+  "description": "Tutorial 03: Message Ordering and Exactly-Once Delivery - TypeScript Examples",
+  "scripts": {
+    "publish-ordered": "ts-node publish-ordered.ts",
+    "exactly-once": "ts-node exactly-once.ts"
+  },
+  "dependencies": {
+    "@google-cloud/pubsub": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}

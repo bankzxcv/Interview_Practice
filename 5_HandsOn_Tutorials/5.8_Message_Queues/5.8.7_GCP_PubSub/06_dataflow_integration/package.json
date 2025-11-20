@@ -1,0 +1,20 @@
+{
+  "name": "gcp-pubsub-06-dataflow-integration",
+  "version": "1.0.0",
+  "description": "Tutorial 06: Cloud Functions and Dataflow Integration - TypeScript Examples",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "deploy": "echo 'Use gcloud functions deploy commands to deploy'"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.0.0",
+    "@google-cloud/pubsub": "^4.0.0",
+    "@google-cloud/firestore": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}

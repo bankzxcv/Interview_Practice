@@ -1,0 +1,31 @@
+{
+  "name": "azure-service-bus-queues-tutorial",
+  "version": "1.0.0",
+  "description": "TypeScript examples for Azure Service Bus Queues",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "producer": "ts-node producer.ts",
+    "consumer": "ts-node consumer.ts",
+    "session-producer": "ts-node session_producer.ts",
+    "session-consumer": "ts-node session_consumer.ts",
+    "dlq-monitor": "ts-node dead_letter_monitor.ts"
+  },
+  "keywords": [
+    "azure",
+    "service-bus",
+    "queue",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@azure/service-bus": "^7.9.0",
+    "@azure/identity": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "ts-node": "^10.9.0"
+  }
+}

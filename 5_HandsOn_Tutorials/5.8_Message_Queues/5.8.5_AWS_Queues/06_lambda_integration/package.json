@@ -1,0 +1,17 @@
+{
+  "name": "aws-lambda-integration-typescript",
+  "version": "1.0.0",
+  "description": "TypeScript Lambda handlers for SQS and SNS events",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.470.0",
+    "@aws-sdk/client-sns": "^3.470.0",
+    "@types/aws-lambda": "^8.10.130"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.2"
+  }
+}

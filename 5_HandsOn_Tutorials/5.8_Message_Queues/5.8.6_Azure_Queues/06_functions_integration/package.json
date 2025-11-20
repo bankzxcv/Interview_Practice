@@ -1,0 +1,20 @@
+{
+  "name": "azure-functions-queue-tutorial",
+  "version": "1.0.0",
+  "description": "TypeScript examples for Azure Functions with Queue triggers",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "prestart": "npm run build",
+    "start": "func start",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "@azure/functions": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "azure-functions-core-tools": "^4.0.0"
+  }
+}

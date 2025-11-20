@@ -1,0 +1,23 @@
+{
+  "name": "kafka-exactly-once-typescript",
+  "version": "1.0.0",
+  "description": "Kafka Exactly-Once Semantics - TypeScript Examples",
+  "main": "index.js",
+  "scripts": {
+    "transactional-producer": "ts-node transactional_producer.ts",
+    "transactional-consumer": "ts-node transactional_consumer.ts",
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["kafka", "typescript", "transactions", "exactly-once", "idempotence"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "redis-pubsub-tutorials-typescript",
+  "version": "1.0.0",
+  "description": "TypeScript implementations for Redis Pub/Sub tutorials",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "ts-node 01_basic_pubsub/test_pubsub.ts"
+  },
+  "keywords": [
+    "redis",
+    "pubsub",
+    "streams",
+    "typescript",
+    "messaging",
+    "queue"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "redis": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

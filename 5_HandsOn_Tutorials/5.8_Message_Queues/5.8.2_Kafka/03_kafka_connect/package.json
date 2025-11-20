@@ -1,0 +1,22 @@
+{
+  "name": "kafka-connect-typescript",
+  "version": "1.0.0",
+  "description": "Kafka Connect Management - TypeScript Examples",
+  "main": "index.js",
+  "scripts": {
+    "manager": "ts-node connector_manager.ts",
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["kafka", "typescript", "kafka-connect", "connectors", "rest-api"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
+  }
+}

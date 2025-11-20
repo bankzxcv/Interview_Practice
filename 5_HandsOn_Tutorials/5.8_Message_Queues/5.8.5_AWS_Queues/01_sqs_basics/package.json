@@ -1,0 +1,43 @@
+{
+  "name": "aws-sqs-basics-typescript",
+  "version": "1.0.0",
+  "description": "TypeScript examples for AWS SQS basics - Standard and FIFO queues",
+  "main": "index.ts",
+  "scripts": {
+    "create-queue": "ts-node create-queue.ts",
+    "send": "ts-node send-messages.ts",
+    "receive": "ts-node receive-messages.ts",
+    "producer": "ts-node producer.ts",
+    "consumer": "ts-node consumer.ts",
+    "localstack": "ts-node localstack-example.ts",
+    "test": "jest",
+    "build": "tsc",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"**/*.ts\""
+  },
+  "keywords": [
+    "aws",
+    "sqs",
+    "typescript",
+    "message-queue",
+    "fifo",
+    "standard-queue"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.470.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

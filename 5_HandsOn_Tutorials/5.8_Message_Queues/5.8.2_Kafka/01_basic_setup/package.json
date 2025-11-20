@@ -1,0 +1,24 @@
+{
+  "name": "kafka-basic-setup-typescript",
+  "version": "1.0.0",
+  "description": "Kafka Basic Setup - TypeScript Examples",
+  "main": "index.js",
+  "scripts": {
+    "producer": "ts-node producer.ts",
+    "consumer": "ts-node consumer.ts",
+    "manual-offset": "ts-node consumer_manual_offset.ts",
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["kafka", "typescript", "messaging", "producer", "consumer"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
+  }
+}

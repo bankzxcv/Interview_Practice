@@ -1,0 +1,20 @@
+{
+  "name": "gcp-pubsub-07-bigquery-integration",
+  "version": "1.0.0",
+  "description": "Tutorial 07: BigQuery and Data Pipeline Integration - TypeScript Examples",
+  "scripts": {
+    "create-subscription": "ts-node bigquery-subscription.ts",
+    "publish": "ts-node publish-to-bigquery.ts"
+  },
+  "dependencies": {
+    "@google-cloud/pubsub": "^4.0.0",
+    "@google-cloud/bigquery": "^7.0.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}
