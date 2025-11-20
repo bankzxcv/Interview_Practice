@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"    # AMQP protocol port
+      - "15672:15672"  # Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_VHOST: /
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_logs:/var/log/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rabbitmq_network
+
+volumes:
+  rabbitmq_data:
+  rabbitmq_logs:
+
+networks:
+  rabbitmq_network:
+    driver: bridge
